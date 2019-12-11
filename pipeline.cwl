@@ -18,6 +18,10 @@ inputs:
     type: int
     default: 1
 outputs:
+  count_matrix:
+    outputSource: alevin_to_anndata/h5ad_file
+    type: File
+    label: "Count matrix from Alevin"
   qc_results:
     outputSource: qc_checks/qc_results
     type: File
