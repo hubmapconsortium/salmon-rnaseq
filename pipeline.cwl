@@ -11,7 +11,7 @@ inputs:
     label: "R1 FASTQ file"
     type: File
   fastq_r2:
-    label: "FASTQ file 2"
+    label: "R2 FASTQ file"
     type: File
   threads:
     label: "Number of threads for Salmon"
