@@ -14,7 +14,7 @@ inputs:
     inputBinding:
       position: 0
       prefix: "--threads"
-  fastq_rdirectory:
+  fastq_dir:
     type: Directory
     inputBinding:
       position: 1

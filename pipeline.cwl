@@ -46,8 +46,8 @@ outputs:
 steps:
   - id: salmon
     in:
-      - id: fastq_directory
-        source: fastq_directory
+      - id: fastq_dir
+        source: fastq_dir
       - id: threads
         source: threads
     out:
