@@ -3,7 +3,7 @@ class: CommandLineTool
 hints:
   DockerRequirement:
     dockerPull: mruffalo/salmon-grch38:1.0.0
-baseCommand: salmon_wrapper.py
+baseCommand: /opt/salmon_wrapper.py
 label: Run Salmon Alevin tool on FASTQ input
 
 # arguments are hardcoded in salmon_wrapper.py
