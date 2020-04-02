@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 from pathlib import Path
-from os import fspath
+from os import environ, fspath
 from subprocess import check_call
 from typing import Iterable, Tuple
 
@@ -71,6 +71,8 @@ def main(threads: int, directory: Path):
         ]
         command.extend(fastq_extension)
     print('Running:', ' '.join(command))
+    env = environ.copy()
+    env['LD_LIBRARY_PATH'] = '/usr/local/lib'
     check_call(command)
 
 if __name__ == '__main__':
