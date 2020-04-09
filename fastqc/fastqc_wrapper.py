@@ -17,9 +17,11 @@ def find_fastq_files(directory: Path) -> Iterable[Path]:
         yield from directory.glob(pattern.format(extension=extension))
 
 def main(directory: Path):
-    command = ["fastqc"]
+    command = ["fastqc", "--outdir", "."]
     for fastq_file in find_fastq_files(directory):
         command.append(str(fastq_file))
+
+    print(command)
 
     print('Running:', ' '.join(command))
     check_call(command)
