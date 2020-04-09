@@ -27,6 +27,28 @@ outputs:
       type: array
       items: File
     label: "HTML reports with embedded graphs"
+  quant_files:
+    outputSource: salmon-bulk/quant_files
+    type:
+      type: array
+      items: File
+    label: "Files containing transcript expression data from salmon quant"
+  command_info:
+    outputSource: salmon-bulk/quant_files
+    type:
+      type: array
+      items: File
+    label: "Log of command parameters supplied to salmon quant"
+  auxiliary_files:
+    outputSource: salmon-bulk/auxiliary_files
+    type:
+      type: array
+      items: File
+    label: "Tarred and zipped directory containing miscellaneous auxiliary files produced by salmon quant"
+  expression_matrix:
+    outputSource: make_expression_matrix/expression_matrix
+    type: File
+    label: "A hd5 file containing transcript by sample matrices of TPM and number of reads"
 
 steps:
 
@@ -47,8 +69,7 @@ steps:
       - id: threads
         source: threads
     out:
-      - quant_dir
-      - quant_sfs
+      - quant_files
       - command_info
       - auxiliary_files
     run: steps/bulk-salmon.cwl
@@ -56,8 +77,8 @@ steps:
 
   - id: make_expression_matrix
     in:
-      - id: quant_dir
-        source: salmon-bulk/quant_dir
+      - id: quant_files
+        source: salmon-bulk/quant_files
 
     out:
       - expression_matrix

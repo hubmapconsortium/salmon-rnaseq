@@ -2,7 +2,7 @@ cwlVersion: v1.0
 class: CommandLineTool
 hints:
   DockerRequirement:
-    dockerPull: mruffalo/salmon-grch38:20200213
+    dockerPull: seandonahue5311/bulk:v1.0
 baseCommand: /opt/bulk_salmon_wrapper.py
 label: Run Salmon quant tool on FASTQ input
 
@@ -21,25 +21,23 @@ inputs:
 
 outputs:
 
-  quant_dir:
-    type: Directory
-    outputBinding:
-      glob: out/salmon_quant/
-
-  quant_sfs:
-    type: array
-    items:
+  quant_files:
+    type:
       type: array
       items: File
     outputBinding:
-      glob: /out/salmon_quant/*quant.sf
+      glob: "out/*.sf"
 
   command_info:
-    type: File
+    type:
+      type: array
+      items: File
     outputBinding:
-      glob: /out/salmon_quant/cmd_info.json
+      glob: "out/*.json"
 
   auxiliary_files:
-    type: File
+    type:
+      type: array
+      items: File
     outputBinding:
-      glob: /out/salmon_quant/aux_files.tar.gz
+      glob: "out/*.gz"

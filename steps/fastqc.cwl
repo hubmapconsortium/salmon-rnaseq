@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Runs fastQC on each fastq file in fastq directory
 hints:
   DockerRequirement:
-    dockerPull: "seandonahue5311/fastqc:1.0"
+    dockerPull: "seandonahue5311/fastqc:v1.0"
 baseCommand: /opt/fastqc_wrapper.py
 
 inputs:
