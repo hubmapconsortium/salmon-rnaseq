@@ -19,6 +19,18 @@ outputs:
     outputSource: alevin_to_anndata/h5ad_file
     type: File
     label: "Count matrix from Alevin"
+  zipped_files:
+    outputSource: fastqc/zipped_files
+    type:
+      type: array
+      items: File
+    label: "Individual graph files and additional data files containing the raw data from which plots were drawn."
+  report_files:
+    outputSource: fastqc/report_files
+    type:
+      type: array
+      items: File
+    label: "HTML reports with embedded graphs"
   qc_results:
     outputSource: qc_checks/qc_results
     type: File
@@ -57,6 +69,15 @@ steps:
       - quant_tier_mat
     run: steps/salmon.cwl
     label: "Salmon Alevin 1.0.0, with index from GRCh38 transcriptome"
+  - id: fastqc
+    in:
+      - id: fastq_dir
+        source: fastq_dir
+    out:
+      - zipped_files
+      - report_files
+    run: steps/fastqc.cwl
+    label: "Run fastqc on all fastq files in fastq directory"
   - id: alevin_to_anndata
     in:
       - id: quant_mat
