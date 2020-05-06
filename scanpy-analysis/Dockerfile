@@ -1,12 +1,23 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 ## System packages
 # I'm used to using `apt` but it complains that it doesn't have a stable
 #   command-line interface, so let's use `apt-get` instead
 RUN apt-get update \
  && apt-get -y install \
+    autoconf \
+    automake \
+    bison \
+    fastqc \
+    flex \
+    libfreetype6-dev \
     libigraph0-dev \
     libxml2-dev \
+    libtool \
+    m4 \
+    pkg-config \
     python3 \
     python3-dev \
     python3-pip \
@@ -20,4 +31,6 @@ RUN pip3 install -r /opt/requirements.txt \
 
 COPY alevin_to_anndata.py /opt
 COPY scanpy_entry_point.py /opt
+COPY make_expression_matrix.py /opt
+COPY fastqc_wrapper.py /opt
 WORKDIR /opt

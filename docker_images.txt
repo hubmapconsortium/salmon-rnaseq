@@ -1,0 +1,3 @@
+# requires version 0.2 of multi-docker-build tool
+hubmap/scanpy	scanpy-analysis/Dockerfile	base_directory_build
+hubmap/salmon-grch38	salmon/Dockerfile	base_directory_build

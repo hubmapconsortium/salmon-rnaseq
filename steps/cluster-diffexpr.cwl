@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Compute differentially expressed genes between each cluster and the rest
 hints:
   DockerRequirement:
-    dockerPull: mruffalo/scanpy:latest
+    dockerPull: hubmap/scanpy:latest
 baseCommand: /opt/scanpy_entry_point.py
 
 arguments:

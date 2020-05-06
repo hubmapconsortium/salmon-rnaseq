@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Convert Alevin sparse output to anndata.AnnData object, save as h5ad
 hints:
   DockerRequirement:
-    dockerPull: mruffalo/scanpy:latest
+    dockerPull: hubmap/scanpy:latest
 baseCommand: /opt/alevin_to_anndata.py
 
 inputs:

@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Compute QC measures
 hints:
   DockerRequirement:
-    dockerPull: mruffalo/scanpy:latest
+    dockerPull: hubmap/scanpy:latest
 baseCommand: /opt/scanpy_entry_point.py
 
 arguments:

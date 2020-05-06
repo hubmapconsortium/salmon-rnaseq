@@ -3,7 +3,7 @@ class: CommandLineTool
 
 hints:
   DockerRequirement:
-    dockerPull: seandonahue5311/pandas:v0.1
+    dockerPull: hubmap/scanpy:latest
 
 baseCommand: /opt/make_expression_matrix.py
 label: Takes gene expression vectors from several bulk RNA samples and makes them into a gene by sample matrix
