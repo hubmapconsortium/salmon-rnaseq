@@ -23,18 +23,10 @@ outputs:
     outputSource: alevin_to_anndata/h5ad_file
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD"
-  zipped_files:
-    outputSource: fastqc/zipped_files
-    type:
-      type: array
-      items: File
-    label: "Individual graph files and additional data files containing the raw data from which plots were drawn."
-  report_files:
-    outputSource: fastqc/report_files
-    type:
-      type: array
-      items: File
-    label: "HTML reports with embedded graphs"
+  fastqc_dir:
+    outputSource: fastqc/fastqc_dir
+    type: Directory
+    label: "Directory of FastQC output files, mirroring input directory structure"
   qc_results:
     outputSource: scanpy_analysis/qc_results
     type: File
@@ -74,8 +66,7 @@ steps:
       - id: fastq_dir
         source: fastq_dir
     out:
-      - zipped_files
-      - report_files
+      - fastqc_dir
     run: steps/fastqc.cwl
     label: "Run fastqc on all fastq files in fastq directory"
   - id: alevin_to_anndata
