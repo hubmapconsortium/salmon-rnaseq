@@ -14,18 +14,8 @@ inputs:
       position: 1
 
 outputs:
-  zipped_files:
-    type:
-      type: array
-      items: File
+  fastqc_dir:
+    type: Directory
     outputBinding:
-      glob: "*.zip"
+      glob: "fastqc"
     doc: Individual graph files and additional data files containing the raw data from which plots were drawn.
-
-  report_files:
-    type:
-      type: array
-      items: File
-    outputBinding:
-      glob: "*.html"
-    doc: HTML reports with embedded graphs
