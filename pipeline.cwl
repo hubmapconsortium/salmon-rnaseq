@@ -36,11 +36,11 @@ outputs:
       items: File
     label: "HTML reports with embedded graphs"
   qc_results:
-    outputSource: qc_checks/qc_results
+    outputSource: scanpy_analysis/qc_results
     type: File
     label: "Quality control metrics"
   umap_pdf:
-    outputSource: dim_reduce_cluster/umap_pdf
+    outputSource: scanpy_analysis/umap_pdf
     type: File
     label: "UMAP dimensionality reduction plot"
   filtered_data:
@@ -51,11 +51,11 @@ outputs:
       dimensionality-reduced space (PCA and UMAP), cluster assignments via
       the Leiden algorithm, and marker genes for one cluster vs. rest
   marker_gene_plot_t_test:
-    outputSource: cluster_diffexpr/marker_gene_plot_t_test
+    outputSource: scanpy_analysis/marker_gene_plot_t_test
     type: File
     label: "Cluster marker genes, t-test"
   marker_gene_plot_logreg:
-    outputSource: cluster_diffexpr/marker_gene_plot_logreg
+    outputSource: scanpy_analysis/marker_gene_plot_logreg
     type: File
     label: "Cluster marker genes, logreg method"
 steps:
@@ -66,10 +66,7 @@ steps:
       - id: threads
         source: threads
     out:
-      - quant_mat
-      - quant_mat_cols
-      - quant_mat_rows
-      - quant_tier_mat
+      - output_dir
     run: steps/salmon.cwl
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
   - id: fastqc
@@ -83,12 +80,8 @@ steps:
     label: "Run fastqc on all fastq files in fastq directory"
   - id: alevin_to_anndata
     in:
-      - id: quant_mat
-        source: salmon/quant_mat
-      - id: quant_mat_cols
-        source: salmon/quant_mat_cols
-      - id: quant_mat_rows
-        source: salmon/quant_mat_rows
+      - id: alevin_dir
+        source: salmon/output_dir
     out:
       - h5ad_file
     run: steps/alevin-to-anndata.cwl
