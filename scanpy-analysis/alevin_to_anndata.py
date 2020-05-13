@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import anndata
 
-def convert(quant_file: Path, gene_file: Path, cb_file: Path, density="sparse"):
+def convert(input_dir: Path, *, density="sparse"):
     """
     Read the quants sparse binary output of Alevin and converts to an `anndata` object
 
@@ -24,12 +24,14 @@ def convert(quant_file: Path, gene_file: Path, cb_file: Path, density="sparse"):
     """
     data_type = "f"
 
-    cb_names = pd.read_csv(cb_file, header=None)[0].values
-    gene_names = pd.read_csv(gene_file, header=None)[0].values
+    alevin_dir = input_dir / 'alevin'
+
+    gene_names = pd.read_csv(alevin_dir / 'quants_mat_cols.txt', header=None)[0].values
+    cb_names = pd.read_csv(alevin_dir / 'quants_mat_rows.txt', header=None)[0].values
     num_genes = len(gene_names)
     num_entries = int(np.ceil(num_genes/8))
 
-    with gzip.open(quant_file) as f:
+    with gzip.open(alevin_dir / 'quants_mat.gz') as f:
         line_count = 0
         tot_umi_count = 0
         umi_matrix = []
@@ -110,10 +112,8 @@ def convert(quant_file: Path, gene_file: Path, cb_file: Path, density="sparse"):
 
 if __name__ == '__main__':
     p = ArgumentParser()
-    p.add_argument('quants_mat_file', type=Path)
-    p.add_argument('quants_mat_cols', type=Path)
-    p.add_argument('quants_mat_rows', type=Path)
+    p.add_argument('alevin_output_dir', type=Path)
     args = p.parse_args()
 
-    alv = convert(args.quants_mat_file, args.quants_mat_cols, args.quants_mat_rows)
+    alv = convert(args.alevin_output_dir)
     alv.write_h5ad('out.h5ad')

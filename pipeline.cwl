@@ -15,10 +15,14 @@ inputs:
     type: int
     default: 1
 outputs:
+  salmon_output:
+    outputSource: salmon/output_dir
+    type: Directory
+    label: "Full output of `salmon alevin`"
   count_matrix:
     outputSource: alevin_to_anndata/h5ad_file
     type: File
-    label: "Count matrix from Alevin"
+    label: "Unfiltered count matrix from Alevin, converted to H5AD"
   zipped_files:
     outputSource: fastqc/zipped_files
     type:
@@ -39,14 +43,13 @@ outputs:
     outputSource: dim_reduce_cluster/umap_pdf
     type: File
     label: "UMAP dimensionality reduction plot"
-  dim_reduced_clustered:
-    outputSource: dim_reduce_cluster/dim_reduced_clustered
+  filtered_data:
+    outputSource: scanpy_analysis/filtered_data
     type: File
-    label: "Dimensionality reduced and clustered data"
-  cluster_marker_genes:
-    outputSource: cluster_diffexpr/cluster_marker_genes
-    type: File
-    label: "Cluster marker genes"
+    label: >-
+      Full data set of filtered results: expression matrix, coordinates in
+      dimensionality-reduced space (PCA and UMAP), cluster assignments via
+      the Leiden algorithm, and marker genes for one cluster vs. rest
   marker_gene_plot_t_test:
     outputSource: cluster_diffexpr/marker_gene_plot_t_test
     type: File
@@ -68,7 +71,7 @@ steps:
       - quant_mat_rows
       - quant_tier_mat
     run: steps/salmon.cwl
-    label: "Salmon Alevin 1.0.0, with index from GRCh38 transcriptome"
+    label: "Salmon Alevin, with index from GRCh38 transcriptome"
   - id: fastqc
     in:
       - id: fastq_dir
@@ -90,38 +93,15 @@ steps:
       - h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
-  - id: qc_checks
+  - id: scanpy_analysis
     in:
       - id: h5ad_file
         source: alevin_to_anndata/h5ad_file
     out:
       - qc_results
-    run: steps/qc.cwl
-    label: "Quality control checks"
-  - id: filter_normalize
-    in:
-      - id: h5ad_file
-        source: alevin_to_anndata/h5ad_file
-    out:
-      - filtered_normalized
-    run: steps/filter-normalize.cwl
-    label: "Filtering and normalization"
-  - id: dim_reduce_cluster
-    in:
-      - id: h5ad_file
-        source: filter_normalize/filtered_normalized
-    out:
-      - dim_reduced_clustered
+      - filtered_data
       - umap_pdf
-    run: steps/dim-reduction-clustering.cwl
-    label: "Dimensionality reduction (UMAP) and clustering"
-  - id: cluster_diffexpr
-    in:
-      - id: h5ad_file
-        source: dim_reduce_cluster/dim_reduced_clustered
-    out:
-      - cluster_marker_genes
       - marker_gene_plot_t_test
       - marker_gene_plot_logreg
-    run: steps/cluster-diffexpr.cwl
-    label: "Compute differentially expressed genes between each cluster and rest"
+    run: steps/scanpy-analysis.cwl
+    label: "Secondary analysis via ScanPy"

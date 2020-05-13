@@ -20,19 +20,7 @@ inputs:
       position: 1
 
 outputs:
-  quant_mat:
-    type: File
+  output_dir:
+    type: Directory
     outputBinding:
-      glob: out/alevin/quants_mat.gz
-  quant_mat_cols:
-    type: File
-    outputBinding:
-      glob: out/alevin/quants_mat_cols.txt
-  quant_mat_rows:
-    type: File
-    outputBinding:
-      glob: out/alevin/quants_mat_rows.txt
-  quant_tier_mat:
-    type: File
-    outputBinding:
-      glob: out/alevin/quants_tier_mat.gz
+      glob: out

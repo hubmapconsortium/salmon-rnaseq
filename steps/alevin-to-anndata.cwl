@@ -7,18 +7,10 @@ hints:
 baseCommand: /opt/alevin_to_anndata.py
 
 inputs:
-  quant_mat:
-    type: File
+  alevin_dir:
+    type: Directory
     inputBinding:
       position: 1
-  quant_mat_cols:
-    type: File
-    inputBinding:
-      position: 2
-  quant_mat_rows:
-    type: File
-    inputBinding:
-      position: 3
 outputs:
   h5ad_file:
     type: File

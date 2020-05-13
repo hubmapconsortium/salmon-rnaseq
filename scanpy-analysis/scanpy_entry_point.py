@@ -5,7 +5,6 @@ from pathlib import Path
 
 import anndata
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import scanpy as sc
 
@@ -34,10 +33,7 @@ def new_plot():
         plt.clf()
         plt.close()
 
-def qc_checks(args):
-    adata = anndata.read_h5ad(args.filtered_feature_matrix)
-    adata.var_names_make_unique()
-
+def qc_checks(adata: anndata.AnnData):
     qc_by_cell, qc_by_gene = sc.pp.calculate_qc_metrics(adata)
 
     # current directory is set up by the CWL runner
@@ -47,9 +43,11 @@ def qc_checks(args):
         store['qc_by_cell'] = qc_by_cell
         store['qc_by_gene'] = qc_by_gene
 
-def filter_normalize(args):
-    adata = anndata.read_h5ad(args.filtered_feature_matrix)
+def main(h5ad_file: Path):
+    adata = anndata.read_h5ad(h5ad_file)
     adata.var_names_make_unique()
+
+    qc_checks(adata)
 
     sc.pp.filter_cells(adata, min_genes=200)
     sc.pp.filter_genes(adata, min_cells=3)
@@ -68,65 +66,39 @@ def filter_normalize(args):
     adata = adata[:, filter_result.gene_subset]
     sc.pp.scale(adata, max_value=10)
 
-    filtered_path = Path('filtered_normalized.h5ad').absolute()
-    print('Saving filtered normalized expression data to', filtered_path)
-    adata.write_h5ad(filtered_path)
-
-def dim_reduce_cluster(args):
-    filtered_normalized = anndata.read_h5ad(args.filtered)
-
-    sc.pp.neighbors(filtered_normalized, n_neighbors=10, n_pcs=10)
-    sc.tl.umap(filtered_normalized)
+    sc.pp.neighbors(adata, n_neighbors=10, n_pcs=10)
+    sc.tl.umap(adata)
 
     with new_plot():
-        sc.pl.umap(filtered_normalized)
+        sc.pl.umap(adata)
         plt.savefig('umap.pdf', bbox_inches='tight')
 
-    sc.tl.leiden(filtered_normalized)
+    sc.tl.leiden(adata)
 
     with new_plot():
-        sc.pl.umap(filtered_normalized, color='leiden')
+        sc.pl.umap(adata, color='leiden')
         plt.savefig('umap_by_leiden_cluster.pdf', bbox_inches='tight')
 
-    filtered_normalized.write_h5ad('dim_reduced_clustered.h5ad')
-
-def compute_cluster_marker_genes(args):
-    dim_reduced_clustered = anndata.read_h5ad(args.clusters)
-
-    sc.tl.rank_genes_groups(dim_reduced_clustered, 'leiden', method='t-test')
+    sc.tl.rank_genes_groups(adata, 'leiden', method='t-test')
 
     with new_plot():
-        sc.pl.rank_genes_groups(dim_reduced_clustered, n_genes=25, sharey=False)
+        sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False)
         plt.savefig('marker_genes_by_cluster_t_test.pdf', bbox_inches='tight')
 
-    sc.tl.rank_genes_groups(dim_reduced_clustered, 'leiden', method='logreg')
+    sc.tl.rank_genes_groups(adata, 'leiden', method='logreg')
 
     with new_plot():
-        sc.pl.rank_genes_groups(dim_reduced_clustered, n_genes=25, sharey=False)
+        sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False)
         plt.savefig('marker_genes_by_cluster_logreg.pdf', bbox_inches='tight')
 
+    output_file = Path('cluster_marker_genes.h5ad')
+    print('Saving output to', output_file.absolute())
     # Save normalized/etc. data
-    dim_reduced_clustered.write_h5ad('cluster_marker_genes.h5ad')
+    adata.write_h5ad(output_file)
 
 if __name__ == '__main__':
     p = ArgumentParser()
-    subparsers = p.add_subparsers()
-
-    parser_qc_checks = subparsers.add_parser('qc_checks')
-    parser_qc_checks.add_argument('filtered_feature_matrix', type=Path)
-    parser_qc_checks.set_defaults(func=qc_checks)
-
-    parser_filter_normalize = subparsers.add_parser('filter_normalize')
-    parser_filter_normalize.add_argument('filtered_feature_matrix', type=Path)
-    parser_filter_normalize.set_defaults(func=filter_normalize)
-
-    parser_dim_reduce_cluster = subparsers.add_parser('dim_reduce_cluster')
-    parser_dim_reduce_cluster.add_argument('filtered', type=Path)
-    parser_dim_reduce_cluster.set_defaults(func=dim_reduce_cluster)
-
-    parser_compute_cluster_marker_genes = subparsers.add_parser('compute_cluster_marker_genes')
-    parser_compute_cluster_marker_genes.add_argument('clusters', type=Path)
-    parser_compute_cluster_marker_genes.set_defaults(func=compute_cluster_marker_genes)
-
+    p.add_argument('alevin_h5ad_file', type=Path)
     args = p.parse_args()
-    args.func(args)
+
+    main(args.alevin_h5ad_file)
