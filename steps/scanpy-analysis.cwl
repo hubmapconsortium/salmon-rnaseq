@@ -6,8 +6,6 @@ hints:
     dockerPull: hubmap/scanpy:latest
 baseCommand: /opt/scanpy_entry_point.py
 
-arguments:
-  - dim_reduce_cluster
 inputs:
   h5ad_file:
     type: File
