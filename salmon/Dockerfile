@@ -1,4 +1,4 @@
-FROM combinelab/salmon:1.1.0
+FROM combinelab/salmon:1.2.1
 
 WORKDIR /opt
 
