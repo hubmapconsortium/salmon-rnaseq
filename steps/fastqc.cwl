@@ -17,5 +17,5 @@ outputs:
   fastqc_dir:
     type: Directory
     outputBinding:
-      glob: "fastqc"
+      glob: "fastqc_output"
     doc: Individual graph files and additional data files containing the raw data from which plots were drawn.

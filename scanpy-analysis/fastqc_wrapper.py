@@ -47,10 +47,11 @@ def main(directory: Path):
     print('Found', len(fastq_files_by_directory), 'directories containing FASTQ files')
 
     fastqc_out_dir = Path('fastqc_output')
-    fastqc_out_dir.mkdir(exist_ok=True, parents=True)
     for directory, files in fastq_files_by_directory.items():
+        subdir = fastqc_out_dir / directory
+        subdir.mkdir(exist_ok=True, parents=True)
         command = [
-            piece.format(out_dir=fastqc_out_dir / directory)
+            piece.format(out_dir=subdir)
             for piece in FASTQC_COMMAND_TEMPLATE
         ]
         command.extend(fspath(fastq_file) for fastq_file in files)
