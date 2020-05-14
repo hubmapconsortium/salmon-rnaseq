@@ -8,6 +8,7 @@ from typing import Iterable, Tuple
 FASTQ_EXTENSIONS = [
     'fastq',
     'fastq.gz',
+    'fq.gz',
 ]
 
 SALMON_COMMAND = [

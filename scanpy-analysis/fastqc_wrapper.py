@@ -10,6 +10,8 @@ from multiprocessing import Pool
 FASTQ_PATTERNS = [
     '*.fastq',
     '*.fastq.gz',
+    '*.fq.gz',
+
 ]
 FASTQC_COMMAND_TEMPLATE = [
     'fastqc',

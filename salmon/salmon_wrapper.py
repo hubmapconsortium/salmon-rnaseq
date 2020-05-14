@@ -8,6 +8,7 @@ from typing import Iterable, Tuple
 FASTQ_EXTENSIONS = [
     'fastq',
     'fastq.gz',
+    'fq.gz',
 ]
 
 SALMON_COMMAND = [
@@ -25,7 +26,7 @@ SALMON_COMMAND = [
     '-p',
     '{threads}',
 ]
-
+I think most of our scripts
 FOUND_PAIR_COLOR = '\033[01;32m'
 UNPAIRED_COLOR = '\033[01;31m'
 NO_COLOR = '\033[00m'
