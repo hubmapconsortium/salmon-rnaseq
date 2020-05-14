@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Runs fastQC on each fastq file in fastq directory
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scanpy:latest
+    dockerPull: seandonahue5311/fastqc-threads
 baseCommand: /opt/fastqc_wrapper.py
 
 inputs:
@@ -12,6 +12,11 @@ inputs:
     doc: Directory containing fastq files to be evaluated
     inputBinding:
       position: 1
+  threads:
+    type: int
+    doc: The number of threads to use for fastqc
+    inputBinding:
+      position: 2
 
 outputs:
   fastqc_dir:

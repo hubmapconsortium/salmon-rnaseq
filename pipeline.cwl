@@ -65,6 +65,8 @@ steps:
     in:
       - id: fastq_dir
         source: fastq_dir
+      - id: threads
+        source: threads
     out:
       - fastqc_dir
     run: steps/fastqc.cwl

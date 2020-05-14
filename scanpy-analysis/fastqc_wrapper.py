@@ -5,6 +5,7 @@ from os import fspath, walk
 from pathlib import Path
 from subprocess import check_call
 from typing import Dict, List, Iterable
+from multiprocessing import Pool
 
 FASTQ_PATTERNS = [
     '*.fastq',
@@ -42,25 +43,42 @@ def collect_fastq_files_by_directory(directory: Path) -> Dict[Path, List[Path]]:
         files_by_directory[fastq_file.parent].append(directory / fastq_file)
     return files_by_directory
 
-def main(directory: Path):
+def single_file_fastqc(fastq_file:Path, sub_dir:Path):
+    #Run fastqc on a single fastq file
+    #Takes an absolute path to the input file and a relative path to the output subdirectory
+
+    command = [
+        piece.format(out_dir=sub_dir)
+        for piece in FASTQC_COMMAND_TEMPLATE
+    ]
+    command.append(fastq_file)
+    print('Running', ' '.join(command))
+    check_call(command)
+
+def main(directory: Path, threads:int):
+    #Crawl directory, create appropriate output subdirectories based on input directory structure
+    #Append output files to a list to pass to Pool.imap_unordered
     fastq_files_by_directory = collect_fastq_files_by_directory(directory)
     print('Found', len(fastq_files_by_directory), 'directories containing FASTQ files')
 
     fastqc_out_dir = Path('fastqc_output')
+
+    fastq_files = []
+
     for directory, files in fastq_files_by_directory.items():
         subdir = fastqc_out_dir / directory
         subdir.mkdir(exist_ok=True, parents=True)
-        command = [
-            piece.format(out_dir=subdir)
-            for piece in FASTQC_COMMAND_TEMPLATE
-        ]
-        command.extend(fspath(fastq_file) for fastq_file in files)
-        print('Running', ' '.join(command))
-        check_call(command)
+        for file in files:
+            fastq_files.append(file, sub_dir)
+
+    with Pool(threads) as p:
+        p.imap_unordered(single_file_fastqc, fastq_files)
+
 
 if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('directory', type=Path)
+    p.add_argument('threads', type=int)
     args = p.parse_args()
 
-    main(args.directory)
+    main(args.directory, args.threads)
