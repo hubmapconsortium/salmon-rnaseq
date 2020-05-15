@@ -21,23 +21,7 @@ inputs:
 
 outputs:
 
-  quant_files:
-    type:
-      type: array
-      items: File
+  output_dir:
+    type: Directory
     outputBinding:
-      glob: "out/*.sf"
-
-  command_info:
-    type:
-      type: array
-      items: File
-    outputBinding:
-      glob: "out/*.json"
-
-  auxiliary_files:
-    type:
-      type: array
-      items: File
-    outputBinding:
-      glob: "out/*.gz"
+      glob: out

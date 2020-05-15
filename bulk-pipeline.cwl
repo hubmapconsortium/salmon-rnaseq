@@ -15,36 +15,14 @@ inputs:
     type: int
     default: 1
 outputs:
-  zipped_files:
-    outputSource: fastqc/zipped_files
-    type:
-      type: array
-      items: File
-    label: "Individual graph files and additional data files containing the raw data from which plots were drawn."
-  report_files:
-    outputSource: fastqc/report_files
-    type:
-      type: array
-      items: File
-    label: "HTML reports with embedded graphs"
-  quant_files:
-    outputSource: salmon-bulk/quant_files
-    type:
-      type: array
-      items: File
-    label: "Files containing transcript expression data from salmon quant"
-  command_info:
-    outputSource: salmon-bulk/quant_files
-    type:
-      type: array
-      items: File
-    label: "Log of command parameters supplied to salmon quant"
-  auxiliary_files:
-    outputSource: salmon-bulk/auxiliary_files
-    type:
-      type: array
-      items: File
-    label: "Tarred and zipped directory containing miscellaneous auxiliary files produced by salmon quant"
+  fastqc_dir:
+    outputSource: fastqc/fastqc_dir
+    type: Directory
+    label: "Directory of FastQC output files, mirroring input directory structure"
+  salmon_output:
+      outputSource: salmon/output_dir
+      type: Directory
+      label: "Full output of `salmon quant`"
   expression_matrix:
     outputSource: make_expression_matrix/expression_matrix
     type: File
