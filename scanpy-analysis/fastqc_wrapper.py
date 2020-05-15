@@ -4,7 +4,7 @@ from collections import defaultdict
 from os import fspath, walk
 from pathlib import Path
 from subprocess import check_call
-from typing import Dict, List, Iterable
+from typing import Dict, List, Tuple, Iterable
 from multiprocessing import Pool
 
 FASTQ_PATTERNS = [
@@ -45,17 +45,19 @@ def collect_fastq_files_by_directory(directory: Path) -> Dict[Path, List[Path]]:
         files_by_directory[fastq_file.parent].append(directory / fastq_file)
     return files_by_directory
 
-def single_file_fastqc(fastq_file:Path, sub_dir:Path):
+def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]) -> str:
     #Run fastqc on a single fastq file
     #Takes an absolute path to the input file and a relative path to the output subdirectory
+    #Returns a str because imap_unordered seemse to really want this function to be fruitful
 
     command = [
-        piece.format(out_dir=sub_dir)
+        piece.format(out_dir=fastq_file_and_subdir[1])
         for piece in FASTQC_COMMAND_TEMPLATE
     ]
-    command.append(fastq_file)
+    command.append(str(fastq_file_and_subdir[0]))
     print('Running', ' '.join(command))
     check_call(command)
+    return command + " completed"
 
 def main(directory: Path, threads:int):
     #Crawl directory, create appropriate output subdirectories based on input directory structure
@@ -65,16 +67,17 @@ def main(directory: Path, threads:int):
 
     fastqc_out_dir = Path('fastqc_output')
 
-    fastq_files = []
+    fastq_files_and_subdirs = []
 
     for directory, files in fastq_files_by_directory.items():
         subdir = fastqc_out_dir / directory
         subdir.mkdir(exist_ok=True, parents=True)
         for file in files:
-            fastq_files.append(file, sub_dir)
+            fastq_files_and_subdirs.append((file, subdir))
 
-    with Pool(threads) as p:
-        p.imap_unordered(single_file_fastqc, fastq_files)
+    with Pool(processes=threads) as p:
+        for message in p.imap_unordered(single_file_fastqc, fastq_files_and_subdirs):
+            print(message)
 
 
 if __name__ == '__main__':
