@@ -6,6 +6,7 @@ from pathlib import Path
 from subprocess import check_call
 from typing import Dict, List, Tuple, Iterable
 from multiprocessing import Pool
+from concurrent.futures import ProcessPoolExecutor, Future, wait
 
 FASTQ_PATTERNS = [
     '*.fastq',
@@ -45,7 +46,7 @@ def collect_fastq_files_by_directory(directory: Path) -> Dict[Path, List[Path]]:
         files_by_directory[fastq_file.parent].append(directory / fastq_file)
     return files_by_directory
 
-def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]) -> str:
+def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]):
     #Run fastqc on a single fastq file
     #Takes an absolute path to the input file and a relative path to the output subdirectory
     #Returns a str because imap_unordered seemse to really want this function to be fruitful
@@ -54,10 +55,10 @@ def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]) -> str:
         piece.format(out_dir=fastq_file_and_subdir[1])
         for piece in FASTQC_COMMAND_TEMPLATE
     ]
-    command.append(str(fastq_file_and_subdir[0]))
+    command.append(fspath(fastq_file_and_subdir[0]))
     print('Running', ' '.join(command))
     check_call(command)
-    return command + " completed"
+    return
 
 def main(directory: Path, threads:int):
     #Crawl directory, create appropriate output subdirectories based on input directory structure
@@ -75,9 +76,9 @@ def main(directory: Path, threads:int):
         for file in files:
             fastq_files_and_subdirs.append((file, subdir))
 
-    with Pool(processes=threads) as p:
-        for message in p.imap_unordered(single_file_fastqc, fastq_files_and_subdirs):
-            print(message)
+    with ProcessPoolExecutor(max_workers=threads) as pool:
+        futures = {pool.submit(single_file_fastqc, fastq_file_and_subdir): fastq_file_and_subdir for fastq_file_and_subdir in fastq_files_and_subdirs}
+        wait(futures)
 
 
 if __name__ == '__main__':
