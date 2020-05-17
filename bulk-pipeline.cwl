@@ -20,7 +20,7 @@ outputs:
     type: Directory
     label: "Directory of FastQC output files, mirroring input directory structure"
   salmon_output:
-      outputSource: salmon/output_dir
+      outputSource: salmon-bulk/output_dir
       type: Directory
       label: "Full output of `salmon quant`"
   expression_matrix:
@@ -34,9 +34,11 @@ steps:
     in:
       - id: fastq_dir
         source: fastq_dir
+      - id: threads
+        source: threads
     out:
-      - zipped_files
-      - report_files
+    - fastqc_dir
+
     run: steps/fastqc.cwl
     label: "Run fastqc on all fastq files in fastq directory"
 
@@ -47,16 +49,14 @@ steps:
       - id: threads
         source: threads
     out:
-      - quant_files
-      - command_info
-      - auxiliary_files
+      - output_dir
     run: steps/bulk-salmon.cwl
     label: "Salmon quant 1.0.0, with index from GRCh38 transcriptome"
 
   - id: make_expression_matrix
     in:
-      - id: quant_files
-        source: salmon-bulk/quant_files
+      - id: quant_dir
+        source: salmon-bulk/output_dir
 
     out:
       - expression_matrix
