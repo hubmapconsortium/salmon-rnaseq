@@ -9,11 +9,12 @@ from argparse import ArgumentParser
 from pathlib import Path
 from struct import Struct
 
+import anndata
 import numpy as np
 import pandas as pd
-import anndata
+import scipy.sparse
 
-def convert(input_dir: Path, *, density="sparse"):
+def convert(input_dir: Path, *, density="sparse") -> anndata.AnnData:
     """
     Read the quants sparse binary output of Alevin and converts to an `anndata` object
 
@@ -31,14 +32,24 @@ def convert(input_dir: Path, *, density="sparse"):
     num_genes = len(gene_names)
     num_entries = int(np.ceil(num_genes/8))
 
+    obs_df = pd.DataFrame(index=cb_names)
+    var_df = pd.DataFrame(index=gene_names)
+
     with gzip.open(alevin_dir / 'quants_mat.gz') as f:
         line_count = 0
         tot_umi_count = 0
+
+        entries = []
+        col_indices = []
+        row_indices = []
+
         umi_matrix = []
 
         if density == "sparse":
             header_struct = Struct("B" * num_entries)
+            cell_index = 0
             while True:
+                gene_index = 0
                 line_count += 1
                 if not (line_count % 100):
                     print("\rDone reading", line_count, "cells", end="")
@@ -71,7 +82,12 @@ def convert(input_dir: Path, *, density="sparse"):
                                 cell_counts_vec.append(0.0)
                             else:
                                 abund = sparse_cell_counts_vec.pop()
+                                entries.append(abund)
+                                col_indices.append(gene_index)
+                                row_indices.append(cell_index)
                                 cell_counts_vec.append(abund)
+
+                            gene_index += 1
 
                     if len(sparse_cell_counts_vec) > 0:
                         print("Failure in consumption of data")
@@ -79,36 +95,19 @@ def convert(input_dir: Path, *, density="sparse"):
                     umi_matrix.append(cell_counts_vec)
                 else:
                     raise ValueError("Found a CB with no read count, something is wrong")
-        elif density == "dense":
-            header_struct = Struct("d" * num_genes)
-            while True:
-                line_count += 1
-                if not (line_count % 100):
-                    print("\rDone reading", line_count, "cells", end="")
-                    sys.stdout.flush()
 
-                try:
-                    cell_counts = header_struct.unpack_from(f.read(header_struct.size))
-                except Exception:
-                    print("\nRead total", line_count - 1, " cells")
-                    print("Found total", tot_umi_count, "reads")
-                    break
-
-                read_count = 0.0
-                for x in cell_counts:
-                    read_count += float(x)
-                tot_umi_count += read_count
-
-                if read_count > 0.0:
-                    umi_matrix.append(cell_counts)
-                else:
-                    raise ValueError('Found a CB with no read count, something is wrong')
+                cell_index += 1
         else:
             raise ValueError(f'Wrong density parameter: {density}')
 
-    alv = pd.DataFrame(umi_matrix, columns=gene_names, index=cb_names)
+    sparse_matrix = scipy.sparse.coo_matrix(
+        (entries, (row_indices, col_indices)),
+        shape=(len(cb_names), num_genes),
+    )
+    dense_matrix = np.array(umi_matrix)
+    assert np.allclose(sparse_matrix.todense(), dense_matrix)
 
-    return anndata.AnnData(alv)
+    return anndata.AnnData(X=sparse_matrix.tocsr(), obs=obs_df, var=var_df)
 
 if __name__ == '__main__':
     p = ArgumentParser()
