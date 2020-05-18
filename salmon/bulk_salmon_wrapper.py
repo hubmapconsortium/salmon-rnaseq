@@ -37,7 +37,7 @@ UNPAIRED_COLOR = '\033[01;31m'
 NO_COLOR = '\033[00m'
 
 def get_sample_id(filename:str):
-    return filename.split("/")[-1].replace("_R1.FASTQ", "")
+    return filename.split("/")[-1].replace("_R1.fastq", "")
 
 def rename_file(old_file_name: str, new_file_name: str):
     command = ["mv"]
@@ -97,7 +97,7 @@ def main(threads: int, directory: Path):
         check_call(TAR_AND_ZIP_COMMAND)
         #tar and zip auxilliary files
 
-        sample_id = get_sample_id(str(r1_fastq_file))
+        sample_id = get_sample_id(fspath(r1_fastq_file))
 
         #Tag output files with sample_id
         rename_file("out/quant.sf", "out/" + sample_id + "-quant.sf")

@@ -9,6 +9,7 @@ import pandas as pd
 from typing import List, Tuple
 from pathlib import Path
 from argparse import ArgumentParser
+from os import fspath
 
 def get_sample_id(quant_file_name:str)->str:
     #Get the sample id from the file name
@@ -23,21 +24,21 @@ def initialize_matrix_dfs(source_df:pd.DataFrame, sample_ids: List)->Tuple[pd.Da
 
     return tpm_df, num_reads_df
 
-def main(quant_dir: Directory):
+def main(quant_dir: Path):
 
     initialized = False
 
     num_reads_df = None
     tpm_df = None
 
-    quant_files = quant_dir.glob('**/*quant.sf')
+    quant_files = [fspath(quant_file) for quant_file in list(quant_dir.glob('**/*quant.sf'))]
 
-    sample_ids = [get_sample_id(str(quant_file)) for quant_file in quant_files]
+    sample_ids = [get_sample_id(fspath(quant_file)) for quant_file in list(quant_files)]
 
     #For each sample
     for quant_file in quant_files:
-        sample_id = get_sample_id(str(quant_file))#Get the sample_id
-        source_df = pd.read_csv(quant_file, delimiter='\t')#And open the source file
+        sample_id = get_sample_id(fspath(quant_file))#Get the sample_id
+        source_df = pd.read_csv(fspath(quant_file), delimiter='\t')#And open the source file
 
         if not initialized:#If we haven't initialized our matrices yet
             tpm_df, num_reads_df = initialize_matrix_dfs(source_df, sample_ids)#Do it now
@@ -60,4 +61,4 @@ if __name__ == '__main__':
     p.add_argument('quant_dir', type=Path)
     args = p.parse_args()
 
-    main(args.quant_files)
+    main(args.quant_dir)
