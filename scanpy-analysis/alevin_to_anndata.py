@@ -38,8 +38,6 @@ def convert(input_dir: Path) -> anndata.AnnData:
         col_indices = []
         row_indices = []
 
-        umi_matrix = []
-
         header_struct = Struct("B" * num_entries)
         cell_index = 0
         while True:
@@ -86,7 +84,6 @@ def convert(input_dir: Path) -> anndata.AnnData:
                 if len(sparse_cell_counts_vec) > 0:
                     print("Failure in consumption of data")
                     print("left with {} entry(ies)".format(len(sparse_cell_counts_vec)))
-                umi_matrix.append(cell_counts_vec)
             else:
                 raise ValueError("Found a CB with no read count, something is wrong")
 
@@ -96,8 +93,6 @@ def convert(input_dir: Path) -> anndata.AnnData:
         (entries, (row_indices, col_indices)),
         shape=(len(cb_names), num_genes),
     )
-    dense_matrix = np.array(umi_matrix)
-    assert np.allclose(sparse_matrix.todense(), dense_matrix)
 
     return anndata.AnnData(X=sparse_matrix.tocsr(), obs=obs_df, var=var_df)
 
