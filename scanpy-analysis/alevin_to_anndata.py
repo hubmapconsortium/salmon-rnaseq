@@ -14,6 +14,18 @@ import numpy as np
 import pandas as pd
 import scipy.sparse
 
+# As per https://gist.github.com/flying-sheep/f46e89b388fed736ff0b68fb8fd83af6
+# the break-even point for density seems to be around 0.6 to 0.7 for large enough
+# data sets (and ours are definitely large enough). Past that point, sparse
+# formats actually require *more* storage.
+#
+# Even though density between 0.5 and ~0.65 still shows space savings with a
+# sparse format, there is computational overhead in working with sparse matrices,
+# so let's set our cutoff a little below 0.65.
+#
+# If the density of the data set is <= this, store as a SciPy CSR sparse matrix:
+DENSITY_THRESHOLD = 0.5
+
 def convert(input_dir: Path) -> anndata.AnnData:
     """
     Read the quants sparse binary output of Alevin and converts to an `anndata` object
@@ -89,12 +101,15 @@ def convert(input_dir: Path) -> anndata.AnnData:
 
             cell_index += 1
 
-    sparse_matrix = scipy.sparse.coo_matrix(
+    matrix = sparse_matrix = scipy.sparse.coo_matrix(
         (entries, (row_indices, col_indices)),
         shape=(len(cb_names), num_genes),
-    )
+    ).tocsr()
+    density = sparse_matrix.nnz / np.prod(sparse_matrix.shape)
+    if density > DENSITY_THRESHOLD:
+        matrix = sparse_matrix.todense()
 
-    return anndata.AnnData(X=sparse_matrix.tocsr(), obs=obs_df, var=var_df)
+    return anndata.AnnData(X=matrix, obs=obs_df, var=var_df)
 
 if __name__ == '__main__':
     p = ArgumentParser()
