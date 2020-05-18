@@ -14,14 +14,9 @@ import numpy as np
 import pandas as pd
 import scipy.sparse
 
-def convert(input_dir: Path, *, density="sparse") -> anndata.AnnData:
+def convert(input_dir: Path) -> anndata.AnnData:
     """
     Read the quants sparse binary output of Alevin and converts to an `anndata` object
-
-    :param quant_file: quants_mat.gz from Alevin
-    :param gene_file: quants_mat_cols.txt from Alevin
-    :param cb_file: quants_mat_rows.txt from Alevin
-    :param density: one of {'sparse', 'dense'}
     """
     data_type = "f"
 
@@ -45,60 +40,57 @@ def convert(input_dir: Path, *, density="sparse") -> anndata.AnnData:
 
         umi_matrix = []
 
-        if density == "sparse":
-            header_struct = Struct("B" * num_entries)
-            cell_index = 0
-            while True:
-                gene_index = 0
-                line_count += 1
-                if not (line_count % 100):
-                    print("\rDone reading", line_count, "cells", end="")
-                    sys.stdout.flush()
-                try:
-                    num_exp_genes = 0
-                    exp_counts = header_struct.unpack_from(f.read(header_struct.size))
-                    for exp_count in exp_counts:
-                        num_exp_genes += bin(exp_count).count("1")
+        header_struct = Struct("B" * num_entries)
+        cell_index = 0
+        while True:
+            gene_index = 0
+            line_count += 1
+            if not (line_count % 100):
+                print("\rDone reading", line_count, "cells", end="")
+                sys.stdout.flush()
+            try:
+                num_exp_genes = 0
+                exp_counts = header_struct.unpack_from(f.read(header_struct.size))
+                for exp_count in exp_counts:
+                    num_exp_genes += bin(exp_count).count("1")
 
-                    data_struct = Struct(data_type * num_exp_genes)
-                    sparse_cell_counts_vec = list(data_struct.unpack_from(f.read(data_struct.size)))[::-1]
-                    cell_umi_counts = sum(sparse_cell_counts_vec)
+                data_struct = Struct(data_type * num_exp_genes)
+                sparse_cell_counts_vec = list(data_struct.unpack_from(f.read(data_struct.size)))[::-1]
+                cell_umi_counts = sum(sparse_cell_counts_vec)
 
-                except Exception:
-                    print("\nRead total", line_count - 1, " cells")
-                    print("Found total", tot_umi_count, "reads")
-                    break
+            except Exception:
+                print("\nRead total", line_count - 1, " cells")
+                print("Found total", tot_umi_count, "reads")
+                break
 
-                if cell_umi_counts > 0.0:
-                    tot_umi_count += cell_umi_counts
+            if cell_umi_counts > 0.0:
+                tot_umi_count += cell_umi_counts
 
-                    cell_counts_vec = []
-                    for exp_count in exp_counts:
-                        for bit in format(exp_count, '08b'):
-                            if len(cell_counts_vec) >= num_genes:
-                                break
+                cell_counts_vec = []
+                for exp_count in exp_counts:
+                    for bit in format(exp_count, '08b'):
+                        if len(cell_counts_vec) >= num_genes:
+                            break
 
-                            if bit == '0':
-                                cell_counts_vec.append(0.0)
-                            else:
-                                abund = sparse_cell_counts_vec.pop()
-                                entries.append(abund)
-                                col_indices.append(gene_index)
-                                row_indices.append(cell_index)
-                                cell_counts_vec.append(abund)
+                        if bit == '0':
+                            cell_counts_vec.append(0.0)
+                        else:
+                            abund = sparse_cell_counts_vec.pop()
+                            entries.append(abund)
+                            col_indices.append(gene_index)
+                            row_indices.append(cell_index)
+                            cell_counts_vec.append(abund)
 
-                            gene_index += 1
+                        gene_index += 1
 
-                    if len(sparse_cell_counts_vec) > 0:
-                        print("Failure in consumption of data")
-                        print("left with {} entry(ies)".format(len(sparse_cell_counts_vec)))
-                    umi_matrix.append(cell_counts_vec)
-                else:
-                    raise ValueError("Found a CB with no read count, something is wrong")
+                if len(sparse_cell_counts_vec) > 0:
+                    print("Failure in consumption of data")
+                    print("left with {} entry(ies)".format(len(sparse_cell_counts_vec)))
+                umi_matrix.append(cell_counts_vec)
+            else:
+                raise ValueError("Found a CB with no read count, something is wrong")
 
-                cell_index += 1
-        else:
-            raise ValueError(f'Wrong density parameter: {density}')
+            cell_index += 1
 
     sparse_matrix = scipy.sparse.coo_matrix(
         (entries, (row_indices, col_indices)),
