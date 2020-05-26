@@ -37,7 +37,7 @@ UNPAIRED_COLOR = '\033[01;31m'
 NO_COLOR = '\033[00m'
 
 def get_sample_id(filename:str):
-    return filename.split("/")[-1].replace("_R1.fastq", "")
+    return filename.split("/")[-1].replace("_1", "")
 
 def rename_file(old_file_name: str, new_file_name: str):
     command = ["mv"]
@@ -45,8 +45,9 @@ def rename_file(old_file_name: str, new_file_name: str):
     command.append(new_file_name)
     check_call(command)
 
+
 def find_r1_fastq_files(directory: Path) -> Iterable[Path]:
-    pattern = '**/*_R1*.{extension}'
+    pattern = '**/*_1*.{extension}'
     for extension in FASTQ_EXTENSIONS:
         yield from directory.glob(pattern.format(extension=extension))
 
@@ -61,7 +62,7 @@ def find_fastq_files(directory: Path) -> Iterable[Tuple[Path, Path]]:
      [1] R2 FASTQ file
     """
     for r1_fastq_file in find_r1_fastq_files(directory):
-        r2_fastq_filename = r1_fastq_file.name.replace('_R1', '_R2')
+        r2_fastq_filename = r1_fastq_file.name.replace('_1', '_2')
         r2_fastq_file = r1_fastq_file.with_name(r2_fastq_filename)
         if r2_fastq_file.is_file():
             print(FOUND_PAIR_COLOR + 'Found pair of FASTQ files:' + NO_COLOR)
