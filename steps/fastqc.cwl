@@ -12,6 +12,11 @@ inputs:
     doc: Directory containing fastq files to be evaluated
     inputBinding:
       position: 1
+  threads:
+    type: int
+    doc: The number of threads to use for fastqc
+    inputBinding:
+      position: 2
 
 outputs:
   fastqc_dir:
