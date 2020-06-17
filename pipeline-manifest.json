@@ -1,0 +1,22 @@
+[
+	{
+		"pattern": "cluster_marker_genes\\.h5ad",
+		"description": "Normalized gene expression with additional metadata, in HDF5 format, readable with the 'anndata' Python package",
+		"edam_ontology_term": "EDAM_1.24.format_3590"
+	},
+	{
+		"pattern": "out\\.h5ad",
+		"description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package",
+		"edam_ontology_term": "EDAM_1.24.format_3590"
+	},
+	{
+		"pattern": "qc_results\\.h5ad",
+		"description": "Quality control results, per-cell and per-gene, in HDF5 format",
+		"edam_ontology_term": "EDAM_1.24.format_3590"
+	},
+	{
+		"pattern": "umap_by_leiden_cluster\\.pdf",
+		"description": "UMAP plot of cells, colored by Leiden cluster ID",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	}
+]
