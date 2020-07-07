@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Dimensionality reduction and clustering
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scanpy:latest
+    dockerPull: mruffalo/scanpy-snare:latest
 baseCommand: /opt/scanpy_entry_point.py
 
 inputs:

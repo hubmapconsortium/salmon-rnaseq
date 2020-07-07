@@ -20,56 +20,26 @@ SALMON_COMMAND = [
     'A',
     '--output',
     'out',
-    '--chromiumV3',
+    '--snareseq',
     '--tgMap',
     '/opt/Homo_sapiens.GRCh38.cdna.all.fa.gz.map',
     '-p',
     '{threads}',
+    '-1',
+    '{barcode_umi_fastq}',
+    '-2',
+    '{transcript_fastq}',
 ]
-FOUND_PAIR_COLOR = '\033[01;32m'
-UNPAIRED_COLOR = '\033[01;31m'
-NO_COLOR = '\033[00m'
 
-def find_r1_fastq_files(directory: Path) -> Iterable[Path]:
-    pattern = '**/*_R1_*.{extension}'
-    for extension in FASTQ_EXTENSIONS:
-        yield from directory.glob(pattern.format(extension=extension))
-
-def find_fastq_files(directory: Path) -> Iterable[Tuple[Path, Path]]:
-    """
-    Specific to 10X FASTQ filename conventions. Returns all paired R1/R2
-    FASTQ files in any subdirectory of 'directory'.
-
-    :param directory:
-    :return: Iterable of 2-tuples:
-     [0] R1 FASTQ file
-     [1] R2 FASTQ file
-    """
-    for r1_fastq_file in find_r1_fastq_files(directory):
-        r2_fastq_filename = r1_fastq_file.name.replace('_R1_', '_R2_')
-        r2_fastq_file = r1_fastq_file.with_name(r2_fastq_filename)
-        if r2_fastq_file.is_file():
-            print(FOUND_PAIR_COLOR + 'Found pair of FASTQ files:' + NO_COLOR)
-            print('\t', r1_fastq_file, sep='')
-            print('\t', r2_fastq_file, sep='')
-            yield r1_fastq_file, r2_fastq_file
-        else:
-            print(UNPAIRED_COLOR + 'Found unpaired FASTQ file:' + NO_COLOR)
-            print('\t', r1_fastq_file, sep='')
-
-def main(threads: int, directory: Path):
+def main(threads: int, barcode_umi_fastq: Path, transcript_fastq: Path):
     command = [
-        piece.format(threads=threads)
+        piece.format(
+            threads=threads,
+            barcode_umi_fastq=barcode_umi_fastq,
+            transcript_fastq=transcript_fastq,
+        )
         for piece in SALMON_COMMAND
     ]
-    for r1_fastq_file, r2_fastq_file in find_fastq_files(directory):
-        fastq_extension = [
-            '-1',
-            fspath(r1_fastq_file),
-            '-2',
-            fspath(r2_fastq_file),
-        ]
-        command.extend(fastq_extension)
     print('Running:', ' '.join(command))
     env = environ.copy()
     env['LD_LIBRARY_PATH'] = '/usr/local/lib'
@@ -78,7 +48,8 @@ def main(threads: int, directory: Path):
 if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('-p', '--threads', type=int)
-    p.add_argument('directory', type=Path)
+    p.add_argument('barcode_umi_fastq', type=Path)
+    p.add_argument('transcript_fastq', type=Path)
     args = p.parse_args()
 
-    main(args.threads, args.directory)
+    main(args.threads, args.barcode_umi_fastq, args.transcript_fastq)

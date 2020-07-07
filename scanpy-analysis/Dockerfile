@@ -2,9 +2,6 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-## System packages
-# I'm used to using `apt` but it complains that it doesn't have a stable
-#   command-line interface, so let's use `apt-get` instead
 RUN apt-get update \
  && apt-get -y install \
     autoconf \
@@ -12,6 +9,7 @@ RUN apt-get update \
     bison \
     fastqc \
     flex \
+    git \
     libfreetype6-dev \
     libigraph0-dev \
     libxml2-dev \
@@ -29,8 +27,7 @@ COPY requirements.txt /opt/requirements.txt
 RUN pip3 install -r /opt/requirements.txt \
  && rm -rf /root/.cache/pip
 
-COPY alevin_to_anndata.py /opt
-COPY scanpy_entry_point.py /opt
-COPY make_expression_matrix.py /opt
-COPY fastqc_wrapper.py /opt
+COPY data /opt/data
+COPY bin /opt
+
 WORKDIR /opt
