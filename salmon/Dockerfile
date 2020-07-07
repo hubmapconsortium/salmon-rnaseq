@@ -9,3 +9,4 @@ RUN mkdir /out
 
 COPY salmon_wrapper.py /opt
 COPY bulk_salmon_wrapper.py /opt
+COPY fastq_utils.py /opt

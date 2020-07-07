@@ -71,7 +71,7 @@ def get_r2_fastq(file_path: Path) -> Path:
     return file_path.with_name(new_filename)
 
 def find_r1_fastq_files(directory: Path) -> Iterable[Path]:
-    for path in directory.glob('**'):
+    for path in directory.glob('**/*'):
         if path.is_file() and FASTQ_R1_PATTERN.match(path.name):
             yield path
 
