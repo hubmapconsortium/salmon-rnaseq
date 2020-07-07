@@ -36,11 +36,18 @@ FOUND_PAIR_COLOR = '\033[01;32m'
 UNPAIRED_COLOR = '\033[01;31m'
 NO_COLOR = '\033[00m'
 
-def rename_file(old_file_name: str, new_file_name: str):
-    command = ["mv"]
-    command.append(old_file_name)
-    command.append(new_file_name)
-    check_call(command)
+def rename_prepend_sample_id(path: Path, sample_id: str) -> Path:
+    """
+    Prepends `sample_id` and '-' to the file/directory name in `path`,
+    with and renames the file or directory on disk
+
+    :param path: file/directory to rename
+    :param sample_id: new prefix of name of `path`
+    :return: the new path
+    """
+    new_name = f'{sample_id}-{path.name}'
+    new_path = path.with_name(new_name)
+    return path.rename(new_path)
 
 def main(threads: int, directory: Path):
     for r1_fastq_file, r2_fastq_file in find_fastq_files(directory):
@@ -60,10 +67,15 @@ def main(threads: int, directory: Path):
 
         sample_id = get_sample_id_from_r1(r1_fastq_file)
 
-        # Tag output files with sample_id
-        rename_file("out/quant.sf", "out/" + sample_id + "-quant.sf")
-        rename_file("out/cmd_info.json", "out/" + sample_id + "-cmd_info.json")
-        rename_file("out/aux_files.tar.gz", "out/" + sample_id + "-aux_files.tar.gz")
+        out_dir = Path('out')
+        # inside `out_dir`
+        filenames_to_rename = [
+            'quant.sf',
+            'cmd_info.json',
+            'aux_files.tar.gz',
+        ]
+        for filename in filenames_to_rename:
+            rename_prepend_sample_id(out_dir / filename, sample_id)
 
 if __name__ == '__main__':
     p = ArgumentParser()
