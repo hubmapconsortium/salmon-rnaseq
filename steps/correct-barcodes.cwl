@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Correct SNARE-seq barcodes
 hints:
   DockerRequirement:
-    dockerPull: mruffalo/scanpy-snare:latest
+    dockerPull: hubmap/scanpy-snare:latest
 baseCommand: /opt/correct_snareseq_barcodes.py
 
 inputs:

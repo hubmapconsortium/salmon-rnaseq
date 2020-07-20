@@ -3,7 +3,7 @@ class: CommandLineTool
 
 hints:
   DockerRequirement:
-    dockerPull: mruffalo/scanpy-snare:latest
+    dockerPull: hubmap/scanpy-snare:latest
 
 baseCommand: /opt/make_expression_matrix.py
 label: Takes gene expression vectors from several bulk RNA samples and makes them into a gene by sample matrix

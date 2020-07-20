@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Concatenate H5AD files
 hints:
   DockerRequirement:
-    dockerPull: mruffalo/scanpy-snare:latest
+    dockerPull: hubmap/scanpy-snare:latest
 baseCommand: /opt/concatenate_h5ad.py
 
 inputs:
