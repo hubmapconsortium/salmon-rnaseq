@@ -6,7 +6,7 @@ from typing import Iterable, Set
 
 import barcodeutils as bu
 
-from utils import smart_open
+from utils import find_fastq_files, smart_open
 
 BARCODE_LENGTH = 8
 BARCODE_STARTS = [10, 48, 86]
@@ -42,9 +42,13 @@ def read_barcode_allowlist(barcode_filename: Path) -> Set[str]:
     with open(barcode_filename) as f:
         return set(f.read().split())
 
-def main(transcript_fastq: Path, barcode_umi_fastq: Path, barcode_filename: Path):
+def main(fastq_dir: Path, barcode_filename: Path):
     barcode_allowlist = read_barcode_allowlist(barcode_filename)
     correcter = bu.BarcodeCorrecter(barcode_allowlist, edit_distance=2)
+
+    fastq_files = list(find_fastq_files(fastq_dir))
+    assert len(fastq_files) == 1
+    transcript_fastq, barcode_umi_fastq = fastq_files[0]
 
     transcript_reader = fastq_reader(transcript_fastq)
     barcode_umi_reader = fastq_reader(barcode_umi_fastq)
@@ -75,8 +79,7 @@ def main(transcript_fastq: Path, barcode_umi_fastq: Path, barcode_filename: Path
 
 if __name__ == '__main__':
     p = ArgumentParser()
-    p.add_argument('transcript_fastq', type=Path)
-    p.add_argument('barcode_umi_fastq', type=Path)
+    p.add_argument('fastq_dir', type=Path)
     p.add_argument('--barcode_list_file', type=Path, nargs='?')
     args = p.parse_args()
 
@@ -84,4 +87,4 @@ if __name__ == '__main__':
         this_script = Path(__file__)
         args.barcode_list_file = this_script.parent / 'data/snareseq-barcodes.txt'
 
-    main(args.transcript_fastq, args.barcode_umi_fastq, args.barcode_list_file)
+    main(args.fastq_dir, args.barcode_list_file)

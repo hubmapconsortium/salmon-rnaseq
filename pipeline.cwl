@@ -51,37 +51,37 @@ outputs:
     type: File
     label: "Cluster marker genes, logreg method"
 steps:
-  - id: salmon
+  salmon:
     in:
-      - id: fastq_dir
+      fastq_dir:
         source: fastq_dir
-      - id: threads
+      threads:
         source: threads
     out:
       - output_dir
-    run: steps/salmon.cwl
+    run: salmon_quant.cwl
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
-  - id: fastqc
+  fastqc:
     in:
-      - id: fastq_dir
+      fastq_dir:
         source: fastq_dir
-      - id: threads
+      threads:
         source: threads
     out:
       - fastqc_dir
     run: steps/fastqc.cwl
     label: "Run fastqc on all fastq files in fastq directory"
-  - id: alevin_to_anndata
+  alevin_to_anndata:
     in:
-      - id: alevin_dir
+      alevin_dir:
         source: salmon/output_dir
     out:
       - h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
-  - id: scanpy_analysis
+  scanpy_analysis:
     in:
-      - id: h5ad_file
+      h5ad_file:
         source: alevin_to_anndata/h5ad_file
     out:
       - qc_results
