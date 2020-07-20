@@ -1,4 +1,4 @@
-FROM mruffalo/salmon-snare:1.2.1
+FROM mruffalo/salmon-sciseq:1.2.1
 
 WORKDIR /opt
 

@@ -38,6 +38,7 @@ class BarcodeMapper:
             setattr(self, f'{label}_mapping', self.read_barcode_mapping(f'{label}.txt'))
 
 def convert(mapper: BarcodeMapper, input_fastq: Path, basename: str):
+    BASE_OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
     print('Converting', input_fastq)
     barcode_umi_path = BASE_OUTPUT_DIR / f'{basename}_R1.fastq'
     transcript_path = BASE_OUTPUT_DIR / f'{basename}_R2.fastq.gz'
