@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Annotate sci-seq barcodes
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scanpy-sciseq:latest
+    dockerPull: hubmap/scanpy-sciseq:1.3-sci
 baseCommand: /opt/annotate_sciseq_barcodes.py
 
 inputs:

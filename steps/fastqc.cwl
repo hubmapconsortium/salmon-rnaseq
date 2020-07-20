@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Runs fastQC on each fastq file in fastq directory
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scanpy-sciseq:latest
+    dockerPull: hubmap/scanpy-sciseq:1.3-sci
 baseCommand: /opt/fastqc_wrapper.py
 
 inputs:
