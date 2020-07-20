@@ -21,6 +21,8 @@ SALMON_COMMAND = [
     '--output',
     'out',
     '--snareseq',
+    '--keepCBFraction',
+    '1',
     '--tgMap',
     '/opt/Homo_sapiens.GRCh38.cdna.all.fa.gz.map',
     '-p',
