@@ -21,18 +21,16 @@ outputs:
     label: "Full output of `salmon alevin`"
 
 steps:
-  correct_barcodes:
+  expand_barcodes:
     in:
       fastq_dir:
         source: fastq_dir
-    out: [barcode_umi_fastq, transcript_fastq]
-    run: steps/correct-barcodes.cwl
+    out: [adj_fastq_dir]
+    run: steps/expand-barcodes.cwl
   salmon:
     in:
-      barcode_umi_fastq:
-        source: correct_barcodes/barcode_umi_fastq
-      transcript_fastq:
-        source: correct_barcodes/transcript_fastq
+      adj_fastq_dir:
+        source: expand_barcodes/adj_fastq_dir
       threads:
         source: threads
     out: [output_dir]

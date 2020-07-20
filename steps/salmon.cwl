@@ -2,7 +2,7 @@ cwlVersion: v1.0
 class: CommandLineTool
 hints:
   DockerRequirement:
-    dockerPull: hubmap/salmon-snare-grch38:latest
+    dockerPull: hubmap/salmon-sciseq-grch38:latest
 baseCommand: /opt/salmon_wrapper.py
 label: Run Salmon Alevin tool on FASTQ input
 
@@ -14,14 +14,10 @@ inputs:
     inputBinding:
       position: 0
       prefix: "--threads"
-  barcode_umi_fastq:
-    type: File
+  adj_fastq_dir:
+    type: Directory
     inputBinding:
       position: 1
-  transcript_fastq:
-    type: File
-    inputBinding:
-      position: 2
 
 outputs:
   output_dir:

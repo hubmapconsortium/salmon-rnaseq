@@ -1,18 +1,18 @@
 cwlVersion: v1.0
 class: CommandLineTool
-label: Convert Alevin sparse output to anndata.AnnData object, save as h5ad
+label: Annotate sci-seq barcodes
 hints:
   DockerRequirement:
     dockerPull: hubmap/scanpy-sciseq:latest
-baseCommand: /opt/alevin_to_anndata.py
+baseCommand: /opt/annotate_sciseq_barcodes.py
 
 inputs:
-  alevin_dir:
-    type: Directory
+  h5ad_file:
+    type: File
     inputBinding:
       position: 1
 outputs:
-  h5ad_file:
+  annotated_h5ad_file:
     type: File
     outputBinding:
-      glob: out.h5ad
+      glob: 'out.h5ad'

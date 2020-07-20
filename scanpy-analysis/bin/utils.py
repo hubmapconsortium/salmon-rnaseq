@@ -1,5 +1,6 @@
-from enum import Enum
 import bz2
+from dataclasses import dataclass
+from enum import Enum
 import gzip
 import lzma
 from os import PathLike
@@ -65,3 +66,22 @@ def find_fastq_files(directory: Path) -> Iterable[Tuple[Path, Path]]:
         else:
             print(UNPAIRED_COLOR + 'Found unpaired FASTQ file:' + NO_COLOR)
             print(f'\t{r1_fastq_file}')
+
+@dataclass
+class Read:
+    read_id: str
+    seq: str
+    unused: str
+    qual: str
+
+    def serialize(self):
+        unused = self.unused or '+'
+        return '\n'.join([self.read_id, self.seq, unused, self.qual])
+
+def fastq_reader(fastq_file: Path) -> Iterable[Read]:
+    with smart_open(fastq_file) as f:
+        while True:
+            lines = [f.readline().strip() for _ in range(4)]
+            if not all(lines):
+                return
+            yield Read(*lines)

@@ -78,10 +78,16 @@ steps:
       - h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
-  scanpy_analysis:
+  annotate_sciseq_barcodes:
     in:
       h5ad_file:
         source: alevin_to_anndata/h5ad_file
+    out: [annotated_h5ad_file]
+    run: steps/annotate-sciseq-barcodes.cwl
+  scanpy_analysis:
+    in:
+      h5ad_file:
+        source: annotate_sciseq_barcodes/annotated_h5ad_file
     out:
       - qc_results
       - filtered_data

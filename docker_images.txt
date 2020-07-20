@@ -1,2 +1,2 @@
-hubmap/scanpy-snare	scanpy-analysis/Dockerfile
-hubmap/salmon-snare-grch38	salmon/Dockerfile
+hubmap/scanpy-sciseq	scanpy-analysis/Dockerfile
+hubmap/salmon-sciseq-grch38	salmon/Dockerfile
