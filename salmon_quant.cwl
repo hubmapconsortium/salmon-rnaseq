@@ -15,7 +15,7 @@ inputs:
     type: int
     default: 1
 outputs:
-  salmon_output:
+  output_dir:
     outputSource: salmon/output_dir
     type: Directory
     label: "Full output of `salmon alevin`"

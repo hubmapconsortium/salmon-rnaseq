@@ -3,9 +3,8 @@
 class: Workflow
 cwlVersion: v1.0
 label: scRNA-seq pipeline using Salmon and Alevin
-#requirements:
-#  ScatterFeatureRequirement: {}
-#  SubworkflowFeatureRequirement: {}
+requirements:
+  SubworkflowFeatureRequirement: {}
 inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"

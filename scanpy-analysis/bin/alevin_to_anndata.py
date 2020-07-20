@@ -26,7 +26,7 @@ import scipy.sparse
 # If the density of the data set is <= this, store as a SciPy CSR sparse matrix:
 DENSITY_THRESHOLD = 0.5
 
-def convert(input_dir: Path, dataset_id: str) -> anndata.AnnData:
+def convert(input_dir: Path) -> anndata.AnnData:
     """
     Read the quants sparse binary output of Alevin and converts to an `anndata` object
     """
@@ -110,14 +110,12 @@ def convert(input_dir: Path, dataset_id: str) -> anndata.AnnData:
         matrix = sparse_matrix.todense()
 
     d = anndata.AnnData(X=matrix, obs=obs_df, var=var_df)
-    d.uns['dataset_id'] = dataset_id
     return d
 
 if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('alevin_output_dir', type=Path)
-    p.add_argument('dataset_id')
     args = p.parse_args()
 
-    alv = convert(args.alevin_output_dir, args.dataset_id)
+    alv = convert(args.alevin_output_dir)
     alv.write_h5ad('out.h5ad')

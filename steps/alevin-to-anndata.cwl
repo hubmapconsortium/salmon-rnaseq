@@ -11,10 +11,6 @@ inputs:
     type: Directory
     inputBinding:
       position: 1
-  dataset_id:
-    type: string
-    inputBinding:
-      position: 2
 outputs:
   h5ad_file:
     type: File
