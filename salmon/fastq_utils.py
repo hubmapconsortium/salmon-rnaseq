@@ -75,7 +75,7 @@ def find_r1_fastq_files(directory: Path) -> Iterable[Path]:
         if path.is_file() and FASTQ_R1_PATTERN.match(path.name):
             yield path
 
-def find_fastq_files(directory: Path) -> Iterable[Tuple[Path, Path]]:
+def find_fastq_files(directory: Path, verbose=True) -> Iterable[Tuple[Path, Path]]:
     """
     Returns all paired R1/R2 FASTQ files in any subdirectory of 'directory'.
 
@@ -87,10 +87,12 @@ def find_fastq_files(directory: Path) -> Iterable[Tuple[Path, Path]]:
     for r1_fastq_file in find_r1_fastq_files(directory):
         r2_fastq_file = get_r2_fastq(r1_fastq_file)
         if r2_fastq_file.is_file():
-            print(FOUND_PAIR_COLOR + 'Found pair of FASTQ files:' + NO_COLOR)
-            print(f'\t{r1_fastq_file}')
-            print(f'\t{r2_fastq_file}')
+            if verbose:
+                print(FOUND_PAIR_COLOR + 'Found pair of FASTQ files:' + NO_COLOR)
+                print(f'\t{r1_fastq_file}')
+                print(f'\t{r2_fastq_file}')
             yield r1_fastq_file, r2_fastq_file
         else:
-            print(UNPAIRED_COLOR + 'Found unpaired FASTQ file:' + NO_COLOR)
-            print(f'\t{r1_fastq_file}')
+            if verbose:
+                print(UNPAIRED_COLOR + 'Found unpaired FASTQ file:' + NO_COLOR)
+                print(f'\t{r1_fastq_file}')
