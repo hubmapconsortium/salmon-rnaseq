@@ -9,7 +9,7 @@ label: scRNA-seq pipeline using Salmon and Alevin
 inputs:
   fastq_dir:
     label: "FASTQ directory"
-    type: Directory
+    type: Directory[]
   threads:
     label: "Number of threads for Salmon"
     type: int
