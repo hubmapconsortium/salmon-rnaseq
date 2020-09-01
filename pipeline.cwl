@@ -5,10 +5,11 @@ cwlVersion: v1.0
 label: scRNA-seq pipeline using Salmon and Alevin
 requirements:
   SubworkflowFeatureRequirement: {}
+  ScatterFeatureRequirement: {}
 inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"
-    type: Directory
+    type: Directory[]
   threads:
     label: "Number of threads for Salmon"
     type: int
@@ -24,7 +25,7 @@ outputs:
     label: "Unfiltered count matrix from Alevin, converted to H5AD"
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
-    type: Directory
+    type: Directory[]
     label: "Directory of FastQC output files, mirroring input directory structure"
   qc_results:
     outputSource: scanpy_analysis/qc_results
@@ -61,6 +62,8 @@ steps:
     run: salmon_quant.cwl
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
   fastqc:
+    scatter: [fastq_dir]
+    scatterMethod: dotproduct
     in:
       fastq_dir:
         source: fastq_dir
