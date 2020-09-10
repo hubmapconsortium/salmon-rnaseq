@@ -23,7 +23,7 @@ def main(fastq_dirs: Iterable[Path], barcode_filename: Path):
     correcter = bu.BarcodeCorrecter(barcode_allowlist, edit_distance=1)
 
     with open('barcode_umi.fastq', 'w') as cbo, open('transcript.fastq', 'w') as tro:
-        for transcript_fastq, barcode_umi_fastq in find_fastq_files(fastq_dirs):
+        for transcript_fastq, barcode_umi_fastq in find_fastq_files(fastq_dirs, 2):
             usable_count = 0
             i = 0
             print('Correcting barcodes in', transcript_fastq, 'and', barcode_umi_fastq)
