@@ -60,7 +60,11 @@ def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]):
     check_call(command)
     return
 
-def main(directory: Path, threads:int):
+def main(directory: Path, threads: int, skip_fastqc: bool):
+    if skip_fastqc:
+        print('Skipping FastQC step')
+        return
+
     #Crawl directory, create appropriate output subdirectories based on input directory structure
     #Append output files to a list to pass to Pool.imap_unordered
     fastq_files_by_directory = collect_fastq_files_by_directory(directory)
@@ -85,6 +89,7 @@ if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('directory', type=Path)
     p.add_argument('threads', type=int)
+    p.add_argument('--skip-fastqc', action='store_true')
     args = p.parse_args()
 
-    main(args.directory, args.threads)
+    main(args.directory, args.threads, args.skip_fastqc)

@@ -14,6 +14,9 @@ inputs:
     label: "Number of threads for Salmon"
     type: int
     default: 1
+  skip_fastqc:
+    type: boolean?
+    default: false
 outputs:
   salmon_output:
     outputSource: salmon/output_dir
@@ -69,6 +72,8 @@ steps:
         source: fastq_dir
       threads:
         source: threads
+      skip_fastqc:
+        source: skip_fastqc
     out:
       - fastqc_dir
     run: steps/fastqc.cwl

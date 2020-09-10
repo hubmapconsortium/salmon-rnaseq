@@ -2,8 +2,7 @@ FROM mruffalo/salmon-snare:1.2.1
 
 WORKDIR /opt
 
-RUN curl https://giygas.compbio.cs.cmu.edu/salmon/grch38_index.tar | tar -xf -
-RUN curl -O https://giygas.compbio.cs.cmu.edu/salmon/Homo_sapiens.GRCh38.cdna.all.fa.gz.map
+RUN curl http://quark/gencode-v35-salmon-index.tar | tar -xf -
 
 RUN mkdir /out
 

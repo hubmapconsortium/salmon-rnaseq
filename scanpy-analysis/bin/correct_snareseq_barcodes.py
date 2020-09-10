@@ -39,12 +39,13 @@ def fastq_reader(fastq_file: Path) -> Iterable[Read]:
             yield Read(*lines)
 
 def read_barcode_allowlist(barcode_filename: Path) -> Set[str]:
+    print('Readinb barcode allowlist from', barcode_filename)
     with open(barcode_filename) as f:
         return set(f.read().split())
 
 def main(fastq_dirs: Iterable[Path], barcode_filename: Path):
     barcode_allowlist = read_barcode_allowlist(barcode_filename)
-    correcter = bu.BarcodeCorrecter(barcode_allowlist, edit_distance=2)
+    correcter = bu.BarcodeCorrecter(barcode_allowlist, edit_distance=1)
 
     with open('barcode_umi.fastq', 'w') as cbo, open('transcript.fastq', 'w') as tro:
         for transcript_fastq, barcode_umi_fastq in find_fastq_files(fastq_dirs):
@@ -54,9 +55,10 @@ def main(fastq_dirs: Iterable[Path], barcode_filename: Path):
             transcript_reader = fastq_reader(transcript_fastq)
             barcode_umi_reader = fastq_reader(barcode_umi_fastq)
             for i, (tr, br) in enumerate(zip(transcript_reader, barcode_umi_reader), 1):
-                barcode_pieces = [revcomp(br.seq[s]) for s in reversed(BARCODE_SEGMENTS)]
-                corrected = [correcter.correct(barcode) for barcode in barcode_pieces]
-                if all(corrected):
+                barcode_pieces = [revcomp(br.seq[s]) for s in BARCODE_SEGMENTS]
+                rc_corrected = [correcter.correct(barcode) for barcode in barcode_pieces]
+                if all(rc_corrected):
+                    corrected = [revcomp(rc_bc) for rc_bc in rc_corrected]
                     usable_count += 1
                     umi_seq = br.seq[UMI_SEGMENT]
                     umi_qual = br.qual[UMI_SEGMENT]

@@ -17,6 +17,12 @@ inputs:
     doc: The number of threads to use for fastqc
     inputBinding:
       position: 2
+  skip_fastqc:
+    type: boolean?
+    default: false
+    inputBinding:
+      position: 3
+      prefix: --skip-fastqc
 
 outputs:
   fastqc_dir:
