@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 from pathlib import Path
-from os import environ, fspath
+from os import environ
 from subprocess import check_call
-from typing import Iterable, Tuple
-
-FASTQ_EXTENSIONS = [
-    'fastq',
-    'fastq.gz',
-    'fq.gz',
-]
 
 SALMON_COMMAND = [
     'salmon',
@@ -43,8 +36,10 @@ def main(threads: int, barcode_umi_fastq: Path, transcript_fastq: Path):
         for piece in SALMON_COMMAND
     ]
     print('Running:', ' '.join(command))
+    # for Singularity container runtime
     env = environ.copy()
     env['LD_LIBRARY_PATH'] = '/usr/local/lib'
+    # /for Singularity container runtime
     check_call(command)
 
 if __name__ == '__main__':

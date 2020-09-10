@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Set
 
 import barcodeutils as bu
-
-from utils import find_fastq_files, smart_open
+from fastq_utils import Read, fastq_reader, find_fastq_files, revcomp
 
 BARCODE_LENGTH = 8
 BARCODE_STARTS = [10, 48, 86]
@@ -14,29 +12,6 @@ BARCODE_SEGMENTS = [slice(start, start + BARCODE_LENGTH) for start in BARCODE_ST
 UMI_SEGMENT = slice(0, 10)
 
 BARCODE_QUAL_DUMMY = 'F' * BARCODE_LENGTH * len(BARCODE_STARTS)
-
-@dataclass
-class Read:
-    read_id: str
-    seq: str
-    unused: str
-    qual: str
-
-    def serialize(self):
-        return '\n'.join([self.read_id, self.seq, self.unused, self.qual])
-
-revcomp_table = str.maketrans("ACTG", "TGAC")
-
-def revcomp(seq: str) -> str:
-    return seq.translate(revcomp_table)[::-1]
-
-def fastq_reader(fastq_file: Path) -> Iterable[Read]:
-    with smart_open(fastq_file) as f:
-        while True:
-            lines = [f.readline().strip() for _ in range(4)]
-            if not all(lines):
-                return
-            yield Read(*lines)
 
 def read_barcode_allowlist(barcode_filename: Path) -> Set[str]:
     print('Readinb barcode allowlist from', barcode_filename)
