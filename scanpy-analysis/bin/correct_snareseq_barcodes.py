@@ -60,6 +60,6 @@ if __name__ == '__main__':
 
     if args.barcode_list_file is None:
         this_script = Path(__file__)
-        args.barcode_list_file = this_script.parent / 'data/snareseq-barcodes.txt'
+        args.barcode_list_file = this_script.parent / 'data/snareseq/barcodes.txt'
 
     main(args.fastq_dirs, args.barcode_list_file)
