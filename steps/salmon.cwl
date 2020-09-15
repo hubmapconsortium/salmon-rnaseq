@@ -31,4 +31,4 @@ outputs:
   output_dir:
     type: Directory
     outputBinding:
-      glob: out
+      glob: salmon_out

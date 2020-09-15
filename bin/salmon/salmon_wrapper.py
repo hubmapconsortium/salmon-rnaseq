@@ -22,7 +22,7 @@ SALMON_COMMAND = [
     '--libType',
     'A',
     '--output',
-    'out',
+    'salmon_out',
     '--dumpMtx',
     '{salmon_option}',
     '--tgMap',
