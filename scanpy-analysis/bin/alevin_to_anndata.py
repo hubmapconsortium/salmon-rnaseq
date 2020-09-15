@@ -109,7 +109,8 @@ def convert(input_dir: Path) -> anndata.AnnData:
     if density > DENSITY_THRESHOLD:
         matrix = sparse_matrix.todense()
 
-    return anndata.AnnData(X=matrix, obs=obs_df, var=var_df)
+    d = anndata.AnnData(X=matrix, obs=obs_df, var=var_df)
+    return d
 
 if __name__ == '__main__':
     p = ArgumentParser()

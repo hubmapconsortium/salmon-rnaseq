@@ -3,13 +3,16 @@
 class: Workflow
 cwlVersion: v1.0
 label: scRNA-seq pipeline using Salmon and Alevin
-#requirements:
-#  ScatterFeatureRequirement: {}
-#  SubworkflowFeatureRequirement: {}
+requirements:
+  SubworkflowFeatureRequirement: {}
+  ScatterFeatureRequirement: {}
 inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"
-    type: Directory
+    type: Directory[]
+  assay:
+    label: "scRNA-seq assay"
+    type: string
   threads:
     label: "Number of threads for Salmon"
     type: int
@@ -25,7 +28,7 @@ outputs:
     label: "Unfiltered count matrix from Alevin, converted to H5AD"
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
-    type: Directory
+    type: Directory[]
     label: "Directory of FastQC output files, mirroring input directory structure"
   qc_results:
     outputSource: scanpy_analysis/qc_results
@@ -51,38 +54,60 @@ outputs:
     type: File
     label: "Cluster marker genes, logreg method"
 steps:
-  - id: salmon
+  adjust_barcodes:
     in:
-      - id: fastq_dir
+      fastq_dir:
         source: fastq_dir
-      - id: threads
+      assay:
+        source: assay
+    out: [adj_fastq_dir]
+    run: steps/adjust-barcodes.cwl
+  salmon:
+    in:
+      orig_fastq_dirs:
+        source: fastq_dir
+      adj_fastq_dir:
+        source: adjust_barcodes/adj_fastq_dir
+      assay:
+        source: assay
+      threads:
         source: threads
     out:
       - output_dir
     run: steps/salmon.cwl
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
-  - id: fastqc
+  fastqc:
+    scatter: [fastq_dir]
+    scatterMethod: dotproduct
     in:
-      - id: fastq_dir
+      fastq_dir:
         source: fastq_dir
-      - id: threads
+      threads:
         source: threads
     out:
       - fastqc_dir
     run: steps/fastqc.cwl
     label: "Run fastqc on all fastq files in fastq directory"
-  - id: alevin_to_anndata
+  alevin_to_anndata:
     in:
-      - id: alevin_dir
+      alevin_dir:
         source: salmon/output_dir
     out:
       - h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
-  - id: scanpy_analysis
+  annotate_cells:
     in:
-      - id: h5ad_file
+      assay:
+        source: assay
+      h5ad_file:
         source: alevin_to_anndata/h5ad_file
+    out: [annotated_h5ad_file]
+    run: steps/annotate-cells.cwl
+  scanpy_analysis:
+    in:
+      h5ad_file:
+        source: annotate_cells/annotated_h5ad_file
     out:
       - qc_results
       - filtered_data
