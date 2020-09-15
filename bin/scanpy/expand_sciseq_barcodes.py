@@ -3,7 +3,6 @@ from functools import lru_cache
 import json
 from pathlib import Path
 import re
-from shutil import copy
 from subprocess import run
 from typing import Dict
 
@@ -16,7 +15,8 @@ FASTQ_INPUT_PATTERN = re.compile(r'(?P<basename>.+)\.(fastq|fq)(.gz)?')
 BASE_OUTPUT_DIR = Path('adj_fastq')
 METADATA_JSON_PATH = Path('metadata.json')
 
-# Much faster than piping through the Python interpreter
+# Probably faster than piping through the Python interpreter, even
+# though we're reading everything anyway, to write the barcode/UMI FASTQ
 GUNZIP_COMMAND = ['gunzip', '-c', '{path}']
 
 @lru_cache(maxsize=None)
