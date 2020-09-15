@@ -7,6 +7,7 @@ from typing import Dict
 
 from fastq_utils import Read, fastq_reader, smart_open
 
+# Relative to path *in container*
 BARCODE_DATA_DIR = Path(__file__).parent / 'data/sciseq'
 FASTQ_INPUT_PATTERN = re.compile(r'(?P<basename>.+)\.(fastq|fq)(.gz)?')
 
@@ -36,11 +37,11 @@ class BarcodeMapper:
         for label in labels:
             setattr(self, f'{label}_mapping', self.read_barcode_mapping(f'{label}.txt'))
 
-def convert(mapper: BarcodeMapper, input_fastq: Path, basename: str):
-    BASE_OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
+def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename: str):
+    output_dir.mkdir(exist_ok=True, parents=True)
     print('Converting', input_fastq)
-    barcode_umi_path = BASE_OUTPUT_DIR / f'{basename}_R1.fastq'
-    transcript_path = BASE_OUTPUT_DIR / f'{basename}_R2.fastq.gz'
+    barcode_umi_path = output_dir / f'{basename}_R1.fastq'
+    transcript_path = output_dir / f'{basename}_R2.fastq.gz'
     copy(input_fastq, transcript_path)
 
     with smart_open(barcode_umi_path, 'wt') as f:
@@ -64,4 +65,4 @@ def main(directory: Path, output_dir):
     mapper = BarcodeMapper()
     for child in directory.iterdir():
         if m := FASTQ_INPUT_PATTERN.match(child.name):
-            convert(mapper, child, m.group('basename'))
+            convert(mapper, child, output_dir, m.group('basename'))
