@@ -46,10 +46,7 @@ def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str):
         cell_id = f'{p7}_{p5}_{rt2}_{experiment_id}'
         cell_ids.append(cell_id)
 
-    data.obs.loc[:, 'cell_id'] = pd.Series(
-        cell_ids,
-        index=data.obs.index,
-    ).astype('string')
+    data.obs.loc[:, 'cell_id'] = pd.Series(cell_ids, index=data.obs.index)
 
     data.write_h5ad('out.h5ad')
 
