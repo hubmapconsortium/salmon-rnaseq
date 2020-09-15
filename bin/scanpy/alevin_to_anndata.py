@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
-"""
-Adapted from https://github.com/mruffalo/vpolo/blob/master/vpolo/alevin/parser.py
-which is licensed under the GPL v3 (so this file is as well)
-"""
-import gzip
-import sys
 from argparse import ArgumentParser
 from pathlib import Path
-from struct import Struct
 
 import anndata
 import numpy as np
 import pandas as pd
+import scipy.io
 import scipy.sparse
 
 # As per https://gist.github.com/flying-sheep/f46e89b388fed736ff0b68fb8fd83af6
@@ -27,84 +21,18 @@ import scipy.sparse
 DENSITY_THRESHOLD = 0.5
 
 def convert(input_dir: Path) -> anndata.AnnData:
-    """
-    Read the quants sparse binary output of Alevin and converts to an `anndata` object
-    """
-    data_type = "f"
-
     alevin_dir = input_dir / 'alevin'
 
-    gene_names = pd.read_csv(alevin_dir / 'quants_mat_cols.txt', header=None)[0].values
-    cb_names = pd.read_csv(alevin_dir / 'quants_mat_rows.txt', header=None)[0].values
-    num_genes = len(gene_names)
-    num_entries = int(np.ceil(num_genes/8))
-
+    with open(alevin_dir / 'quants_mat_rows.txt') as f:
+        cb_names = [line.strip() for line in f]
     obs_df = pd.DataFrame(index=cb_names)
+
+    with open(alevin_dir / 'quants_mat_cols.txt') as f:
+        gene_names = [line.strip() for line in f]
     var_df = pd.DataFrame(index=gene_names)
 
-    with gzip.open(alevin_dir / 'quants_mat.gz') as f:
-        line_count = 0
-        tot_umi_count = 0
+    matrix = sparse_matrix = scipy.io.mmread(alevin_dir / 'quants_mat.mtx.gz').tocsr()
 
-        entries = []
-        col_indices = []
-        row_indices = []
-
-        header_struct = Struct("B" * num_entries)
-        cell_index = 0
-        while True:
-            gene_index = 0
-            line_count += 1
-            if not (line_count % 100):
-                print("\rDone reading", line_count, "cells", end="")
-                sys.stdout.flush()
-            try:
-                num_exp_genes = 0
-                exp_counts = header_struct.unpack_from(f.read(header_struct.size))
-                for exp_count in exp_counts:
-                    num_exp_genes += bin(exp_count).count("1")
-
-                data_struct = Struct(data_type * num_exp_genes)
-                sparse_cell_counts_vec = list(data_struct.unpack_from(f.read(data_struct.size)))[::-1]
-                cell_umi_counts = sum(sparse_cell_counts_vec)
-
-            except Exception:
-                print("\nRead total", line_count - 1, " cells")
-                print("Found total", tot_umi_count, "reads")
-                break
-
-            if cell_umi_counts > 0.0:
-                tot_umi_count += cell_umi_counts
-
-                cell_counts_vec = []
-                for exp_count in exp_counts:
-                    for bit in format(exp_count, '08b'):
-                        if len(cell_counts_vec) >= num_genes:
-                            break
-
-                        if bit == '0':
-                            cell_counts_vec.append(0.0)
-                        else:
-                            abund = sparse_cell_counts_vec.pop()
-                            entries.append(abund)
-                            col_indices.append(gene_index)
-                            row_indices.append(cell_index)
-                            cell_counts_vec.append(abund)
-
-                        gene_index += 1
-
-                if len(sparse_cell_counts_vec) > 0:
-                    print("Failure in consumption of data")
-                    print("left with {} entry(ies)".format(len(sparse_cell_counts_vec)))
-            else:
-                raise ValueError("Found a CB with no read count, something is wrong")
-
-            cell_index += 1
-
-    matrix = sparse_matrix = scipy.sparse.coo_matrix(
-        (entries, (row_indices, col_indices)),
-        shape=(len(cb_names), num_genes),
-    ).tocsr()
     density = sparse_matrix.nnz / np.prod(sparse_matrix.shape)
     if density > DENSITY_THRESHOLD:
         matrix = sparse_matrix.todense()

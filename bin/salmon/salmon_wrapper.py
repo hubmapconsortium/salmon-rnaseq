@@ -23,6 +23,7 @@ SALMON_COMMAND = [
     'A',
     '--output',
     'out',
+    '--dumpMtx',
     '{salmon_option}',
     '--tgMap',
     '/opt/Homo_sapiens.GRCh38.cdna.all.fa.gz.map',
