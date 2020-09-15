@@ -32,6 +32,6 @@ class Assay(Enum):
     def __str__(self):
         return self.value
 
-    CHROMIUM_V3 = '10x', '--chromiumV3', True, False
-    SNARESEQ = 'snareseq', '--snareseq', False, True
-    SCISEQ = 'sciseq', '--sciseq', False, True
+    CHROMIUM_V3 = '10x', '--chromiumV3', False, False
+    SNARESEQ = 'snareseq', '--snareseq', True, True
+    SCISEQ = 'sciseq', '--sciseq', True, True
