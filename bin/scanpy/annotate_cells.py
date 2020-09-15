@@ -7,25 +7,22 @@ from common import Assay
 
 H5AD_PATH = Path('out.h5ad')
 
-def dummy_annotate_cells(directory: Path):
-    input_h5ad_file = directory / 'out.h5ad'
-    copy(input_h5ad_file, H5AD_PATH)
+def dummy_annotate_cells(h5ad_file: Path):
+    copy(h5ad_file, H5AD_PATH)
 
-def main(assay: Assay, directory: Path):
-    output_path = Path('adj_h5ad')
-    output_path.mkdir(exist_ok=True, parents=True)
-
+def main(assay: Assay, h5ad_file: Path):
     if assay == Assay.SCISEQ:
         pass
     elif assay == Assay.SNARESEQ:
         pass
     else:
-        dummy_annotate_cells(directory)
+        print('No annotation to perform for assay', assay)
+        dummy_annotate_cells(h5ad_file)
 
 if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('assay', choices=list(Assay), type=Assay)
-    p.add_argument('directory', type=Path)
+    p.add_argument('h5ad_file', type=Path)
     args = p.parse_args()
 
-    main(args.assay, args.directory)
+    main(args.assay, args.h5ad_file)
