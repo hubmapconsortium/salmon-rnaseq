@@ -9,9 +9,9 @@ from common import ADJ_OUTPUT_DIR, Assay
 def main(assay: str, input_dir: Path):
     ADJ_OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
-    if assay == 'sciseq':
+    if assay == Assay.SCISEQ:
         expand_sciseq_barcodes.main(input_dir, ADJ_OUTPUT_DIR)
-    elif assay == 'snareseq':
+    elif assay == Assay.SNARESEQ:
         pass
     else:
         pass
