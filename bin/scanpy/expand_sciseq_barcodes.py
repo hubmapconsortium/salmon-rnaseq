@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from functools import lru_cache
+import json
 from pathlib import Path
 import re
 from shutil import copy
+from subprocess import run
 from typing import Dict
 
 from fastq_utils import Read, fastq_reader, smart_open
@@ -12,6 +14,10 @@ BARCODE_DATA_DIR = Path(__file__).parent / 'data/sciseq'
 FASTQ_INPUT_PATTERN = re.compile(r'(?P<basename>.+)\.(fastq|fq)(.gz)?')
 
 BASE_OUTPUT_DIR = Path('adj_fastq')
+METADATA_JSON_PATH = Path('metadata.json')
+
+# Much faster than piping through the Python interpreter
+GUNZIP_COMMAND = ['gunzip', '-c', '{path}']
 
 @lru_cache(maxsize=None)
 def get_base_qual_str(length: int) -> str:
@@ -37,12 +43,22 @@ class BarcodeMapper:
         for label in labels:
             setattr(self, f'{label}_mapping', self.read_barcode_mapping(f'{label}.txt'))
 
+def decompress_fastq(input_path: Path, output_path: Path):
+    print('Decompressing', input_path, 'to', output_path)
+    with open(output_path, 'wb') as o:
+        command = [
+            piece.format(path=input_path)
+            for piece in GUNZIP_COMMAND
+        ]
+        run(command, stdout=o, check=True)
+    return output_path
+
 def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename: str):
     output_dir.mkdir(exist_ok=True, parents=True)
     print('Converting', input_fastq)
     barcode_umi_path = output_dir / f'{basename}_R1.fastq'
-    transcript_path = output_dir / f'{basename}_R2.fastq.gz'
-    copy(input_fastq, transcript_path)
+    transcript_path = output_dir / f'{basename}_R2.fastq'
+    decompress_fastq(input_fastq, transcript_path)
 
     with smart_open(barcode_umi_path, 'wt') as f:
         for transcript_read in fastq_reader(input_fastq):
@@ -63,6 +79,15 @@ def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename
 
 def main(directory: Path, output_dir):
     mapper = BarcodeMapper()
+    experiment_ids = set()
     for child in directory.iterdir():
         if m := FASTQ_INPUT_PATTERN.match(child.name):
-            convert(mapper, child, output_dir, m.group('basename'))
+            basename = m.group('basename')
+            convert(mapper, child, output_dir, basename)
+            experiment_ids.add(basename.split('-')[0])
+
+    # TODO: relax this
+    assert len(experiment_ids) == 1
+    experiment_id = next(iter(experiment_ids))
+    with open(METADATA_JSON_PATH, 'w') as f:
+        json.dump({'experiment_id': experiment_id}, f)

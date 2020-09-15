@@ -15,6 +15,11 @@ inputs:
     type: File
     inputBinding:
       position: 1
+  metadata_json:
+    type: File?
+    inputBinding:
+      position: 2
+      prefix: '--metadata_json'
 outputs:
   annotated_h5ad_file:
     type: File

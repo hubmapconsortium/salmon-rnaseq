@@ -60,7 +60,7 @@ steps:
         source: fastq_dir
       assay:
         source: assay
-    out: [adj_fastq_dir]
+    out: [adj_fastq_dir, metadata_json]
     run: steps/adjust-barcodes.cwl
   salmon:
     in:
@@ -102,6 +102,8 @@ steps:
         source: assay
       h5ad_file:
         source: alevin_to_anndata/h5ad_file
+      metadata_json:
+        source: adjust_barcodes/metadata_json
     out: [annotated_h5ad_file]
     run: steps/annotate-cells.cwl
   scanpy_analysis:

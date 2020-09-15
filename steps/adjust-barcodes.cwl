@@ -20,3 +20,7 @@ outputs:
     type: Directory
     outputBinding:
       glob: 'adj_fastq'
+  metadata_json:
+    type: File?
+    outputBinding:
+      glob: 'metadata.json'
