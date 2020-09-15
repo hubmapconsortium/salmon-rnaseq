@@ -28,6 +28,7 @@ RUN pip3 install -r /opt/requirements.txt \
  && rm -rf /root/.cache/pip
 
 COPY data /opt/data
-COPY bin /opt
+COPY bin/common /opt
+COPY bin/scanpy /opt
 
 WORKDIR /opt

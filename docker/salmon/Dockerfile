@@ -15,4 +15,5 @@ RUN python3 -m pip install -r /opt/requirements.txt \
 
 RUN mkdir /out
 
-COPY bin /opt
+COPY bin/common /opt
+COPY bin/salmon /opt

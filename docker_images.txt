@@ -1,2 +1,2 @@
-hubmap/scanpy	scanpy-analysis/Dockerfile
-hubmap/salmon-grch38	salmon/Dockerfile
+hubmap/scanpy	scanpy-analysis/Dockerfile	base_directory_build
+hubmap/salmon-grch38	salmon/Dockerfile	base_directory_build
