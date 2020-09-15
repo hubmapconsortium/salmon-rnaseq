@@ -58,7 +58,7 @@ def main(assay: Assay, orig_fastq_dir: Iterable[Path], adj_fastq_dir: Path, thre
     fastq_pairs: List[Sequence[Path]]
     if assay.barcode_adj_performed:
         if assay.barcode_adj_r1_r2:
-            list(find_fastq_files([adj_fastq_dir], 2))
+            fastq_pairs = list(find_fastq_files([adj_fastq_dir], 2))
         else:
             fastq_pairs = [find_adj_fastq_files(adj_fastq_dir)]
     else:
