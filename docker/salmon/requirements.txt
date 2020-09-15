@@ -1,1 +1,3 @@
+dataclasses
+
 git+https://github.com/hubmapconsortium/fastq-utils
