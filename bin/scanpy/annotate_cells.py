@@ -15,8 +15,6 @@ def dummy_annotate_cells(h5ad_file: Path):
 def main(assay: Assay, h5ad_file: Path, metadata_json: Optional[Path]):
     if assay == Assay.SCISEQ:
         annotate_sciseq_barcodes.main(h5ad_file, metadata_json)
-    elif assay == Assay.SNARESEQ:
-        pass
     else:
         print('No annotation to perform for assay', assay)
         dummy_annotate_cells(h5ad_file)
