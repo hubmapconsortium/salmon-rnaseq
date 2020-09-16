@@ -1,2 +1,7 @@
+*.fastq
+*.fastq.gz
+*.h5ad
+*.hdf5
 .idea/
 __pycache__/
+out/
