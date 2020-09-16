@@ -6,6 +6,8 @@ from typing import Iterable, Mapping, Set
 import barcodeutils as bu
 from fastq_utils import Read, fastq_reader, find_fastq_files, revcomp
 
+from common import BARCODE_UMI_FASTQ_PATH, TRANSCRIPT_FASTQ_PATH
+
 BARCODE_LENGTH = 8
 BARCODE_STARTS = [10, 48, 86]
 BARCODE_SEGMENTS = [slice(start, start + BARCODE_LENGTH) for start in BARCODE_STARTS]
@@ -36,13 +38,21 @@ def read_barcode_allowlist(barcode_filename: Path) -> Set[str]:
     with open(barcode_filename) as f:
         return set(f.read().split())
 
-def main(fastq_dirs: Iterable[Path], barcode_filename: Path, n6_dt_mapping_file: Path):
+def main(
+        fastq_dirs: Iterable[Path],
+        output_dir: Path = Path(),
+        barcode_filename: Path = BARCODE_ALLOWLIST_FILE,
+        n6_dt_mapping_file: Path = N6_DT_MAPPING_FILE,
+):
     barcode_allowlist = read_barcode_allowlist(barcode_filename)
     correcter = bu.BarcodeCorrecter(barcode_allowlist, edit_distance=1)
 
     n6_dt_mapping = read_n6_dt_mapping(n6_dt_mapping_file)
 
-    with open('barcode_umi.fastq', 'w') as cbo, open('transcript.fastq', 'w') as tro:
+    buf = output_dir / BARCODE_UMI_FASTQ_PATH
+    trf = output_dir / TRANSCRIPT_FASTQ_PATH
+
+    with open(buf, 'w') as cbo, open(trf, 'w') as tro:
         for transcript_fastq, barcode_umi_fastq in find_fastq_files(fastq_dirs, 2):
             usable_count = 0
             i = 0
@@ -80,4 +90,8 @@ if __name__ == '__main__':
     p.add_argument('--n6_dt_mapping_file', type=Path, default=N6_DT_MAPPING_FILE)
     args = p.parse_args()
 
-    main(args.fastq_dirs, args.barcode_list_file, args.n6_dt_mapping_file)
+    main(
+        fastq_dirs=args.fastq_dirs,
+        barcode_filename=args.barcode_list_file,
+        n6_dt_mapping_file=args.n6_dt_mapping_file,
+    )

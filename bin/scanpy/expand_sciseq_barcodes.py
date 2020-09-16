@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import re
 from subprocess import run
-from typing import Dict
+from typing import Dict, Iterable
 
 from fastq_utils import Read, fastq_reader, smart_open
 
@@ -77,14 +77,15 @@ def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename
             )
             print(barcode_umi_read.serialize(), file=f)
 
-def main(directory: Path, output_dir):
+def main(directories: Iterable[Path], output_dir):
     mapper = BarcodeMapper()
     experiment_ids = set()
-    for child in directory.iterdir():
-        if m := FASTQ_INPUT_PATTERN.match(child.name):
-            basename = m.group('basename')
-            convert(mapper, child, output_dir, basename)
-            experiment_ids.add(basename.split('-')[0])
+    for directory in directories:
+        for child in directory.iterdir():
+            if m := FASTQ_INPUT_PATTERN.match(child.name):
+                basename = m.group('basename')
+                convert(mapper, child, output_dir, basename)
+                experiment_ids.add(basename.split('-')[0])
 
     # TODO: relax this
     assert len(experiment_ids) == 1
