@@ -63,7 +63,7 @@ def main(
                 barcode_pieces = [revcomp(br.seq[s]) for s in BARCODE_SEGMENTS]
                 rc_corrected = [correcter.correct(barcode) for barcode in barcode_pieces]
                 if all(rc_corrected):
-                    corrected[2] = n6_dt_mapping[corrected[2]]
+                    rc_corrected[2] = n6_dt_mapping[rc_corrected[2]]
                     corrected = [revcomp(rc_bc) for rc_bc in rc_corrected]
                     usable_count += 1
                     umi_seq = br.seq[UMI_SEGMENT]
