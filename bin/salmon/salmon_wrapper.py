@@ -18,7 +18,7 @@ SALMON_COMMAND = [
     'salmon',
     'alevin',
     '--index',
-    '/opt/grch38_index',
+    '/opt/gencode.v35.intron-exon.sidx',
     '--libType',
     'A',
     '--output',
@@ -26,7 +26,7 @@ SALMON_COMMAND = [
     '--dumpMtx',
     '{salmon_option}',
     '--tgMap',
-    '/opt/Homo_sapiens.GRCh38.cdna.all.fa.gz.map',
+    '/opt/gencode.v35.annotation.expanded.tx2gene.tsv',
     '-p',
     '{threads}',
 ]
