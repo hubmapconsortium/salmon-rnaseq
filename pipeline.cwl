@@ -98,6 +98,7 @@ steps:
         source: salmon/output_dir
     out:
       - h5ad_file
+      - full_h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
   annotate_cells:
