@@ -23,7 +23,7 @@ outputs:
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix:
-    outputSource: annotate_cells/h5ad_file
+    outputSource: annotate_cells/annotated_h5ad_file
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD"
   full_count_matrix:
