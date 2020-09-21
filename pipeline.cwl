@@ -23,9 +23,13 @@ outputs:
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix:
-    outputSource: alevin_to_anndata/h5ad_file
+    outputSource: annotate_cells/h5ad_file
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD"
+  full_count_matrix:
+    outputSource: alevin_to_anndata/full_h5ad_file
+    type: File
+    label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic regions"
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
     type: Directory[]
