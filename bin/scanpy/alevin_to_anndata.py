@@ -47,13 +47,16 @@ def get_col_sum_matrix(
           summing columns of that data matrix. Transpose this to sum across rows.
       [1] Labels for the new axis introduced by this summation matrix
 
-    >>> col_labels = list('123')
+    >>> col_labels = list('2143')
     >>> col_mapping = {'2': '3'}
     >>> csm, new_col_labels = get_col_sum_matrix(col_labels, col_mapping)
     >>> csm.todense()
-    matrix([[1, 0],
-            [0, 1],
-            [0, 1]])
+    matrix([[0, 1, 0],
+            [1, 0, 0],
+            [0, 0, 1],
+            [0, 1, 0]])
+    >>> new_col_labels
+    ['1', '3', '4']
     """
     new_labels = sorted({label_mapping.get(l, l) for l in orig_labels})
     new_label_indices = {label: i for i, label in enumerate(new_labels)}
