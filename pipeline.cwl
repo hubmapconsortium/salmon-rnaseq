@@ -23,9 +23,13 @@ outputs:
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix:
-    outputSource: alevin_to_anndata/h5ad_file
+    outputSource: annotate_cells/annotated_h5ad_file
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD"
+  full_count_matrix:
+    outputSource: alevin_to_anndata/full_h5ad_file
+    type: File
+    label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic regions"
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
     type: Directory[]
@@ -94,6 +98,7 @@ steps:
         source: salmon/output_dir
     out:
       - h5ad_file
+      - full_h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
   annotate_cells:
