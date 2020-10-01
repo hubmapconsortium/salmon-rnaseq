@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Assay-specific annotation of cell barcodes after quantification
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scanpy:1.5
+    dockerPull: hubmap/scanpy:1.5.1
 baseCommand: /opt/annotate_cells.py
 
 inputs:
