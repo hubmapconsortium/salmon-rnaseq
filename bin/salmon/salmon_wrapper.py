@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
+from itertools import chain
 from pathlib import Path
 from os import environ
 from subprocess import check_call
 from typing import Iterable, List, Sequence, Tuple
 
-from fastq_utils import find_fastq_files
+from fastq_utils import find_grouped_fastq_files
 
 from common import (
     Assay,
@@ -32,7 +33,8 @@ SALMON_COMMAND = [
 ]
 
 def find_adj_fastq_files(directory: Path) -> Tuple[Path, Path]:
-    # not general enough to implement in fastq-utils
+    # not general enough to implement in fastq-utils; very specific
+    # to how we create "synthetic" barcode + UMI FASTQ files
     barcode_umi_fastq = directory / BARCODE_UMI_FASTQ_PATH
 
     transcript_fastq = directory / TRANSCRIPT_FASTQ_PATH
@@ -58,11 +60,16 @@ def main(assay: Assay, orig_fastq_dir: Iterable[Path], adj_fastq_dir: Path, thre
     fastq_pairs: List[Sequence[Path]]
     if assay.barcode_adj_performed:
         if assay.barcode_adj_r1_r2:
-            fastq_pairs = list(find_fastq_files([adj_fastq_dir], 2))
+            fastq_pairs = list(find_grouped_fastq_files(adj_fastq_dir, 2))
         else:
             fastq_pairs = [find_adj_fastq_files(adj_fastq_dir)]
     else:
-        fastq_pairs = list(find_fastq_files(orig_fastq_dir, 2))
+        fastq_pairs = list(
+            chain.from_iterable(
+                find_grouped_fastq_files(fastq_dir, 2)
+                for fastq_dir in orig_fastq_dir
+            )
+        )
 
     if assay.keep_all_barcodes:
         command.extend(['--keepCBFraction', '1'])

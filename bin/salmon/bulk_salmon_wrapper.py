@@ -4,7 +4,7 @@ from os import fspath
 from pathlib import Path
 from subprocess import check_call
 
-from fastq_utils import find_fastq_files, get_sample_id_from_r1
+from fastq_utils import find_grouped_fastq_files, get_sample_id_from_r1
 
 SALMON_COMMAND = [
     'salmon',
@@ -33,7 +33,7 @@ def rename_file(old_file_name: str, new_file_name: str):
     check_call(command)
 
 def main(threads: int, directory: Path):
-    for r1_fastq_file, r2_fastq_file in find_fastq_files([directory], 2):
+    for r1_fastq_file, r2_fastq_file in find_grouped_fastq_files(directory, 2):
 
         command = [
             piece.format(threads=threads)
