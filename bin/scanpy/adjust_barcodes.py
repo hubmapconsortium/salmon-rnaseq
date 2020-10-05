@@ -8,7 +8,7 @@ import correct_snareseq_barcodes
 
 from common import ADJ_OUTPUT_DIR, Assay
 
-def main(assay: str, input_dirs: Iterable[Path]):
+def main(assay: Assay, input_dirs: Iterable[Path]):
     ADJ_OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
     if assay == Assay.SCISEQ:
@@ -16,8 +16,7 @@ def main(assay: str, input_dirs: Iterable[Path]):
     elif assay == Assay.SNARESEQ:
         correct_snareseq_barcodes.main(input_dirs, output_dir=ADJ_OUTPUT_DIR)
     else:
-        # nothing to do
-        pass
+        print('No barcode adjustment to perform for assay', assay)
 
 if __name__ == '__main__':
     p = ArgumentParser()
