@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
+from itertools import chain
 from pathlib import Path
 from typing import Iterable, Mapping, Set
 
 import barcodeutils as bu
-from fastq_utils import Read, fastq_reader, find_fastq_files, revcomp
+from fastq_utils import Read, fastq_reader, find_grouped_fastq_files, revcomp
 
 from common import BARCODE_UMI_FASTQ_PATH, TRANSCRIPT_FASTQ_PATH
 
@@ -52,8 +53,13 @@ def main(
     buf = output_dir / BARCODE_UMI_FASTQ_PATH
     trf = output_dir / TRANSCRIPT_FASTQ_PATH
 
+    all_fastqs = chain.from_iterable(
+        find_grouped_fastq_files(fastq_dir, 2)
+        for fastq_dir in fastq_dirs
+    )
+
     with open(buf, 'w') as cbo, open(trf, 'w') as tro:
-        for transcript_fastq, barcode_umi_fastq in find_fastq_files(fastq_dirs, 2):
+        for transcript_fastq, barcode_umi_fastq in all_fastqs:
             usable_count = 0
             i = 0
             print('Correcting barcodes in', transcript_fastq, 'and', barcode_umi_fastq)
