@@ -194,6 +194,7 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData, AnnData]:
     with open(alevin_dir / 'quants_mat_cols.txt') as f:
         gene_names = [line.strip() for line in f]
 
+    print('Reading sparse count matrix')
     raw_matrix = scipy.io.mmread(alevin_dir / 'quants_mat.mtx.gz').tocsr()
     raw_labeled = LabeledMatrix(
         matrix=raw_matrix,
@@ -201,6 +202,7 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData, AnnData]:
         col_labels=gene_names,
     )
 
+    print('Collapsing intronic counts')
     ie_labeled = collapse_intron_cols(raw_labeled)
 
     density = ie_labeled.matrix.nnz / np.prod(ie_labeled.matrix.shape)
@@ -208,6 +210,8 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData, AnnData]:
         ie_labeled.matrix = ie_labeled.matrix.todense()
 
     raw_anndata = raw_labeled.to_anndata()
+
+    print('Separating spliced/unspliced counts')
     spliced_anndata = split_spliced_unspliced(raw_anndata)
 
     return raw_anndata, ie_labeled.to_anndata(), spliced_anndata
@@ -217,7 +221,7 @@ if __name__ == '__main__':
     p.add_argument('alevin_output_dir', type=Path)
     args = p.parse_args()
 
-    full, summed, spliced = convert(args.alevin_output_dir)
-    full.write_h5ad('full.h5ad')
+    raw, summed, spliced = convert(args.alevin_output_dir)
+    raw.write_h5ad('full.h5ad')
     summed.write_h5ad('out.h5ad')
     spliced.write_h5ad('spliced.h5ad')
