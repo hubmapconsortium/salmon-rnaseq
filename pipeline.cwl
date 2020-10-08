@@ -38,10 +38,18 @@ outputs:
     outputSource: scanpy_analysis/qc_results
     type: File
     label: "Quality control metrics"
-  umap_pdf:
-    outputSource: scanpy_analysis/umap_pdf
+  dispersion_plot:
+    outputSource: scanpy_analysis/dispersion_plot
+    type: File
+    label: "Gene expression dispersion plot"
+  umap_plot:
+    outputSource: scanpy_analysis/umap_plot
     type: File
     label: "UMAP dimensionality reduction plot"
+  umap_density_plot:
+    outputSource: scanpy_analysis/umap_density_plot
+    type: File
+    label: "UMAP dimensionality reduction plot, colored by cell density"
   filtered_data:
     outputSource: scanpy_analysis/filtered_data
     type: File
@@ -118,8 +126,10 @@ steps:
     out:
       - qc_results
       - filtered_data
-      - umap_pdf
+      - umap_plot
       - marker_gene_plot_t_test
       - marker_gene_plot_logreg
+      - dispersion_plot
+      - umap_density_plot
     run: steps/scanpy-analysis.cwl
     label: "Secondary analysis via ScanPy"

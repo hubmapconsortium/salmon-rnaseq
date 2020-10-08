@@ -16,10 +16,18 @@ outputs:
     type: File
     outputBinding:
       glob: cluster_marker_genes.h5ad
-  umap_pdf:
+  dispersion_plot:
+    type: File
+    outputBinding:
+      glob: dispersion_plot.pdf
+  umap_plot:
     type: File
     outputBinding:
       glob: umap_by_leiden_cluster.pdf
+  umap_density_plot:
+    type: File
+    outputBinding:
+      glob: umap_embedding_density.pdf
   qc_results:
     type: File
     outputBinding:

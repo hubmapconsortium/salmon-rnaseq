@@ -60,24 +60,26 @@ def main(h5ad_file: Path):
     sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e4)
 
     filter_result = sc.pp.filter_genes_dispersion(adata.X, min_mean=0.0125, max_mean=5, min_disp=0)
-    sc.pl.filter_genes_dispersion(filter_result, show=False, save='dispersion.pdf')
-
-    # %%
-    adata = adata[:, filter_result.gene_subset]
-    sc.pp.scale(adata, max_value=10)
-
-    sc.pp.neighbors(adata, n_neighbors=10, n_pcs=10)
-    sc.tl.umap(adata)
 
     with new_plot():
-        sc.pl.umap(adata)
-        plt.savefig('umap.pdf', bbox_inches='tight')
-
+        sc.pl.filter_genes_dispersion(filter_result, show=False)
+        plt.savefig('dispersion_plot.pdf', bbox_inches='tight')
+    
+    adata = adata[:, filter_result.gene_subset]
+    sc.pp.scale(adata, max_value=10)
+    sc.pp.pca(adata, n_comps=50)
+    sc.pp.neighbors(adata, n_neighbors=50, n_pcs=50)
+    sc.tl.umap(adata)
     sc.tl.leiden(adata)
 
     with new_plot():
         sc.pl.umap(adata, color='leiden')
         plt.savefig('umap_by_leiden_cluster.pdf', bbox_inches='tight')
+
+    sc.tl.embedding_density(adata, basis='umap')
+    with new_plot():
+        sc.pl.embedding_density(adata, color_map='viridis_r', show=False)
+        plt.savefig('umap_embedding_density.pdf', bbox_inches='tight')
 
     sc.tl.rank_genes_groups(adata, 'leiden', method='t-test')
 
