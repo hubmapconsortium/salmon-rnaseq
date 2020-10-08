@@ -74,11 +74,11 @@ outputs:
     type: File
     label: "scVelo-annotated h5ad file, including cell RNA velocity"
   scvelo_embedding_grid_plot:
-    outputSource: embedding_grid_plot
+    outputSource: scvelo_analysis/embedding_grid_plot
     type: File
     label: "scVelo velocity embedding grid plot"
   scvelo_embedding_stream_plot:
-    outputSource: embedding_stream_plot
+    outputSource: scvelo_analysis/embedding_stream_plot
     type: File
     label: "scVelo velocity embedding stream plot"
 steps:
@@ -123,6 +123,7 @@ steps:
     out:
       - h5ad_file
       - full_h5ad_file
+      - spliced_h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
   annotate_cells:
