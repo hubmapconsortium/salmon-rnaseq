@@ -30,6 +30,10 @@ outputs:
     outputSource: alevin_to_anndata/full_h5ad_file
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic regions"
+  spliced_count_matrix:
+    outputSource: alevin_to_anndata/spliced_h5ad_file
+    type: File
+    label: "Unfiltered count matrix, with spliced/unspliced layers"
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
     type: Directory[]
@@ -133,3 +137,13 @@ steps:
       - umap_density_plot
     run: steps/scanpy-analysis.cwl
     label: "Secondary analysis via ScanPy"
+  scvelo_analysis:
+    in:
+      spliced_h5ad_file:
+        source: alevin_to_anndata/spliced_h5ad_file
+    out:
+      - scvelo_annotated_h5ad
+      - stream_plot
+      - grid_plot
+    run: steps/scvelo-analysis.cwl
+    label: "RNA velocity analysis via scVelo"

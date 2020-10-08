@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import anndata
+from anndata import AnnData
 import numpy as np
 import pandas as pd
 import scipy.io
@@ -29,7 +29,7 @@ class LabeledMatrix:
     col_labels: List[str]
 
     def to_anndata(self):
-        return anndata.AnnData(
+        return AnnData(
             X=self.matrix,
             obs=pd.DataFrame(index=self.row_labels),
             var=pd.DataFrame(index=self.col_labels),
@@ -74,10 +74,10 @@ def collapse_matrix_rows_cols(
         col_mapping: Optional[Dict[str, str]] = None,
 ) -> LabeledMatrix:
     """
-    Not operating directly on a `anndata.AnnData` object, to make it clear that
+    Not operating directly on a `AnnData` object, to make it clear that
     this functionality only preserves row and column labels, and does not even
     *attempt* to deal with any supplementary data that could be stored in other
-    columns of `anndata.AnnData.obs` or `anndata.AnnData.var`
+    columns of `AnnData.obs` or `AnnData.var`
 
     :param matrix: LabeledMatrix instance
     :param row_mapping: Mapping from row labels to new row labels. Any label not
@@ -129,7 +129,63 @@ def collapse_intron_cols(lm: LabeledMatrix) -> LabeledMatrix:
     new_matrix = collapse_matrix_rows_cols(lm, col_mapping=intron_mapping)
     return new_matrix
 
-def convert(input_dir: Path) -> Tuple[anndata.AnnData, anndata.AnnData]:
+def expand_anndata(
+        d: AnnData,
+        selected_cols: List[str],
+        added_cols: List[str],
+        replacement_selected_cols: Optional[List] = None,
+) -> AnnData:
+    x_real = d[:, selected_cols].X
+    x_addition = scipy.sparse.coo_matrix(
+        (d.shape[0], len(added_cols)),
+        dtype=d.X.dtype,
+    )
+    x_full = scipy.sparse.hstack([x_real, x_addition])
+    orig_cols = replacement_selected_cols or selected_cols
+    expanded_cols = orig_cols + added_cols
+    d_full = AnnData(
+        X=x_full.tocsr(),
+        obs=d.obs.copy(),
+        var=pd.DataFrame(index=expanded_cols),
+    )
+    d_full_sorted = d_full[:, sorted(expanded_cols)].copy()
+    return d_full_sorted
+
+def split_spliced_unspliced(d: AnnData) -> AnnData:
+    genes_split = [(i, i.split('-')) for i in d.var.index]
+
+    all_exons = {g[1][0] for g in genes_split}
+    orig_exons = {g[1][0] for g in genes_split if len(g[1]) == 1}
+    exons_to_add = list(all_exons - orig_exons)
+
+    spliced_expanded = expand_anndata(d, list(orig_exons), exons_to_add)
+
+    intron_mapping = {
+        g[0]: g[1][0] for g in genes_split
+        if len(g[1]) == 2 and g[1][1] == 'I'
+    }
+    orig_intron_list = list(intron_mapping)
+    # This could probably be "optimized" by trusting dict ordering, but
+    # it feels odd to use the order of a mapping and its .values()
+    # Might be worth building separate lists earlier, might not
+    # (this isn't computationally intensive in any case)
+    mapped_intron_list = [intron_mapping[i] for i in orig_intron_list]
+    introns_to_add = list(all_exons - set(intron_mapping.values()))
+    unspliced_expanded = expand_anndata(d, orig_intron_list, introns_to_add, mapped_intron_list)
+
+    adata = AnnData(
+        X=spliced_expanded.X,
+        obs=spliced_expanded.obs,
+        var=spliced_expanded.var,
+        layers={
+            'spliced': spliced_expanded.X,
+            'unspliced': unspliced_expanded.X,
+        },
+    )
+
+    return adata
+
+def convert(input_dir: Path) -> Tuple[AnnData, AnnData, AnnData]:
     alevin_dir = input_dir / 'alevin'
 
     with open(alevin_dir / 'quants_mat_rows.txt') as f:
@@ -151,13 +207,17 @@ def convert(input_dir: Path) -> Tuple[anndata.AnnData, anndata.AnnData]:
     if density > DENSITY_THRESHOLD:
         ie_labeled.matrix = ie_labeled.matrix.todense()
 
-    return raw_labeled.to_anndata(), ie_labeled.to_anndata()
+    raw_anndata = raw_labeled.to_anndata()
+    spliced_anndata = split_spliced_unspliced(raw_anndata)
+
+    return raw_anndata, ie_labeled.to_anndata(), spliced_anndata
 
 if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('alevin_output_dir', type=Path)
     args = p.parse_args()
 
-    full, summed = convert(args.alevin_output_dir)
+    full, summed, spliced = convert(args.alevin_output_dir)
     full.write_h5ad('full.h5ad')
     summed.write_h5ad('out.h5ad')
+    spliced.write_h5ad('spliced.h5ad')
