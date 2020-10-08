@@ -60,6 +60,10 @@ def main(spliced_h5ad_file: Path):
     scv.tl.velocity(adata, mode='dynamical')
     scv.tl.velocity_graph(adata)
 
+    output_file = Path('scvelo_annotated.h5ad')
+    print('Saving output to', output_file)
+    adata.write_h5ad(output_file)
+
     with new_plot():
         scv.pl.velocity_embedding_grid(adata, basis='umap', color='leiden', show=False)
         plt.savefig('scvelo_embedding_grid.pdf', bbox_inches='tight')
@@ -67,11 +71,6 @@ def main(spliced_h5ad_file: Path):
     with new_plot():
         scv.pl.velocity_embedding_stream(adata, basis='umap', color='leiden', show=False)
         plt.savefig('scvelo_embedding_stream.pdf', bbox_inches='tight')
-
-    output_file = Path('scvelo_annotated.h5ad')
-    print('Saving output to', output_file.absolute())
-    # Save normalized/etc. data
-    adata.write_h5ad(output_file)
 
 if __name__ == '__main__':
     p = ArgumentParser()
