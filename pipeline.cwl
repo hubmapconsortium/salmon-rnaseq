@@ -69,6 +69,18 @@ outputs:
     outputSource: scanpy_analysis/marker_gene_plot_logreg
     type: File
     label: "Cluster marker genes, logreg method"
+  scvelo_annotated_h5ad:
+    outputSource: scvelo_analysis/annotated_h5ad_file
+    type: File
+    label: "scVelo-annotated h5ad file, including cell RNA velocity"
+  scvelo_embedding_grid_plot:
+    outputSource: embedding_grid_plot
+    type: File
+    label: "scVelo velocity embedding grid plot"
+  scvelo_embedding_stream_plot:
+    outputSource: embedding_stream_plot
+    type: File
+    label: "scVelo velocity embedding stream plot"
 steps:
   adjust_barcodes:
     in:
@@ -142,8 +154,8 @@ steps:
       spliced_h5ad_file:
         source: alevin_to_anndata/spliced_h5ad_file
     out:
-      - scvelo_annotated_h5ad
-      - stream_plot
-      - grid_plot
+      - annotated_h5ad_file
+      - embedding_grid_plot
+      - embedding_stream_plot
     run: steps/scvelo-analysis.cwl
     label: "RNA velocity analysis via scVelo"

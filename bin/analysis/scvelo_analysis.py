@@ -61,11 +61,11 @@ def main(spliced_h5ad_file: Path):
 
     with new_plot():
         scv.pl.velocity_embedding_grid(adata, basis='umap', show=False)
-        plt.savefig('embedding_grid.pdf', bbox_inches='tight')
+        plt.savefig('scvelo_embedding_grid.pdf', bbox_inches='tight')
 
     with new_plot():
         scv.pl.velocity_embedding_stream(adata, basis='umap', show=False)
-        plt.savefig('embedding_grid.pdf')
+        plt.savefig('scvelo_embedding_stream.pdf')
 
     output_file = Path('scvelo_annotated.h5ad')
     print('Saving output to', output_file.absolute())
