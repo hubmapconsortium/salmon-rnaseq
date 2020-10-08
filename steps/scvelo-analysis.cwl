@@ -19,8 +19,8 @@ outputs:
   embedding_grid_plot:
     type: File
     outputBinding:
-      glob: scvelo_embedding_grid.svg
+      glob: scvelo_embedding_grid.pdf
   embedding_stream_plot:
     type: File
     outputBinding:
-      glob: scvelo_embedding_stream.svg
+      glob: scvelo_embedding_stream.pdf
