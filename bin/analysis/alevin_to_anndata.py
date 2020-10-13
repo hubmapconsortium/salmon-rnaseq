@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from anndata import AnnData
 import numpy as np
@@ -21,6 +21,21 @@ import scipy.sparse
 #
 # If the density of the data set is <= this, store as a SciPy CSR sparse matrix:
 DENSITY_THRESHOLD = 0.5
+
+def sparsify_if_appropriate(mat: scipy.sparse.spmatrix) -> Union[np.ndarray, scipy.sparse.spmatrix]:
+    density = mat.nnz / np.prod(mat.shape)
+    if density > DENSITY_THRESHOLD:
+        return mat.todense()
+    else:
+        return mat
+
+# noinspection PyDeprecation
+def force_dense_matrix(mat: Union[np.ndarray, scipy.sparse.spmatrix]) -> np.matrix:
+    # Only used for convenience in doctests
+    if isinstance(mat, np.ndarray):
+        return np.matrix(mat)
+    elif isinstance(mat, scipy.sparse.spmatrix):
+        return mat.todense()
 
 @dataclass
 class LabeledMatrix:
@@ -151,41 +166,75 @@ def expand_anndata(
     d_full_sorted = d_full[:, sorted(expanded_cols)].copy()
     return d_full_sorted
 
-def split_spliced_unspliced(d: AnnData) -> AnnData:
-    genes_split = [(i, i.split('-')) for i in d.var.index]
+def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
+    """
+    :param lm: cell ⨉ gene LabeledMatrix, with columns for both spliced and
+      unspliced sequences
+    :return: an `AnnData` object (let's say `adata`) constructed from `lm`:
+      spliced and unspliced counts are added to compute `adata.X`, spliced
+      counts are stored in `adata.layers['spliced']` and unspliced counts
+      are likewise stored in `adata.layers['unspliced']`.
+
+    >>> row_labels = ['c1', 'c2']
+    >>> col_labels = ['g1', 'g2', 'g2-I', 'g3-I']
+    >>> mat = scipy.sparse.csr_matrix(np.arange(1, 9, dtype=np.float32).reshape((2, 4)))
+    >>> lm = LabeledMatrix(matrix=mat, row_labels=row_labels, col_labels=col_labels)
+    >>> adata: AnnData = add_split_spliced_unspliced(lm)
+    >>> list(adata.obs.index)
+    ['c1', 'c2']
+    >>> list(adata.var.index)
+    ['g1', 'g2', 'g3']
+    >>> force_dense_matrix(adata.X)
+    matrix([[ 1.,  5.,  4.],
+            [ 5., 13.,  8.]], dtype=float32)
+    >>> force_dense_matrix(adata.layers['spliced'])
+    matrix([[1., 2., 0.],
+            [5., 6., 0.]], dtype=float32)
+    >>> force_dense_matrix(adata.layers['unspliced'])
+    matrix([[0., 3., 4.],
+            [0., 7., 8.]], dtype=float32)
+    """
+    # TODO: rethink data types and control flow between helper functions.
+    #   These have gone through a few iterations and might need a few cleanups.
+    genes_split = [(i, i.split('-')) for i in lm.col_labels]
 
     all_exons = {g[1][0] for g in genes_split}
     orig_exons = {g[1][0] for g in genes_split if len(g[1]) == 1}
     exons_to_add = list(all_exons - orig_exons)
 
+    d = lm.to_anndata()
     spliced_expanded = expand_anndata(d, list(orig_exons), exons_to_add)
 
     intron_mapping = {
         g[0]: g[1][0] for g in genes_split
         if len(g[1]) == 2 and g[1][1] == 'I'
     }
-    orig_intron_list = list(intron_mapping)
-    # This could probably be "optimized" by trusting dict ordering, but
-    # it feels odd to use the order of a mapping and its .values()
-    # Might be worth building separate lists earlier, might not
-    # (this isn't computationally intensive in any case)
-    mapped_intron_list = [intron_mapping[i] for i in orig_intron_list]
+    orig_intron_list, mapped_intron_list = (list(z) for z in zip(*intron_mapping.items()))
     introns_to_add = list(all_exons - set(intron_mapping.values()))
     unspliced_expanded = expand_anndata(d, orig_intron_list, introns_to_add, mapped_intron_list)
 
+    collapsed = collapse_intron_cols(lm)
+
     adata = AnnData(
-        X=spliced_expanded.X,
+        X=sparsify_if_appropriate(collapsed.matrix),
         obs=spliced_expanded.obs,
         var=spliced_expanded.var,
         layers={
-            'spliced': spliced_expanded.X,
-            'unspliced': unspliced_expanded.X,
+            'spliced': sparsify_if_appropriate(spliced_expanded.X),
+            'unspliced': sparsify_if_appropriate(unspliced_expanded.X),
         },
     )
 
     return adata
 
-def convert(input_dir: Path) -> Tuple[AnnData, AnnData, AnnData]:
+def convert(input_dir: Path) -> Tuple[AnnData, AnnData]:
+    """
+    :return: 2-tuple:
+     [0] full count matrix, with columns for spliced and unspliced regions
+     [1] count matrix with `AnnData.X` containing sums of spliced and unspliced,
+         `AnnData.layers['spliced']` and `AnnData.layers['unspliced']`
+         containing only those counts, respectively
+    """
     alevin_dir = input_dir / 'alevin'
 
     with open(alevin_dir / 'quants_mat_rows.txt') as f:
@@ -201,27 +250,15 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData, AnnData]:
         row_labels=cb_names,
         col_labels=gene_names,
     )
+    spliced_anndata = add_split_spliced_unspliced(raw_labeled)
 
-    print('Collapsing intronic counts')
-    ie_labeled = collapse_intron_cols(raw_labeled)
-
-    density = ie_labeled.matrix.nnz / np.prod(ie_labeled.matrix.shape)
-    if density > DENSITY_THRESHOLD:
-        ie_labeled.matrix = ie_labeled.matrix.todense()
-
-    raw_anndata = raw_labeled.to_anndata()
-
-    print('Separating spliced/unspliced counts')
-    spliced_anndata = split_spliced_unspliced(raw_anndata)
-
-    return raw_anndata, ie_labeled.to_anndata(), spliced_anndata
+    return raw_labeled.to_anndata(), spliced_anndata
 
 if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('alevin_output_dir', type=Path)
     args = p.parse_args()
 
-    raw, summed, spliced = convert(args.alevin_output_dir)
+    raw, spliced = convert(args.alevin_output_dir)
     raw.write_h5ad('full.h5ad')
-    summed.write_h5ad('out.h5ad')
-    spliced.write_h5ad('spliced.h5ad')
+    spliced.write_h5ad('out.h5ad')
