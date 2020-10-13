@@ -15,12 +15,8 @@ outputs:
   full_h5ad_file:
     type: File
     outputBinding:
-      glob: full.h5ad
-  spliced_h5ad_file:
-    type: File
-    outputBinding:
-      glob: spliced.h5ad
+      glob: full_expr.h5ad
   h5ad_file:
     type: File
     outputBinding:
-      glob: out.h5ad
+      glob: expr.h5ad

@@ -25,15 +25,11 @@ outputs:
   count_matrix:
     outputSource: annotate_cells/annotated_h5ad_file
     type: File
-    label: "Unfiltered count matrix from Alevin, converted to H5AD"
+    label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
   full_count_matrix:
     outputSource: alevin_to_anndata/full_h5ad_file
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic regions"
-  spliced_count_matrix:
-    outputSource: alevin_to_anndata/spliced_h5ad_file
-    type: File
-    label: "Unfiltered count matrix, with spliced/unspliced layers"
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
     type: Directory[]
@@ -123,7 +119,6 @@ steps:
     out:
       - h5ad_file
       - full_h5ad_file
-      - spliced_h5ad_file
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
   annotate_cells:
@@ -153,7 +148,7 @@ steps:
   scvelo_analysis:
     in:
       spliced_h5ad_file:
-        source: alevin_to_anndata/spliced_h5ad_file
+        source: annotate_cells/annotated_h5ad_file
     out:
       - annotated_h5ad_file
       - embedding_grid_plot

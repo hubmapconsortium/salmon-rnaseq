@@ -260,5 +260,5 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     raw, spliced = convert(args.alevin_output_dir)
-    raw.write_h5ad('full.h5ad')
-    spliced.write_h5ad('out.h5ad')
+    raw.write_h5ad('full_expr.h5ad')
+    spliced.write_h5ad('expr.h5ad')
