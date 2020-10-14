@@ -7,7 +7,7 @@ from typing import Optional
 import annotate_sciseq_barcodes
 from common import Assay
 
-H5AD_PATH = Path('out.h5ad')
+H5AD_PATH = Path('expr.h5ad')
 
 def dummy_annotate_cells(h5ad_file: Path):
     copy(h5ad_file, H5AD_PATH)

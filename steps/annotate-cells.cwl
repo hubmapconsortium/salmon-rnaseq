@@ -24,4 +24,4 @@ outputs:
   annotated_h5ad_file:
     type: File
     outputBinding:
-      glob: 'out.h5ad'
+      glob: 'expr.h5ad'
