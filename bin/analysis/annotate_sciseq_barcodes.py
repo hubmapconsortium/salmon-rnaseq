@@ -48,7 +48,7 @@ def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str):
 
     data.obs.loc[:, 'cell_id'] = pd.Series(cell_ids, index=data.obs.index)
 
-    data.write_h5ad('out.h5ad')
+    data.write_h5ad('expr.h5ad')
 
 def main(h5ad_file: Path, metadata_json_file: Path):
     data = anndata.read_h5ad(h5ad_file)
