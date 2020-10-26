@@ -57,18 +57,16 @@ def main(assay: Assay, orig_fastq_dir: Iterable[Path], adj_fastq_dir: Path, thre
         for piece in SALMON_COMMAND
     ]
 
-    fastq_pairs: List[Sequence[Path]]
+    fastq_pairs: Iterable[Sequence[Path]]
     if assay.barcode_adj_performed:
         if assay.barcode_adj_r1_r2:
-            fastq_pairs = list(find_grouped_fastq_files(adj_fastq_dir, 2))
+            fastq_pairs = find_grouped_fastq_files(adj_fastq_dir, 2)
         else:
             fastq_pairs = [find_adj_fastq_files(adj_fastq_dir)]
     else:
-        fastq_pairs = list(
-            chain.from_iterable(
-                find_grouped_fastq_files(fastq_dir, 2)
-                for fastq_dir in orig_fastq_dir
-            )
+        fastq_pairs = chain.from_iterable(
+            find_grouped_fastq_files(fastq_dir, 2)
+            for fastq_dir in orig_fastq_dir
         )
 
     if assay.keep_all_barcodes:
