@@ -53,4 +53,4 @@ class Assay(Enum):
     CHROMIUM_V3 = '10x', '--chromiumV3', False, False, False
     SNARESEQ = 'snareseq', '--snareseq', True, False, True
     SCISEQ = 'sciseq', '--sciseq', True, True, True
-    SLIDESEQ = 'slideseq', '--slideseq', False, False, False
+    SLIDESEQ = 'slideseq', '--slideseq', True, False, False
