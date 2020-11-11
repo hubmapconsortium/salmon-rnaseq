@@ -15,7 +15,7 @@ outputs:
   filtered_data:
     type: File
     outputBinding:
-      glob: cluster_marker_genes.h5ad
+      glob: secondary_analysis.h5ad
   dispersion_plot:
     type: File
     outputBinding:

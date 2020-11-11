@@ -93,7 +93,7 @@ def main(h5ad_file: Path):
         sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False)
         plt.savefig('marker_genes_by_cluster_logreg.pdf', bbox_inches='tight')
 
-    output_file = Path('cluster_marker_genes.h5ad')
+    output_file = Path('secondary_analysis.h5ad')
     print('Saving output to', output_file.absolute())
     # Save normalized/etc. data
     adata.write_h5ad(output_file)
