@@ -1,4 +1,4 @@
-FROM mruffalo/salmon-custom:1.3.0-hbm1-1-g5dde08a93d41
+FROM mruffalo/salmon-custom:1.3.0-hbm1-2-g629aba2931c3
 
 WORKDIR /opt
 
