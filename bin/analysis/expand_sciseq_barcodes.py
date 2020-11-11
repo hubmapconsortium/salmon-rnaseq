@@ -3,10 +3,11 @@ from functools import lru_cache
 import json
 from pathlib import Path
 import re
-from subprocess import run
 from typing import Dict, Iterable
 
 from fastq_utils import Read, fastq_reader, smart_open
+
+from common import decompress_fastq
 
 # Relative to path *in container*
 BARCODE_DATA_DIR = Path(__file__).parent / 'data/sciseq'
@@ -14,10 +15,6 @@ FASTQ_INPUT_PATTERN = re.compile(r'(?P<basename>.+)\.(fastq|fq)(.gz)?')
 
 BASE_OUTPUT_DIR = Path('adj_fastq')
 METADATA_JSON_PATH = Path('metadata.json')
-
-# Probably faster than piping through the Python interpreter, even
-# though we're reading everything anyway, to write the barcode/UMI FASTQ
-GUNZIP_COMMAND = ['gunzip', '-c', '{path}']
 
 @lru_cache(maxsize=None)
 def get_base_qual_str(length: int) -> str:
@@ -42,16 +39,6 @@ class BarcodeMapper:
         labels = ['p5', 'p7', 'rt', 'rt2']
         for label in labels:
             setattr(self, f'{label}_mapping', self.read_barcode_mapping(f'{label}.txt'))
-
-def decompress_fastq(input_path: Path, output_path: Path):
-    print('Decompressing', input_path, 'to', output_path)
-    with open(output_path, 'wb') as o:
-        command = [
-            piece.format(path=input_path)
-            for piece in GUNZIP_COMMAND
-        ]
-        run(command, stdout=o, check=True)
-    return output_path
 
 def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename: str):
     output_dir.mkdir(exist_ok=True, parents=True)
