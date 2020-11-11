@@ -68,9 +68,14 @@ def main(spliced_h5ad_file: Path):
         scv.pl.velocity_embedding_grid(adata, basis='umap', color='leiden', show=False)
         plt.savefig('scvelo_embedding_grid.pdf', bbox_inches='tight')
 
-    with new_plot():
-        scv.pl.velocity_embedding_stream(adata, basis='umap', color='leiden', show=False)
-        plt.savefig('scvelo_embedding_stream.pdf', bbox_inches='tight')
+    try:
+        with new_plot():
+            scv.pl.velocity_embedding_stream(adata, basis='umap', color='leiden', show=False)
+            plt.savefig('scvelo_embedding_stream.pdf', bbox_inches='tight')
+    except Exception as e:
+        # Sometimes fails due to NaNs; this plot is best-effort and optional in
+        # the CWL workflow/tool definition
+        print('Caught', e)
 
 if __name__ == '__main__':
     p = ArgumentParser()
