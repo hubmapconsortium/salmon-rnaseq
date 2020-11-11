@@ -53,7 +53,8 @@ outputs:
   filtered_data:
     outputSource: scanpy_analysis/filtered_data
     type: File
-    label: >-
+    label: Full data set of filtered results
+    doc: >-
       Full data set of filtered results: expression matrix, coordinates in
       dimensionality-reduced space (PCA and UMAP), cluster assignments via
       the Leiden algorithm, and marker genes for one cluster vs. rest
