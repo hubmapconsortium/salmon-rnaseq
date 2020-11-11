@@ -69,7 +69,8 @@ def main(directories: Iterable[Path], output_dir):
     experiment_ids = set()
     for directory in directories:
         for child in directory.iterdir():
-            if m := FASTQ_INPUT_PATTERN.match(child.name):
+            m = FASTQ_INPUT_PATTERN.match(child.name)
+            if m:
                 basename = m.group('basename')
                 convert(mapper, child, output_dir, basename)
                 experiment_ids.add(basename.split('-')[0])
