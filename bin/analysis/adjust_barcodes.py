@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pypy3
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Iterable
