@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
+from itertools import chain
 from pathlib import Path
+from typing import Iterable
 
 from fastq_utils import Read, fastq_reader, find_grouped_fastq_files
 
@@ -11,11 +13,14 @@ def get_barcode_umi(seq: str) -> str:
     umi = seq[32:41]
     return barcode + umi
 
-def main(fastq_dir: Path, output_dir: Path = Path()):
+def main(fastq_dirs: Iterable[Path], output_dir: Path = Path()):
     buf = output_dir / BARCODE_UMI_FASTQ_PATH
     trf = output_dir / TRANSCRIPT_FASTQ_PATH
 
-    all_fastqs = find_grouped_fastq_files(fastq_dir, 2)
+    all_fastqs = chain.from_iterable(
+        find_grouped_fastq_files(fastq_dir, 2)
+        for fastq_dir in fastq_dirs
+    )
 
     with open(buf, 'w') as cbo:
         for transcript_fastq, barcode_umi_fastq in all_fastqs:

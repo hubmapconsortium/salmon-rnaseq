@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 import expand_sciseq_barcodes
+import extract_slideseq_barcodes
 import correct_snareseq_barcodes
 
 from common import ADJ_OUTPUT_DIR, Assay
@@ -15,6 +16,8 @@ def main(assay: Assay, input_dirs: Iterable[Path]):
         expand_sciseq_barcodes.main(input_dirs, output_dir=ADJ_OUTPUT_DIR)
     elif assay == Assay.SNARESEQ:
         correct_snareseq_barcodes.main(input_dirs, output_dir=ADJ_OUTPUT_DIR)
+    elif assay == Assay.SLIDESEQ:
+        extract_slideseq_barcodes.main(input_dirs, output_dir=ADJ_OUTPUT_DIR)
     else:
         print('No barcode adjustment to perform for assay', assay)
 
