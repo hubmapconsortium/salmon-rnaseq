@@ -75,7 +75,7 @@ outputs:
     label: "scVelo velocity embedding grid plot"
   scvelo_embedding_stream_plot:
     outputSource: scvelo_analysis/embedding_stream_plot
-    type: File
+    type: File?
     label: "scVelo velocity embedding stream plot"
 steps:
   adjust_barcodes:
