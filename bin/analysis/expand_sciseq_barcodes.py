@@ -69,6 +69,7 @@ def main(directories: Iterable[Path], output_dir):
     experiment_ids = set()
     for directory in directories:
         for child in directory.iterdir():
+            # no walrus operator; PyPy3 is at 3.6 as of writing this
             m = FASTQ_INPUT_PATTERN.match(child.name)
             if m:
                 basename = m.group('basename')
