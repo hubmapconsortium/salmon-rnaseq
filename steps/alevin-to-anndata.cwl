@@ -15,7 +15,7 @@ outputs:
   full_h5ad_file:
     type: File
     outputBinding:
-      glob: full_expr.h5ad
+      glob: raw_expr.h5ad
   h5ad_file:
     type: File
     outputBinding:
