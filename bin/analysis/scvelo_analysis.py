@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import scanpy as sc
 import scvelo as scv
 
+
 @contextmanager
 def new_plot():
     """
@@ -33,6 +34,7 @@ def new_plot():
         plt.clf()
         plt.close()
 
+
 def main(spliced_h5ad_file: Path):
     adata = anndata.read_h5ad(spliced_h5ad_file)
     adata.var_names_make_unique()
@@ -51,35 +53,36 @@ def main(spliced_h5ad_file: Path):
     sc.tl.umap(adata)
     sc.tl.leiden(adata)
 
-    scv.settings.set_figure_params('scvelo')
+    scv.settings.set_figure_params("scvelo")
     scv.utils.show_proportions(adata)
 
     scv.pp.moments(adata, n_pcs=50, n_neighbors=50)
     scv.tl.recover_dynamics(adata)
 
-    scv.tl.velocity(adata, mode='dynamical')
+    scv.tl.velocity(adata, mode="dynamical")
     scv.tl.velocity_graph(adata)
 
-    output_file = Path('scvelo_annotated.h5ad')
-    print('Saving output to', output_file)
+    output_file = Path("scvelo_annotated.h5ad")
+    print("Saving output to", output_file)
     adata.write_h5ad(output_file)
 
     with new_plot():
-        scv.pl.velocity_embedding_grid(adata, basis='umap', color='leiden', show=False)
-        plt.savefig('scvelo_embedding_grid.pdf', bbox_inches='tight')
+        scv.pl.velocity_embedding_grid(adata, basis="umap", color="leiden", show=False)
+        plt.savefig("scvelo_embedding_grid.pdf", bbox_inches="tight")
 
     try:
         with new_plot():
-            scv.pl.velocity_embedding_stream(adata, basis='umap', color='leiden', show=False)
-            plt.savefig('scvelo_embedding_stream.pdf', bbox_inches='tight')
+            scv.pl.velocity_embedding_stream(adata, basis="umap", color="leiden", show=False)
+            plt.savefig("scvelo_embedding_stream.pdf", bbox_inches="tight")
     except Exception as e:
         # Sometimes fails due to NaNs; this plot is best-effort and optional in
         # the CWL workflow/tool definition
-        print('Caught', e)
+        print("Caught", e)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument('alevin_h5ad_file', type=Path)
+    p.add_argument("alevin_h5ad_file", type=Path)
     args = p.parse_args()
 
     main(args.alevin_h5ad_file)

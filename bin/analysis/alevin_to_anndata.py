@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
-from anndata import AnnData
 import numpy as np
 import pandas as pd
 import scipy.io
 import scipy.sparse
+from anndata import AnnData
 
 # As per https://gist.github.com/flying-sheep/f46e89b388fed736ff0b68fb8fd83af6
 # the break-even point for density seems to be around 0.6 to 0.7 for large enough
@@ -22,12 +22,16 @@ import scipy.sparse
 # If the density of the data set is <= this, store as a SciPy CSR sparse matrix:
 DENSITY_THRESHOLD = 0.5
 
-def sparsify_if_appropriate(mat: scipy.sparse.spmatrix) -> Union[np.ndarray, scipy.sparse.spmatrix]:
+
+def sparsify_if_appropriate(
+    mat: scipy.sparse.spmatrix,
+) -> Union[np.ndarray, scipy.sparse.spmatrix]:
     density = mat.nnz / np.prod(mat.shape)
     if density > DENSITY_THRESHOLD:
         return mat.todense()
     else:
         return mat
+
 
 # noinspection PyDeprecation
 def force_dense_matrix(mat: Union[np.ndarray, scipy.sparse.spmatrix]) -> np.matrix:
@@ -36,6 +40,7 @@ def force_dense_matrix(mat: Union[np.ndarray, scipy.sparse.spmatrix]) -> np.matr
         return np.matrix(mat)
     elif isinstance(mat, scipy.sparse.spmatrix):
         return mat.todense()
+
 
 @dataclass
 class LabeledMatrix:
@@ -50,9 +55,9 @@ class LabeledMatrix:
             var=pd.DataFrame(index=self.col_labels),
         )
 
+
 def get_col_sum_matrix(
-        orig_labels: List[str],
-        label_mapping: Dict[str, str]
+    orig_labels: List[str], label_mapping: Dict[str, str]
 ) -> Tuple[scipy.sparse.spmatrix, List[str]]:
     """
     :param orig_labels:
@@ -83,10 +88,11 @@ def get_col_sum_matrix(
     m = scipy.sparse.coo_matrix((data_vec, (row_vec, col_vec))).tocsr()
     return m, new_labels
 
+
 def collapse_matrix_rows_cols(
-        matrix: LabeledMatrix,
-        row_mapping: Optional[Dict[str, str]] = None,
-        col_mapping: Optional[Dict[str, str]] = None,
+    matrix: LabeledMatrix,
+    row_mapping: Optional[Dict[str, str]] = None,
+    col_mapping: Optional[Dict[str, str]] = None,
 ) -> LabeledMatrix:
     """
     Not operating directly on a `AnnData` object, to make it clear that
@@ -139,16 +145,18 @@ def collapse_matrix_rows_cols(
         col_labels=new_col_labels,
     )
 
+
 def collapse_intron_cols(lm: LabeledMatrix) -> LabeledMatrix:
-    intron_mapping = {i: i.split('-')[0] for i in lm.col_labels}
+    intron_mapping = {i: i.split("-")[0] for i in lm.col_labels}
     new_matrix = collapse_matrix_rows_cols(lm, col_mapping=intron_mapping)
     return new_matrix
 
+
 def expand_anndata(
-        d: AnnData,
-        selected_cols: List[str],
-        added_cols: List[str],
-        replacement_selected_cols: Optional[List] = None,
+    d: AnnData,
+    selected_cols: List[str],
+    added_cols: List[str],
+    replacement_selected_cols: Optional[List] = None,
 ) -> AnnData:
     x_real = d[:, selected_cols].X
     x_addition = scipy.sparse.coo_matrix(
@@ -165,6 +173,7 @@ def expand_anndata(
     )
     d_full_sorted = d_full[:, sorted(expanded_cols)].copy()
     return d_full_sorted
+
 
 def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
     """
@@ -196,7 +205,7 @@ def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
     """
     # TODO: rethink data types and control flow between helper functions.
     #   These have gone through a few iterations and might need a few cleanups.
-    genes_split = [(i, i.split('-')) for i in lm.col_labels]
+    genes_split = [(i, i.split("-")) for i in lm.col_labels]
 
     all_exons = {g[1][0] for g in genes_split}
     orig_exons = {g[1][0] for g in genes_split if len(g[1]) == 1}
@@ -205,10 +214,7 @@ def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
     d = lm.to_anndata()
     spliced_expanded = expand_anndata(d, list(orig_exons), exons_to_add)
 
-    intron_mapping = {
-        g[0]: g[1][0] for g in genes_split
-        if len(g[1]) == 2 and g[1][1] == 'I'
-    }
+    intron_mapping = {g[0]: g[1][0] for g in genes_split if len(g[1]) == 2 and g[1][1] == "I"}
     orig_intron_list, mapped_intron_list = (list(z) for z in zip(*intron_mapping.items()))
     introns_to_add = list(all_exons - set(intron_mapping.values()))
     unspliced_expanded = expand_anndata(d, orig_intron_list, introns_to_add, mapped_intron_list)
@@ -220,12 +226,13 @@ def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
         obs=spliced_expanded.obs,
         var=spliced_expanded.var,
         layers={
-            'spliced': sparsify_if_appropriate(spliced_expanded.X),
-            'unspliced': sparsify_if_appropriate(unspliced_expanded.X),
+            "spliced": sparsify_if_appropriate(spliced_expanded.X),
+            "unspliced": sparsify_if_appropriate(unspliced_expanded.X),
         },
     )
 
     return adata
+
 
 def convert(input_dir: Path) -> Tuple[AnnData, AnnData]:
     """
@@ -235,16 +242,16 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData]:
          `AnnData.layers['spliced']` and `AnnData.layers['unspliced']`
          containing only those counts, respectively
     """
-    alevin_dir = input_dir / 'alevin'
+    alevin_dir = input_dir / "alevin"
 
-    with open(alevin_dir / 'quants_mat_rows.txt') as f:
+    with open(alevin_dir / "quants_mat_rows.txt") as f:
         cb_names = [line.strip() for line in f]
 
-    with open(alevin_dir / 'quants_mat_cols.txt') as f:
+    with open(alevin_dir / "quants_mat_cols.txt") as f:
         gene_names = [line.strip() for line in f]
 
-    print('Reading sparse count matrix')
-    raw_matrix = scipy.io.mmread(alevin_dir / 'quants_mat.mtx.gz').tocsr()
+    print("Reading sparse count matrix")
+    raw_matrix = scipy.io.mmread(alevin_dir / "quants_mat.mtx.gz").tocsr()
     raw_labeled = LabeledMatrix(
         matrix=raw_matrix,
         row_labels=cb_names,
@@ -254,11 +261,12 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData]:
 
     return raw_labeled.to_anndata(), spliced_anndata
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument('alevin_output_dir', type=Path)
+    p.add_argument("alevin_output_dir", type=Path)
     args = p.parse_args()
 
     raw, spliced = convert(args.alevin_output_dir)
-    raw.write_h5ad('raw_expr.h5ad')
-    spliced.write_h5ad('expr.h5ad')
+    raw.write_h5ad("raw_expr.h5ad")
+    spliced.write_h5ad("expr.h5ad")
