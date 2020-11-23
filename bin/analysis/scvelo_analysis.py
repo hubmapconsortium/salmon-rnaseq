@@ -65,6 +65,7 @@ def main(spliced_h5ad_file: Path):
     output_file = Path("scvelo_annotated.h5ad")
     print("Saving output to", output_file)
     adata.write_h5ad(output_file)
+    adata.write_zarr(output_file.with_suffix(".zarr"))
 
     with new_plot():
         scv.pl.velocity_embedding_grid(adata, basis="umap", color="leiden", show=False)

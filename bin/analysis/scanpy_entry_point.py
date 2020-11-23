@@ -100,6 +100,7 @@ def main(h5ad_file: Path):
     print("Saving output to", output_file.absolute())
     # Save normalized/etc. data
     adata.write_h5ad(output_file)
+    adata.write_zarr(output_file.with_suffix(".zarr"))
 
 
 if __name__ == "__main__":
