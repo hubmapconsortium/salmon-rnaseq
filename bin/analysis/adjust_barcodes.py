@@ -9,16 +9,17 @@ import extract_slideseq_barcodes
 
 from common import ADJ_OUTPUT_DIR, Assay
 
+adj_funcs = {
+    Assay.SCISEQ: expand_sciseq_barcodes.main,
+    Assay.SNARESEQ: correct_snareseq_barcodes.main,
+    Assay.SLIDESEQ: extract_slideseq_barcodes.main,
+}
+
 
 def main(assay: Assay, input_dirs: Iterable[Path]):
     ADJ_OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
-
-    if assay == Assay.SCISEQ:
-        expand_sciseq_barcodes.main(input_dirs, output_dir=ADJ_OUTPUT_DIR)
-    elif assay == Assay.SNARESEQ:
-        correct_snareseq_barcodes.main(input_dirs, output_dir=ADJ_OUTPUT_DIR)
-    elif assay == Assay.SLIDESEQ:
-        extract_slideseq_barcodes.main(input_dirs, output_dir=ADJ_OUTPUT_DIR)
+    if assay in adj_funcs:
+        adj_funcs[assay](input_dirs, output_dir=ADJ_OUTPUT_DIR)
     else:
         print("No barcode adjustment to perform for assay", assay)
 
