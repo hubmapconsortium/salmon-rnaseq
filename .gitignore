@@ -3,6 +3,7 @@
 *.h5ad
 *.hdf5
 *.pdf
+*.zarr
 .idea/
 __pycache__/
 out/
