@@ -52,7 +52,16 @@ def find_adj_fastq_files(directory: Path) -> Tuple[Path, Path]:
         raise ValueError(message)
 
 
-def main(assay: Assay, orig_fastq_dir: Iterable[Path], adj_fastq_dir: Path, threads: int):
+def read_slideseq_cell_count(base_dir: Path) -> int:
+    matched_bead_barcode_files = list(base_dir.glob("**/*matched_bead_barcodes.txt"))
+    assert len(matched_bead_barcode_files) == 1
+    print("Reading barcode count from", matched_bead_barcode_files[0])
+    with open(matched_bead_barcode_files[0]) as f:
+        barcodes = [line.strip() for line in f]
+    return len(barcodes)
+
+
+def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, threads: int):
     command = [
         piece.format(
             salmon_option=assay.salmon_option,
@@ -69,11 +78,20 @@ def main(assay: Assay, orig_fastq_dir: Iterable[Path], adj_fastq_dir: Path, thre
             fastq_pairs = [find_adj_fastq_files(adj_fastq_dir)]
     else:
         fastq_pairs = chain.from_iterable(
-            find_grouped_fastq_files(fastq_dir, 2) for fastq_dir in orig_fastq_dir
+            find_grouped_fastq_files(fastq_dir, 2) for fastq_dir in orig_fastq_dirs
         )
 
     if assay.keep_all_barcodes:
         command.extend(["--keepCBFraction", "1"])
+    # hack
+    if assay == Assay.SLIDESEQ:
+        # Don't support multiple input directories for Slide-seq; this will
+        # likely cause significantly incorrect results due to barcode overlap
+        # between multiple input data sets
+        if len(orig_fastq_dirs) != 1:
+            raise ValueError("Need exactly 1 input directory for Slide-seq")
+        expected_cell_count = read_slideseq_cell_count(orig_fastq_dirs[0])
+        command.extend(["--expectCells", str(expected_cell_count)])
 
     for r1_fastq_file, r2_fastq_file in fastq_pairs:
         fastq_extension = [
