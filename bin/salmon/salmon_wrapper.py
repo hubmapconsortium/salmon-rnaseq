@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 from itertools import chain
-from os import environ
+from os import environ, fspath
 from pathlib import Path
 from subprocess import check_call
 from typing import Iterable, Sequence, Tuple
@@ -52,13 +52,10 @@ def find_adj_fastq_files(directory: Path) -> Tuple[Path, Path]:
         raise ValueError(message)
 
 
-def read_slideseq_cell_count(base_dir: Path) -> int:
-    matched_bead_barcode_files = list(base_dir.glob("**/*matched_bead_barcodes.txt"))
-    assert len(matched_bead_barcode_files) == 1
-    print("Reading barcode count from", matched_bead_barcode_files[0])
-    with open(matched_bead_barcode_files[0]) as f:
-        barcodes = [line.strip() for line in f]
-    return len(barcodes)
+def find_slideseq_barcode_file(base_dir: Path) -> Path:
+    barcode_files = list(base_dir.glob("**/*matched_bead_barcodes.txt"))
+    assert len(barcode_files) == 1
+    return barcode_files[0]
 
 
 def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, threads: int):
@@ -90,8 +87,8 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, thr
         # between multiple input data sets
         if len(orig_fastq_dirs) != 1:
             raise ValueError("Need exactly 1 input directory for Slide-seq")
-        expected_cell_count = read_slideseq_cell_count(orig_fastq_dirs[0])
-        command.extend(["--expectCells", str(expected_cell_count)])
+        barcode_file = find_slideseq_barcode_file(orig_fastq_dirs[0])
+        command.extend(["--whitelist", fspath(barcode_file)])
 
     for r1_fastq_file, r2_fastq_file in fastq_pairs:
         fastq_extension = [
