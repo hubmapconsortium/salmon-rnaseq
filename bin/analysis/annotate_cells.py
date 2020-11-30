@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 from pathlib import Path
-from shutil import copy
 from typing import Optional
 
+import anndata
 import annotate_sciseq_barcodes
 
 from common import Assay
 
 H5AD_PATH = Path("expr.h5ad")
+ZARR_PATH = H5AD_PATH.with_suffix(".zarr")
 
 
-def dummy_annotate_cells(h5ad_file: Path):
-    copy(h5ad_file, H5AD_PATH)
+def dummy_annotate_cells(h5ad_file: Path) -> anndata.AnnData:
+    return anndata.read_h5ad(h5ad_file)
 
 
 def main(assay: Assay, h5ad_file: Path, metadata_json: Optional[Path]):
     if assay == Assay.SCISEQ:
-        annotate_sciseq_barcodes.main(h5ad_file, metadata_json)
+        expr_data = annotate_sciseq_barcodes.main(h5ad_file, metadata_json)
     else:
         print("No annotation to perform for assay", assay)
-        dummy_annotate_cells(h5ad_file)
+        expr_data = dummy_annotate_cells(h5ad_file)
+
+    expr_data.write_h5ad(H5AD_PATH)
+    expr_data.write_zarr(ZARR_PATH)
 
 
 if __name__ == "__main__":

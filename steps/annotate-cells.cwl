@@ -25,3 +25,7 @@ outputs:
     type: File
     outputBinding:
       glob: 'expr.h5ad'
+  annotated_zarr_dir:
+    type: Directory
+    outputBinding:
+      glob: 'expr.zarr'

@@ -12,11 +12,11 @@ inputs:
     inputBinding:
       position: 1
 outputs:
-  full_h5ad_file:
+  raw_expr_h5ad:
     type: File
     outputBinding:
       glob: raw_expr.h5ad
-  h5ad_file:
+  expr_h5ad:
     type: File
     outputBinding:
       glob: expr.h5ad

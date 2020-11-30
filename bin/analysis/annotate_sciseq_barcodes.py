@@ -36,7 +36,7 @@ class CellIdMapper:
             setattr(self, f"{label}_mapping", self.read_barcode_mapping(f"{label}.txt"))
 
 
-def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str):
+def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str) -> anndata.AnnData:
     cell_ids = []
 
     for i in data.obs.index:
@@ -50,7 +50,7 @@ def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str):
 
     data.obs.loc[:, "cell_id"] = pd.Series(cell_ids, index=data.obs.index)
 
-    data.write_h5ad("expr.h5ad")
+    return data
 
 
 def main(h5ad_file: Path, metadata_json_file: Path):
@@ -59,7 +59,7 @@ def main(h5ad_file: Path, metadata_json_file: Path):
         experiment_id = json.load(f)["experiment_id"]
 
     mapper = CellIdMapper()
-    annotate(mapper, data, experiment_id)
+    return annotate(mapper, data, experiment_id)
 
 
 if __name__ == "__main__":
@@ -68,4 +68,5 @@ if __name__ == "__main__":
     p.add_argument("metadata_json_file", type=Path)
     args = p.parse_args()
 
-    main(args.h5ad_file, args.metadata_json_file)
+    d = main(args.h5ad_file, args.metadata_json_file)
+    d.write_h5ad("expr.h5ad")

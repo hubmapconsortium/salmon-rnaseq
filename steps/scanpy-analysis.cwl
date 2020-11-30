@@ -12,10 +12,14 @@ inputs:
     inputBinding:
       position: 1
 outputs:
-  filtered_data:
+  filtered_data_h5ad:
     type: File
     outputBinding:
       glob: secondary_analysis.h5ad
+  filtered_data_zarr:
+    type: Directory
+    outputBinding:
+      glob: secondary_analysis.zarr
   dispersion_plot:
     type: File
     outputBinding:
