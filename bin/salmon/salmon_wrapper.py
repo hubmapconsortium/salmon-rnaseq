@@ -53,8 +53,15 @@ def find_adj_fastq_files(directory: Path) -> Tuple[Path, Path]:
 
 
 def find_slideseq_barcode_file(base_dir: Path) -> Path:
-    barcode_files = list(base_dir.glob("**/*matched_bead_barcodes.txt"))
-    assert len(barcode_files) == 1
+    pattern = "**/*matched_bead_barcodes.txt"
+    barcode_files = list(base_dir.glob(pattern))
+    if len(barcode_files) != 1:
+        message_pieces = [
+            f"Need exactly 1 file matching {pattern} "
+            f"under {base_dir}, found {len(barcode_files)}:"
+        ]
+        message_pieces.extend(f"\t{bf}" for bf in barcode_files)
+        raise ValueError("\n".join(message_pieces))
     return barcode_files[0]
 
 
