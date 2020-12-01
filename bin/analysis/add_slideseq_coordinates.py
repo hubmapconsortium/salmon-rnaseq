@@ -7,14 +7,15 @@ import pandas as pd
 
 
 def read_bead_pos(fastq_dir: Path) -> pd.DataFrame:
+    barcode_dir = fastq_dir / "barcode_matching"
     all_pos_raw = pd.read_csv(
-        fastq_dir / "BeadLocations.txt",
+        barcode_dir / "BeadLocations.txt",
         index_col=None,
         header=None,
     )
     all_pos = all_pos_raw.T
 
-    with open(fastq_dir / "BeadBarcodes.txt") as f:
+    with open(barcode_dir / "BeadBarcodes.txt") as f:
         all_barcodes = ["".join(line.strip().split(",")) for line in f]
     all_pos.index = all_barcodes
     return all_pos
