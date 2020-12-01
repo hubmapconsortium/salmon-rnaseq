@@ -144,6 +144,8 @@ steps:
     label: "Convert Alevin output to AnnData object in h5ad format"
   annotate_cells:
     in:
+      orig_fastq_dirs:
+        source: fastq_dir
       assay:
         source: assay
       h5ad_file:

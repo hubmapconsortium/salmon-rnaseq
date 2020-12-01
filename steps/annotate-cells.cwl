@@ -15,10 +15,14 @@ inputs:
     type: File
     inputBinding:
       position: 1
+  orig_fastq_dirs:
+    type: Directory[]
+    inputBinding:
+      position: 2
   metadata_json:
     type: File?
     inputBinding:
-      position: 2
+      position: 3
       prefix: '--metadata_json'
 outputs:
   annotated_h5ad_file:
