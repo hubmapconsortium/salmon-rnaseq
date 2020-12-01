@@ -54,6 +54,10 @@ outputs:
     outputSource: scanpy_analysis/umap_density_plot
     type: File
     label: "UMAP dimensionality reduction plot, colored by cell density"
+  slideseq_plot:
+    outputSource: scanpy_analysis/slideseq_plot
+    type: File?
+    label: "Slide-seq bead plot, colored by Leiden cluster"
   filtered_data_h5ad:
     outputSource: scanpy_analysis/filtered_data_h5ad
     type: File
@@ -152,6 +156,8 @@ steps:
     run: steps/annotate-cells.cwl
   scanpy_analysis:
     in:
+      assay:
+        source: assay
       h5ad_file:
         source: annotate_cells/annotated_h5ad_file
     out:
@@ -163,6 +169,7 @@ steps:
       - marker_gene_plot_logreg
       - dispersion_plot
       - umap_density_plot
+      - slideseq_plot
     run: steps/scanpy-analysis.cwl
     label: "Secondary analysis via ScanPy"
   scvelo_analysis:

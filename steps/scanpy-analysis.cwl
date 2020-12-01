@@ -7,6 +7,10 @@ hints:
 baseCommand: /opt/scanpy_entry_point.py
 
 inputs:
+  assay:
+    type: string
+    inputBinding:
+      position: 0
   h5ad_file:
     type: File
     inputBinding:
@@ -28,6 +32,10 @@ outputs:
     type: File
     outputBinding:
       glob: umap_by_leiden_cluster.pdf
+  slideseq_plot:
+    type: File?
+    outputBinding:
+      glob: slideseq_pos.pdf
   umap_density_plot:
     type: File
     outputBinding:

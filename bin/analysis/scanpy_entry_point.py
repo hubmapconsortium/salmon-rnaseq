@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scanpy as sc
 
+from common import Assay
+
 
 @contextmanager
 def new_plot():
@@ -46,7 +48,7 @@ def qc_checks(adata: anndata.AnnData):
         store["qc_by_gene"] = qc_by_gene
 
 
-def main(h5ad_file: Path):
+def main(assay: Assay, h5ad_file: Path):
     adata = anndata.read_h5ad(h5ad_file)
     adata.var_names_make_unique()
 
@@ -84,6 +86,11 @@ def main(h5ad_file: Path):
         sc.pl.embedding_density(adata, color_map="viridis_r", show=False)
         plt.savefig("umap_embedding_density.pdf", bbox_inches="tight")
 
+    if assay == Assay.SLIDESEQ:
+        with new_plot():
+            sc.pl.scatter(adata, color="leiden", basis="slideseq", show=False)
+            plt.savefig("slideseq_pos.pdf", bbox_inches="tight")
+
     sc.tl.rank_genes_groups(adata, "leiden", method="t-test")
 
     with new_plot():
@@ -105,7 +112,8 @@ def main(h5ad_file: Path):
 
 if __name__ == "__main__":
     p = ArgumentParser()
+    p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("alevin_h5ad_file", type=Path)
     args = p.parse_args()
 
-    main(args.alevin_h5ad_file)
+    main(args.assay, args.alevin_h5ad_file)
