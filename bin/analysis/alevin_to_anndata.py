@@ -220,14 +220,16 @@ def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
     unspliced_expanded = expand_anndata(d, orig_intron_list, introns_to_add, mapped_intron_list)
 
     collapsed = collapse_intron_cols(lm)
+    spliced = sparsify_if_appropriate(spliced_expanded.X)
 
     adata = AnnData(
-        X=sparsify_if_appropriate(collapsed.matrix),
+        X=spliced,
         obs=spliced_expanded.obs,
         var=spliced_expanded.var,
         layers={
-            "spliced": sparsify_if_appropriate(spliced_expanded.X),
+            "spliced": spliced,
             "unspliced": sparsify_if_appropriate(unspliced_expanded.X),
+            "spliced_unspliced_sum": sparsify_if_appropriate(collapsed.matrix),
         },
     )
 
