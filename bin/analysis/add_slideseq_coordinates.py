@@ -39,7 +39,7 @@ def annotate(h5ad_path: Path, raw_fastq_dir: Path) -> anndata.AnnData:
 
     quant_pos = pd.concat([positions_overlap, positions_missing])
     quant_pos_ordered = quant_pos.loc[d.obs.index, :]
-    d.obsm["X_slideseq"] = quant_pos_ordered.to_numpy()
+    d.obsm["X_spatial"] = quant_pos_ordered.to_numpy()
 
     return d
 

@@ -90,7 +90,7 @@ def main(assay: Assay, h5ad_file: Path):
 
     if assay == Assay.SLIDESEQ:
         with new_plot():
-            sc.pl.scatter(adata, color="leiden", basis="slideseq", show=False)
+            sc.pl.scatter(adata, color="leiden", basis="spatial", show=False)
             plt.savefig("slideseq_pos.pdf", bbox_inches="tight")
 
     sc.tl.rank_genes_groups(adata, "leiden", method="t-test")
