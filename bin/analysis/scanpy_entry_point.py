@@ -50,7 +50,8 @@ def qc_checks(adata: anndata.AnnData):
 
 def main(assay: Assay, h5ad_file: Path):
     adata = anndata.read_h5ad(h5ad_file)
-    adata.X = adata.layers[assay.secondary_analysis_layer]
+    if assay.secondary_analysis_layer in adata.layers:
+        adata.X = adata.layers[assay.secondary_analysis_layer]
     adata.var_names_make_unique()
 
     qc_checks(adata)
