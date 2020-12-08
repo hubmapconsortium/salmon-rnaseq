@@ -10,6 +10,8 @@ import scipy.io
 import scipy.sparse
 from anndata import AnnData
 
+from common import AnnDataLayer
+
 # As per https://gist.github.com/flying-sheep/f46e89b388fed736ff0b68fb8fd83af6
 # the break-even point for density seems to be around 0.6 to 0.7 for large enough
 # data sets (and ours are definitely large enough). Past that point, sparse
@@ -227,9 +229,9 @@ def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
         obs=spliced_expanded.obs,
         var=spliced_expanded.var,
         layers={
-            "spliced": spliced,
-            "unspliced": sparsify_if_appropriate(unspliced_expanded.X),
-            "spliced_unspliced_sum": sparsify_if_appropriate(collapsed.matrix),
+            AnnDataLayer.SPLICED: spliced,
+            AnnDataLayer.UNSPLICED: sparsify_if_appropriate(unspliced_expanded.X),
+            AnnDataLayer.SPLICED_UNSPLICED_SUM: sparsify_if_appropriate(collapsed.matrix),
         },
     )
 

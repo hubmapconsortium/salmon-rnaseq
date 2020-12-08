@@ -29,12 +29,18 @@ def get_adjusted_fastq_paths(directory: Path) -> Tuple[Path, Path]:
     return directory / BARCODE_UMI_FASTQ_PATH, directory / TRANSCRIPT_FASTQ_PATH
 
 
+class AnnDataLayer(str, Enum):
+    SPLICED = "spliced"
+    UNSPLICED = "unspliced"
+    SPLICED_UNSPLICED_SUM = "spliced_unspliced_sum"
+
+
 class Assay(Enum):
     def __new__(
         cls,
         key: str,
         salmon_option: str,
-        secondary_analysis_layer: str,
+        secondary_analysis_layer: AnnDataLayer,
         barcode_adj_performed: bool,
         barcode_adj_r1_r2: bool,
         keep_all_barcodes: bool,
@@ -51,8 +57,8 @@ class Assay(Enum):
     def __str__(self):
         return self.value
 
-    CHROMIUM_V2 = "10x_v2", "--chromium", "spliced", False, False, False
-    CHROMIUM_V3 = "10x", "--chromiumV3", "spliced", False, False, False
-    SNARESEQ = "snareseq", "--snareseq", "spliced_unspliced_sum", True, False, True
-    SCISEQ = "sciseq", "--sciseq", "spliced_unspliced_sum", True, True, True
-    SLIDESEQ = "slideseq", "--slideseq", "spliced", True, False, False
+    CHROMIUM_V2 = "10x_v2", "--chromium", AnnDataLayer.SPLICED, False, False, False
+    CHROMIUM_V3 = "10x", "--chromiumV3", AnnDataLayer.SPLICED, False, False, False
+    SNARESEQ = "snareseq", "--snareseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, False, True
+    SCISEQ = "sciseq", "--sciseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, True, True
+    SLIDESEQ = "slideseq", "--slideseq", AnnDataLayer.SPLICED, True, False, False
