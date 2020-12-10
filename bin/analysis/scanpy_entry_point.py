@@ -80,7 +80,7 @@ def main(assay: Assay, h5ad_file: Path):
     sc.tl.leiden(adata)
 
     with new_plot():
-        sc.pl.umap(adata, color="leiden")
+        sc.pl.umap(adata, color="leiden", show=False)
         plt.savefig("umap_by_leiden_cluster.pdf", bbox_inches="tight")
 
     sc.tl.embedding_density(adata, basis="umap")
@@ -88,7 +88,7 @@ def main(assay: Assay, h5ad_file: Path):
         sc.pl.embedding_density(adata, color_map="viridis_r", show=False)
         plt.savefig("umap_embedding_density.pdf", bbox_inches="tight")
 
-    if assay == Assay.SLIDESEQ:
+    if "X_spatial" in adata.obsm:
         with new_plot():
             sc.pl.scatter(adata, color="leiden", basis="spatial", show=False)
             plt.savefig("slideseq_pos.pdf", bbox_inches="tight")
