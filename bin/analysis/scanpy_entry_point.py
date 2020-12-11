@@ -91,7 +91,7 @@ def main(assay: Assay, h5ad_file: Path):
     if "X_spatial" in adata.obsm:
         with new_plot():
             sc.pl.scatter(adata, color="leiden", basis="spatial", show=False)
-            plt.savefig("slideseq_pos.pdf", bbox_inches="tight")
+            plt.savefig("spatial_pos.pdf", bbox_inches="tight")
 
     sc.tl.rank_genes_groups(adata, "leiden", method="t-test")
 
