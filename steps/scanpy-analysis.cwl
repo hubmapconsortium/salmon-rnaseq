@@ -35,7 +35,7 @@ outputs:
   slideseq_plot:
     type: File?
     outputBinding:
-      glob: slideseq_pos.pdf
+      glob: spatial_pos_by_leiden_cluster.pdf
   umap_density_plot:
     type: File
     outputBinding:

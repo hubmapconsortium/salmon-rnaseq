@@ -46,6 +46,11 @@
 		"edam_ontology_term": "EDAM_1.24.format_3508"
 	},
 	{
+		"pattern": "spatial_pos_by_leiden_cluster\\.pdf",
+		"description": "Spatial plot of cells, colored by Leiden cluster ID",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
 		"pattern": "scvelo_embedding_grid\\.pdf",
 		"description": "scVelo RNA velocity grid plot",
 		"edam_ontology_term": "EDAM_1.24.format_3508"
