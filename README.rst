@@ -22,10 +22,11 @@ runtime; we recommend Docker and the ``cwltool`` reference implementation.
 recent Python environment with ``pip install cwltool``. Afterward, clone this
 repository, check out a tag, and invoke the pipeline as::
 
-  cwltool pipeline.cwl --assay ASSAY
+  cwltool pipeline.cwl --assay ASSAY --fastq_dir FASTQ_DIR --threads THREADS
 
 (The ``master`` branch and ``latest`` Docker images may not always be in sync;
-checking out a version like ``v1.5.4`` is *highly* recommended.)
+checking out a version like ``v2.0`` is *highly* recommended.)
 
-Supported assays are ``10x`` for 10X Genomics Chromium v3, ``snareseq``, and
-``sciseq``. See ``cwltool pipeline.cwl --help`` for additional options.
+Supported assays are ``10x`` for 10X Genomics Chromium v3, ``snareseq``,
+``sciseq``, and ``slideseq``. See ``cwltool pipeline.cwl --help`` for
+additional options.
