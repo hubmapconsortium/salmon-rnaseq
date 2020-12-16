@@ -6,9 +6,9 @@ import anndata
 import matplotlib.pyplot as plt
 import pandas as pd
 import scanpy as sc
-from plot_utils import new_plot
 
 from common import Assay
+from plot_utils import new_plot
 
 
 def qc_checks(adata: anndata.AnnData):

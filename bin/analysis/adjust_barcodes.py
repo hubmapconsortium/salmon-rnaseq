@@ -6,7 +6,6 @@ from typing import Iterable
 import correct_snareseq_barcodes
 import expand_sciseq_barcodes
 import extract_slideseq_barcodes
-
 from common import ADJ_OUTPUT_DIR, Assay
 
 adj_funcs = {

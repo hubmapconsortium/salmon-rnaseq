@@ -3,10 +3,10 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional, Sequence
 
-import add_slideseq_coordinates
 import anndata
-import annotate_sciseq_barcodes
 
+import add_slideseq_coordinates
+import annotate_sciseq_barcodes
 from common import Assay
 
 H5AD_PATH = Path("expr.h5ad")
