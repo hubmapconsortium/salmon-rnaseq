@@ -142,7 +142,7 @@ def collapse_matrix_rows_cols(
 
     new_data = row_mat @ matrix.matrix @ col_mat
     return LabeledMatrix(
-        matrix=new_data,
+        matrix=new_data.astype(matrix.matrix.dtype),
         row_labels=new_row_labels,
         col_labels=new_col_labels,
     )
@@ -196,14 +196,17 @@ def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
     >>> list(adata.var.index)
     ['g1', 'g2', 'g3']
     >>> force_dense_matrix(adata.X)
-    matrix([[ 1.,  5.,  4.],
-            [ 5., 13.,  8.]], dtype=float32)
+    matrix([[1., 2., 0.],
+            [5., 6., 0.]], dtype=float32)
     >>> force_dense_matrix(adata.layers['spliced'])
     matrix([[1., 2., 0.],
             [5., 6., 0.]], dtype=float32)
     >>> force_dense_matrix(adata.layers['unspliced'])
     matrix([[0., 3., 4.],
             [0., 7., 8.]], dtype=float32)
+    >>> force_dense_matrix(adata.layers['spliced_unspliced_sum'])
+    matrix([[ 1.,  5.,  4.],
+            [ 5., 13.,  8.]], dtype=float32)
     """
     # TODO: rethink data types and control flow between helper functions.
     #   These have gone through a few iterations and might need a few cleanups.
