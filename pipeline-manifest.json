@@ -1,16 +1,21 @@
 [
 	{
-		"pattern": "cluster_marker_genes\\.h5ad",
+		"pattern": "secondary_analysis\\.h5ad",
 		"description": "Normalized gene expression with additional metadata, in HDF5 format, readable with the 'anndata' Python package",
 		"edam_ontology_term": "EDAM_1.24.format_3590"
 	},
 	{
-		"pattern": "out\\.h5ad",
+		"pattern": "scvelo_annotated\\.h5ad",
+		"description": "RNA velocity results, in HDF5 format, readable with the 'anndata' Python package",
+		"edam_ontology_term": "EDAM_1.24.format_3590"
+	},
+	{
+		"pattern": "expr\\.h5ad",
 		"description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package, intronic counts collapsed to genes",
 		"edam_ontology_term": "EDAM_1.24.format_3590"
 	},
 	{
-		"pattern": "full\\.h5ad",
+		"pattern": "raw_expr\\.h5ad",
 		"description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package, with intronic counts",
 		"edam_ontology_term": "EDAM_1.24.format_3590"
 	},
@@ -21,8 +26,38 @@
 		"is_qa_qc": true
 	},
 	{
+		"pattern": "dispersion_plot\\.pdf",
+		"description": "Disperson plot of gene expression",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
 		"pattern": "umap_by_leiden_cluster\\.pdf",
 		"description": "UMAP plot of cells, colored by Leiden cluster ID",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
+		"pattern": "umap_embedding_density\\.pdf",
+		"description": "UMAP plot of cells, colored by embedding density",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
+		"pattern": "umap_embedding_density\\.pdf",
+		"description": "UMAP plot of cells, colored by embedding density",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
+		"pattern": "spatial_pos_by_leiden_cluster\\.pdf",
+		"description": "Spatial plot of cells, colored by Leiden cluster ID",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
+		"pattern": "scvelo_embedding_grid\\.pdf",
+		"description": "scVelo RNA velocity grid plot",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
+		"pattern": "scvelo_embedding_stream\\.pdf",
+		"description": "scVelo RNA velocity stream plot",
 		"edam_ontology_term": "EDAM_1.24.format_3508"
 	},
 	{

@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Assay-specific annotation of cell barcodes after quantification
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scanpy:1.5.4
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/annotate_cells.py
 
 inputs:
@@ -15,13 +15,21 @@ inputs:
     type: File
     inputBinding:
       position: 1
+  orig_fastq_dirs:
+    type: Directory[]
+    inputBinding:
+      position: 2
   metadata_json:
     type: File?
     inputBinding:
-      position: 2
+      position: 3
       prefix: '--metadata_json'
 outputs:
   annotated_h5ad_file:
     type: File
     outputBinding:
-      glob: 'out.h5ad'
+      glob: 'expr.h5ad'
+  annotated_zarr_dir:
+    type: Directory
+    outputBinding:
+      glob: 'expr.zarr'

@@ -23,12 +23,12 @@ RUN apt-get update \
  && rm -rf /var/cache/apt/*
 
 ## Python packages
-COPY docker/scanpy/requirements.txt /opt/requirements.txt
+COPY docker/analysis/requirements.txt /opt/requirements.txt
 RUN pip3 install -r /opt/requirements.txt \
  && rm -rf /root/.cache/pip
 
 COPY data /opt/data
 COPY bin/common /opt
-COPY bin/scanpy /opt
+COPY bin/analysis /opt
 
 WORKDIR /opt

@@ -9,10 +9,11 @@ from typing import Tuple
 from fastq_utils import collect_fastq_files_by_directory
 
 FASTQC_COMMAND_TEMPLATE = [
-    'fastqc',
-    '--outdir',
-    '{out_dir}',
+    "fastqc",
+    "--outdir",
+    "{out_dir}",
 ]
+
 
 def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]):
     """
@@ -21,13 +22,11 @@ def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]):
     Takes an absolute path to the input file and a relative path to
     the output subdirectory
     """
-    command = [
-        piece.format(out_dir=fastq_file_and_subdir[1])
-        for piece in FASTQC_COMMAND_TEMPLATE
-    ]
+    command = [piece.format(out_dir=fastq_file_and_subdir[1]) for piece in FASTQC_COMMAND_TEMPLATE]
     command.append(fspath(fastq_file_and_subdir[0]))
-    print('Running', ' '.join(command))
+    print("Running", " ".join(command))
     check_call(command)
+
 
 def main(directory: Path, threads: int):
     """
@@ -35,9 +34,9 @@ def main(directory: Path, threads: int):
     Append output files to a list to pass to Pool.imap_unordered
     """
     fastq_files_by_directory = collect_fastq_files_by_directory(directory)
-    print('Found', len(fastq_files_by_directory), 'directories containing FASTQ files')
+    print("Found", len(fastq_files_by_directory), "directories containing FASTQ files")
 
-    fastqc_out_dir = Path('fastqc_output')
+    fastqc_out_dir = Path("fastqc_output")
 
     fastq_files_and_subdirs = []
 
@@ -54,10 +53,11 @@ def main(directory: Path, threads: int):
         }
         wait(futures)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument('directory', type=Path)
-    p.add_argument('threads', type=int)
+    p.add_argument("directory", type=Path)
+    p.add_argument("threads", type=int)
     args = p.parse_args()
 
     main(args.directory, args.threads)
