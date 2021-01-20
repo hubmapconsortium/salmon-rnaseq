@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -35,6 +34,20 @@ def sparsify_if_appropriate(
         return mat
 
 
+def build_anndata(X, rows: Sequence[str], cols: Sequence[str], **kwargs) -> AnnData:
+    """
+    Helper to construct an AnnData object from a data matrix and
+    specified rows/columns, with calls to pd.DataFrame for obs and
+    var data structures
+    """
+    return AnnData(
+        X=X,
+        obs=pd.DataFrame(index=rows),
+        var=pd.DataFrame(index=cols),
+        **kwargs,
+    )
+
+
 # noinspection PyDeprecation
 def force_dense_matrix(mat: Union[np.ndarray, scipy.sparse.spmatrix]) -> np.matrix:
     # Only used for convenience in doctests
@@ -44,22 +57,8 @@ def force_dense_matrix(mat: Union[np.ndarray, scipy.sparse.spmatrix]) -> np.matr
         return mat.todense()
 
 
-@dataclass
-class LabeledMatrix:
-    matrix: scipy.sparse.spmatrix
-    row_labels: List[str]
-    col_labels: List[str]
-
-    def to_anndata(self):
-        return AnnData(
-            X=self.matrix,
-            obs=pd.DataFrame(index=self.row_labels),
-            var=pd.DataFrame(index=self.col_labels),
-        )
-
-
 def get_col_sum_matrix(
-    orig_labels: List[str], label_mapping: Dict[str, str]
+    orig_labels: Sequence[str], label_mapping: Dict[str, str]
 ) -> Tuple[scipy.sparse.spmatrix, List[str]]:
     """
     :param orig_labels:
@@ -92,22 +91,21 @@ def get_col_sum_matrix(
 
 
 def collapse_matrix_rows_cols(
-    matrix: LabeledMatrix,
+    matrix: AnnData,
     row_mapping: Optional[Dict[str, str]] = None,
     col_mapping: Optional[Dict[str, str]] = None,
-) -> LabeledMatrix:
+) -> AnnData:
     """
-    Not operating directly on a `AnnData` object, to make it clear that
-    this functionality only preserves row and column labels, and does not even
+    This functionality only preserves row and column labels, and does not even
     *attempt* to deal with any supplementary data that could be stored in other
-    columns of `AnnData.obs` or `AnnData.var`
+    columns of `AnnData.obs` or `AnnData.var`. Such data is dropped silently
 
-    :param matrix: LabeledMatrix instance
+    :param matrix: AnnData
     :param row_mapping: Mapping from row labels to new row labels. Any label not
       present in this mapping is returned unchanged.
     :param col_mapping: Mapping from column labels to new column labels. Any label
       not present in this mapping is returned unchanged.
-    :return: New LabeledMatrix with entries as sums of appropriate rows and columns
+    :return: New AnnData with entries as sums of appropriate rows and columns
 
     >>> m = np.arange(1, 10).reshape((3, 3))
     >>> m
@@ -116,16 +114,16 @@ def collapse_matrix_rows_cols(
            [7, 8, 9]])
     >>> row_labels = list('abc')
     >>> col_labels = list('123')
-    >>> lm = LabeledMatrix(matrix=m, row_labels=row_labels, col_labels=col_labels)
+    >>> lm = build_anndata(X=m, rows=row_labels, cols=col_labels)
     >>> row_mapping = {'a': 'b'}
     >>> col_mapping = {'2': '3'}
     >>> sm = collapse_matrix_rows_cols(lm, row_mapping, col_mapping)
-    >>> sm.matrix
-    array([[ 5, 16],
-           [ 7, 17]])
-    >>> sm.row_labels
+    >>> sm.X
+    array([[ 5., 16.],
+           [ 7., 17.]], dtype=float32)
+    >>> list(sm.obs.index)
     ['b', 'c']
-    >>> sm.col_labels
+    >>> list(sm.var.index)
     ['1', '3']
     """
     if not (row_mapping or col_mapping):
@@ -136,21 +134,21 @@ def collapse_matrix_rows_cols(
     if col_mapping is None:
         col_mapping = {}
 
-    col_mat, new_col_labels = get_col_sum_matrix(matrix.col_labels, col_mapping)
-    row_mat_t, new_row_labels = get_col_sum_matrix(matrix.row_labels, row_mapping)
+    col_mat, new_col_labels = get_col_sum_matrix(matrix.var.index, col_mapping)
+    row_mat_t, new_row_labels = get_col_sum_matrix(matrix.obs.index, row_mapping)
     row_mat = row_mat_t.T
 
-    new_data = row_mat @ matrix.matrix @ col_mat
-    return LabeledMatrix(
-        matrix=new_data.astype(matrix.matrix.dtype),
-        row_labels=new_row_labels,
-        col_labels=new_col_labels,
+    new_data = row_mat @ matrix.X @ col_mat
+    return build_anndata(
+        X=new_data.astype(matrix.X.dtype),
+        rows=new_row_labels,
+        cols=new_col_labels,
     )
 
 
-def collapse_intron_cols(lm: LabeledMatrix) -> LabeledMatrix:
-    intron_mapping = {i: i.split("-")[0] for i in lm.col_labels}
-    new_matrix = collapse_matrix_rows_cols(lm, col_mapping=intron_mapping)
+def collapse_intron_cols(d: AnnData) -> AnnData:
+    intron_mapping = {i: i.split("-")[0] for i in d.var.index}
+    new_matrix = collapse_matrix_rows_cols(d, col_mapping=intron_mapping)
     return new_matrix
 
 
@@ -177,54 +175,58 @@ def expand_anndata(
     return d_full_sorted
 
 
-def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
+def add_split_spliced_unspliced(d: AnnData) -> AnnData:
     """
-    :param lm: cell ⨉ gene LabeledMatrix, with columns for both spliced and
-      unspliced sequences
+    :param d: AnnData with columns for both spliced and unspliced sequences
     :return: an `AnnData` object (let's say `adata`) constructed from `lm`:
       spliced and unspliced counts are added to compute `adata.X`, spliced
       counts are stored in `adata.layers['spliced']` and unspliced counts
       are likewise stored in `adata.layers['unspliced']`.
 
-    >>> row_labels = ['c1', 'c2']
-    >>> col_labels = ['g1', 'g2', 'g2-I', 'g3-I']
+    >>> row_labels = ['c2', 'c1']
+    >>> col_labels = ['g2', 'g1', 'g3-I', 'g2-I']
     >>> mat = scipy.sparse.csr_matrix(np.arange(1, 9, dtype=np.float32).reshape((2, 4)))
-    >>> lm = LabeledMatrix(matrix=mat, row_labels=row_labels, col_labels=col_labels)
-    >>> adata: AnnData = add_split_spliced_unspliced(lm)
+    >>> d = build_anndata(X=mat, rows=row_labels, cols=col_labels)
+    >>> adata: AnnData = add_split_spliced_unspliced(d)
     >>> list(adata.obs.index)
     ['c1', 'c2']
     >>> list(adata.var.index)
     ['g1', 'g2', 'g3']
     >>> force_dense_matrix(adata.X)
-    matrix([[1., 2., 0.],
-            [5., 6., 0.]], dtype=float32)
+    matrix([[6., 5., 0.],
+            [2., 1., 0.]], dtype=float32)
     >>> force_dense_matrix(adata.layers['spliced'])
-    matrix([[1., 2., 0.],
-            [5., 6., 0.]], dtype=float32)
+    matrix([[6., 5., 0.],
+            [2., 1., 0.]], dtype=float32)
     >>> force_dense_matrix(adata.layers['unspliced'])
-    matrix([[0., 3., 4.],
-            [0., 7., 8.]], dtype=float32)
+    matrix([[0., 8., 7.],
+            [0., 4., 3.]], dtype=float32)
     >>> force_dense_matrix(adata.layers['spliced_unspliced_sum'])
-    matrix([[ 1.,  5.,  4.],
-            [ 5., 13.,  8.]], dtype=float32)
+    matrix([[ 6., 13.,  7.],
+            [ 2.,  5.,  3.]], dtype=float32)
     """
+    d_sorted = d[sorted(d.obs.index), sorted(d.var.index)]
     # TODO: rethink data types and control flow between helper functions.
     #   These have gone through a few iterations and might need a few cleanups.
-    genes_split = [(i, i.split("-")) for i in lm.col_labels]
+    genes_split = [(i, i.split("-")) for i in d_sorted.var.index]
 
     all_exons = {g[1][0] for g in genes_split}
     orig_exons = {g[1][0] for g in genes_split if len(g[1]) == 1}
     exons_to_add = list(all_exons - orig_exons)
 
-    d = lm.to_anndata()
-    spliced_expanded = expand_anndata(d, list(orig_exons), exons_to_add)
+    spliced_expanded = expand_anndata(d_sorted, list(orig_exons), exons_to_add)
 
     intron_mapping = {g[0]: g[1][0] for g in genes_split if len(g[1]) == 2 and g[1][1] == "I"}
     orig_intron_list, mapped_intron_list = (list(z) for z in zip(*intron_mapping.items()))
     introns_to_add = list(all_exons - set(intron_mapping.values()))
-    unspliced_expanded = expand_anndata(d, orig_intron_list, introns_to_add, mapped_intron_list)
+    unspliced_expanded = expand_anndata(
+        d_sorted,
+        orig_intron_list,
+        introns_to_add,
+        mapped_intron_list,
+    )
 
-    collapsed = collapse_intron_cols(lm)
+    collapsed = collapse_intron_cols(d_sorted)
     spliced = sparsify_if_appropriate(spliced_expanded.X)
 
     adata = AnnData(
@@ -234,7 +236,7 @@ def add_split_spliced_unspliced(lm: LabeledMatrix) -> AnnData:
         layers={
             AnnDataLayer.SPLICED: spliced,
             AnnDataLayer.UNSPLICED: sparsify_if_appropriate(unspliced_expanded.X),
-            AnnDataLayer.SPLICED_UNSPLICED_SUM: sparsify_if_appropriate(collapsed.matrix),
+            AnnDataLayer.SPLICED_UNSPLICED_SUM: sparsify_if_appropriate(collapsed.X),
         },
     )
 
@@ -259,14 +261,14 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData]:
 
     print("Reading sparse count matrix")
     raw_matrix = scipy.io.mmread(alevin_dir / "quants_mat.mtx.gz").tocsr()
-    raw_labeled = LabeledMatrix(
-        matrix=raw_matrix,
-        row_labels=cb_names,
-        col_labels=gene_names,
+    raw_labeled = build_anndata(
+        X=raw_matrix,
+        rows=cb_names,
+        cols=gene_names,
     )
     spliced_anndata = add_split_spliced_unspliced(raw_labeled)
 
-    return raw_labeled.to_anndata(), spliced_anndata
+    return raw_labeled, spliced_anndata
 
 
 if __name__ == "__main__":
