@@ -57,101 +57,6 @@ def force_dense_matrix(mat: Union[np.ndarray, scipy.sparse.spmatrix]) -> np.matr
         return mat.todense()
 
 
-def get_col_sum_matrix(
-    orig_labels: Sequence[str], label_mapping: Dict[str, str]
-) -> Tuple[scipy.sparse.spmatrix, List[str]]:
-    """
-    :param orig_labels:
-    :param label_mapping:
-    :return: 2-tuple:
-      [0] A summation matrix suitable for right-multiplying a data matrix,
-          summing columns of that data matrix. Transpose this to sum across rows.
-      [1] Labels for the new axis introduced by this summation matrix
-
-    >>> col_labels = list('2143')
-    >>> col_mapping = {'2': '3'}
-    >>> csm, new_col_labels = get_col_sum_matrix(col_labels, col_mapping)
-    >>> csm.todense()
-    matrix([[0, 1, 0],
-            [1, 0, 0],
-            [0, 0, 1],
-            [0, 1, 0]])
-    >>> new_col_labels
-    ['1', '3', '4']
-    """
-    new_labels = sorted({label_mapping.get(l, l) for l in orig_labels})
-    new_label_indices = {label: i for i, label in enumerate(new_labels)}
-
-    data_vec = np.ones(len(orig_labels), dtype=int)
-    row_vec = np.arange(len(orig_labels))
-    col_vec = np.array([new_label_indices[label_mapping.get(l, l)] for l in orig_labels])
-
-    m = scipy.sparse.coo_matrix((data_vec, (row_vec, col_vec))).tocsr()
-    return m, new_labels
-
-
-def collapse_matrix_rows_cols(
-    matrix: AnnData,
-    row_mapping: Optional[Dict[str, str]] = None,
-    col_mapping: Optional[Dict[str, str]] = None,
-) -> AnnData:
-    """
-    This functionality only preserves row and column labels, and does not even
-    *attempt* to deal with any supplementary data that could be stored in other
-    columns of `AnnData.obs` or `AnnData.var`. Such data is dropped silently
-
-    :param matrix: AnnData
-    :param row_mapping: Mapping from row labels to new row labels. Any label not
-      present in this mapping is returned unchanged.
-    :param col_mapping: Mapping from column labels to new column labels. Any label
-      not present in this mapping is returned unchanged.
-    :return: New AnnData with entries as sums of appropriate rows and columns
-
-    >>> m = np.arange(1, 10).reshape((3, 3))
-    >>> m
-    array([[1, 2, 3],
-           [4, 5, 6],
-           [7, 8, 9]])
-    >>> row_labels = list('abc')
-    >>> col_labels = list('123')
-    >>> lm = build_anndata(X=m, rows=row_labels, cols=col_labels)
-    >>> row_mapping = {'a': 'b'}
-    >>> col_mapping = {'2': '3'}
-    >>> sm = collapse_matrix_rows_cols(lm, row_mapping, col_mapping)
-    >>> sm.X
-    array([[ 5., 16.],
-           [ 7., 17.]], dtype=float32)
-    >>> list(sm.obs.index)
-    ['b', 'c']
-    >>> list(sm.var.index)
-    ['1', '3']
-    """
-    if not (row_mapping or col_mapping):
-        return matrix
-
-    if row_mapping is None:
-        row_mapping = {}
-    if col_mapping is None:
-        col_mapping = {}
-
-    col_mat, new_col_labels = get_col_sum_matrix(matrix.var.index, col_mapping)
-    row_mat_t, new_row_labels = get_col_sum_matrix(matrix.obs.index, row_mapping)
-    row_mat = row_mat_t.T
-
-    new_data = row_mat @ matrix.X @ col_mat
-    return build_anndata(
-        X=new_data.astype(matrix.X.dtype),
-        rows=new_row_labels,
-        cols=new_col_labels,
-    )
-
-
-def collapse_intron_cols(d: AnnData) -> AnnData:
-    intron_mapping = {i: i.split("-")[0] for i in d.var.index}
-    new_matrix = collapse_matrix_rows_cols(d, col_mapping=intron_mapping)
-    return new_matrix
-
-
 def expand_anndata(
     d: AnnData,
     selected_cols: List[str],
@@ -226,17 +131,16 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
         mapped_intron_list,
     )
 
-    collapsed = collapse_intron_cols(d_sorted)
-    spliced = sparsify_if_appropriate(spliced_expanded.X)
-
     adata = AnnData(
-        X=spliced,
+        X=sparsify_if_appropriate(spliced_expanded.X),
         obs=spliced_expanded.obs,
         var=spliced_expanded.var,
         layers={
             AnnDataLayer.SPLICED: spliced,
             AnnDataLayer.UNSPLICED: sparsify_if_appropriate(unspliced_expanded.X),
-            AnnDataLayer.SPLICED_UNSPLICED_SUM: sparsify_if_appropriate(collapsed.X),
+            AnnDataLayer.SPLICED_UNSPLICED_SUM: sparsify_if_appropriate(
+                spliced_expanded.X + unspliced_expanded.X
+            ),
         },
     )
 
