@@ -131,8 +131,9 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
         mapped_intron_list,
     )
 
+    spliced = sparsify_if_appropriate(spliced_expanded.X)
     adata = AnnData(
-        X=sparsify_if_appropriate(spliced_expanded.X),
+        X=spliced,
         obs=spliced_expanded.obs,
         var=spliced_expanded.var,
         layers={
