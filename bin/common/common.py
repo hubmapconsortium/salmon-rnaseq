@@ -61,4 +61,4 @@ class Assay(Enum):
     CHROMIUM_V3 = "10x", "--chromiumV3", AnnDataLayer.SPLICED, False, False, False
     SNARESEQ = "snareseq", "--snareseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, False, True
     SCISEQ = "sciseq", "--sciseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, True, True
-    SLIDESEQ = "slideseq", "--slideseq", AnnDataLayer.SPLICED, True, False, False
+    SLIDESEQ = "slideseq", "--slideseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, False, False
