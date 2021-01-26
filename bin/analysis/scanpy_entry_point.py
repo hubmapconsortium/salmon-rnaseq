@@ -36,21 +36,18 @@ def main(assay: Assay, h5ad_file: Path):
     # add the total counts per cell as observations-annotation to adata
     adata.obs["n_counts"] = adata.X.sum(axis=1)
 
-    adata.raw = sc.pp.log1p(adata, copy=True)
-
-    sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e4)
-
-    filter_result = sc.pp.filter_genes_dispersion(adata.X, min_mean=0.0125, max_mean=5, min_disp=0)
+    sc.pp.normalize_total(adata, target_sum=1e4)
+    sc.pp.log1p(adata)
+    sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=5, min_disp=0)
 
     with new_plot():
-        sc.pl.filter_genes_dispersion(filter_result, show=False)
+        sc.pl.highly_variable_genes(adata, show=False)
         plt.savefig("dispersion_plot.pdf", bbox_inches="tight")
 
-    adata = adata[:, filter_result.gene_subset]
     sc.pp.scale(adata, max_value=10)
     sc.pp.pca(adata, n_comps=50)
     sc.pp.neighbors(adata, n_neighbors=50, n_pcs=50)
-    sc.tl.umap(adata)
+    sc.tl.umap(adata, min_dist=0.05)
     sc.tl.leiden(adata)
 
     with new_plot():
