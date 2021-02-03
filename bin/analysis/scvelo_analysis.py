@@ -36,6 +36,7 @@ def main(spliced_h5ad_file: Path):
 
     scv.tl.velocity(adata, mode="dynamical")
     scv.tl.velocity_graph(adata)
+    scv.tl.velocity_embedding(adata, basis="umap")
 
     output_file = Path("scvelo_annotated.h5ad")
     print("Saving output to", output_file)
