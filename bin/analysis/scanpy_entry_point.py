@@ -40,6 +40,8 @@ def main(assay: Assay, h5ad_file: Path):
     sc.pp.log1p(adata)
     sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=5, min_disp=0)
 
+    adata.layers["unscaled"] = adata.X.copy()
+
     with new_plot():
         sc.pl.highly_variable_genes(adata, show=False)
         plt.savefig("dispersion_plot.pdf", bbox_inches="tight")
