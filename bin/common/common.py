@@ -57,8 +57,59 @@ class Assay(Enum):
     def __str__(self):
         return self.value
 
-    CHROMIUM_V2 = "10x_v2", "--chromium", AnnDataLayer.SPLICED, False, False, False
-    CHROMIUM_V3 = "10x", "--chromiumV3", AnnDataLayer.SPLICED, False, False, False
-    SNARESEQ = "snareseq", "--snareseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, False, True
-    SCISEQ = "sciseq", "--sciseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, True, True
-    SLIDESEQ = "slideseq", "--slideseq", AnnDataLayer.SPLICED_UNSPLICED_SUM, True, False, False
+    CHROMIUM_V2 = (
+        "10x_v2",
+        "--chromium",
+        AnnDataLayer.SPLICED,
+        False,
+        False,
+        False,
+    )
+    CHROMIUM_V3 = (
+        "10x_v3",
+        "--chromiumV3",
+        AnnDataLayer.SPLICED,
+        False,
+        False,
+        False,
+    )
+    CHROMIUM_V2_SN = (
+        "10x_v2_sn",
+        "--chromium",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        False,
+        False,
+        False,
+    )
+    CHROMIUM_V3_SN = (
+        "10x_v3_sn",
+        "--chromiumV3",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        False,
+        False,
+        False,
+    )
+    SNARESEQ = (
+        "snareseq",
+        "--snareseq",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        True,
+        False,
+        True,
+    )
+    SCISEQ = (
+        "sciseq",
+        "--sciseq",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        True,
+        True,
+        True,
+    )
+    SLIDESEQ = (
+        "slideseq",
+        "--slideseq",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        True,
+        False,
+        False,
+    )
