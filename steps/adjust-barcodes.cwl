@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Assay-specific adjustment of cell barcodes
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scrna-barcode-adj:2.0.5
+    dockerPull: hubmap/scrna-barcode-adj:latest
 baseCommand: /opt/adjust_barcodes.py
 
 inputs:

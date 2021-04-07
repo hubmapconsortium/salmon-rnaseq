@@ -4,7 +4,7 @@ from itertools import chain
 from os import environ, fspath
 from pathlib import Path
 from subprocess import check_call
-from typing import Iterable, Sequence, Tuple
+from typing import Iterable, Optional, Sequence, Tuple
 
 from fastq_utils import find_grouped_fastq_files
 
@@ -31,6 +31,35 @@ SALMON_COMMAND = [
     "-p",
     "{threads}",
 ]
+
+
+def read_expected_cell_count(directories: Sequence[Path]) -> Optional[int]:
+    cell_count_filename = "extras/expected_cell_count.txt"
+
+    cell_counts = []
+    for directory in directories:
+        cell_count_file = directory / cell_count_filename
+        if cell_count_file.is_file():
+            with open(cell_count_file) as f:
+                cell_count = int(f.read().strip())
+                print(f"Read expected cell count from {cell_count_file}: {cell_count}")
+                cell_counts.append(cell_count)
+
+    dirs_with_cell_counts = len(cell_counts)
+    if dirs_with_cell_counts == 0:
+        return None
+    elif dirs_with_cell_counts == len(directories):
+        total_expected = sum(cell_counts)
+        print("Total expected cells:", total_expected)
+        return total_expected
+    else:
+        message = (
+            f"Found expected cell counts in {dirs_with_cell_counts} of "
+            f"{len(directories)} directories, need 0 or {len(directories)} "
+            f"input directories with cell counts (can't mix auto-detection "
+            f"and guided cell barcode counting)"
+        )
+        raise ValueError(message)
 
 
 def find_adj_fastq_files(directory: Path) -> Tuple[Path, Path]:
@@ -96,6 +125,10 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, thr
             raise ValueError("Need exactly 1 input directory for Slide-seq")
         barcode_file = find_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
+
+    maybe_cell_count = read_expected_cell_count(orig_fastq_dirs)
+    if maybe_cell_count is not None:
+        command.extend(["--expectCells", str(maybe_cell_count)])
 
     for r1_fastq_file, r2_fastq_file in fastq_pairs:
         fastq_extension = [
