@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: Assay-specific annotation of cell barcodes after quantification
-hints:
+requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/annotate_cells.py

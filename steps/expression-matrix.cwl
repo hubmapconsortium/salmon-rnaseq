@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 
-hints:
+requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-analysis:latest
 

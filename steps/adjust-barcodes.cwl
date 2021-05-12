@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: Assay-specific adjustment of cell barcodes
-hints:
+requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-barcode-adj:latest
 baseCommand: /opt/adjust_barcodes.py

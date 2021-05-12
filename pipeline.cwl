@@ -107,12 +107,24 @@ steps:
         source: assay
     out: [adj_fastq_dir, metadata_json]
     run: steps/adjust-barcodes.cwl
-  salmon:
+  trim_reads:
     in:
       orig_fastq_dirs:
         source: fastq_dir
       adj_fastq_dir:
         source: adjust_barcodes/adj_fastq_dir
+      assay:
+        source: assay
+      threads:
+        source: threads
+    out: [trimmed_fastq_dir]
+    run: steps/trim-reads.cwl
+  salmon:
+    in:
+      orig_fastq_dirs:
+        source: fastq_dir
+      trimmed_fastq_dir:
+        source: trim_reads/trimmed_fastq_dir
       assay:
         source: assay
       threads:

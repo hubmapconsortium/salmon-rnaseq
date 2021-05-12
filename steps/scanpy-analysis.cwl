@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: Dimensionality reduction and clustering
-hints:
+requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scanpy_entry_point.py

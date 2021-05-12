@@ -94,7 +94,7 @@ def find_slideseq_barcode_file(base_dir: Path) -> Path:
     return barcode_files[0]
 
 
-def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, threads: int):
+def main(assay: Assay, orig_fastq_dirs: Sequence[Path], trimmed_fastq_dir: Path, threads: int):
     command = [
         piece.format(
             salmon_option=assay.salmon_option,
@@ -103,16 +103,7 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, thr
         for piece in SALMON_COMMAND
     ]
 
-    fastq_pairs: Iterable[Sequence[Path]]
-    if assay.barcode_adj_performed:
-        if assay.barcode_adj_r1_r2:
-            fastq_pairs = find_grouped_fastq_files(adj_fastq_dir, 2)
-        else:
-            fastq_pairs = [find_adj_fastq_files(adj_fastq_dir)]
-    else:
-        fastq_pairs = chain.from_iterable(
-            find_grouped_fastq_files(fastq_dir, 2) for fastq_dir in orig_fastq_dirs
-        )
+    fastq_pairs = find_grouped_fastq_files(trimmed_fastq_dir, 2)
 
     if assay.keep_all_barcodes:
         command.extend(["--keepCBFraction", "1"])
@@ -128,7 +119,7 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, thr
 
     maybe_cell_count = read_expected_cell_count(orig_fastq_dirs)
     if maybe_cell_count is not None:
-        command.extend(["--expectCells", str(maybe_cell_count)])
+        command.extend(["--forceCells", str(maybe_cell_count)])
 
     for r1_fastq_file, r2_fastq_file in fastq_pairs:
         fastq_extension = [
@@ -150,9 +141,9 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, thr
 if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
-    p.add_argument("adj_fastq_dir", type=Path)
+    p.add_argument("trimmed_fastq_dir", type=Path)
     p.add_argument("orig_fastq_dir", type=Path, nargs="+")
     p.add_argument("-p", "--threads", type=int)
     args = p.parse_args()
 
-    main(args.assay, args.orig_fastq_dir, args.adj_fastq_dir, args.threads)
+    main(args.assay, args.orig_fastq_dir, args.trimmed_fastq_dir, args.threads)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple, Union
@@ -8,8 +9,11 @@ import pandas as pd
 import scipy.io
 import scipy.sparse
 from anndata import AnnData
+from fastq_utils import smart_open
 
 from common import AnnDataLayer
+
+DEFAULT_HUGO_ENSEMBL_MAPPING_PATH = Path("/opt/data/ensembl_hugo_mapping.json.gz")
 
 # As per https://gist.github.com/flying-sheep/f46e89b388fed736ff0b68fb8fd83af6
 # the break-even point for density seems to be around 0.6 to 0.7 for large enough
@@ -32,6 +36,27 @@ def sparsify_if_appropriate(
         return mat.todense()
     else:
         return mat
+
+
+class EnsemblHugoMapper:
+    mapping: Dict[str, str]
+
+    def __init__(self):
+        self.mapping = {}
+
+    @classmethod
+    def populate(cls, path: Path):
+        self = cls()
+        with smart_open(path) as f:
+            self.mapping.update(json.load(f))
+        return self
+
+    def annotate(self, data: AnnData):
+        symbols = [self.mapping.get(e) for e in data.var.index]
+        data.var.loc[
+            :,
+            "hugo_symbol",
+        ] = symbols
 
 
 def build_anndata(X, rows: Sequence[str], cols: Sequence[str], **kwargs) -> AnnData:
@@ -148,7 +173,7 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
     return adata
 
 
-def convert(input_dir: Path) -> Tuple[AnnData, AnnData]:
+def convert(input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, AnnData]:
     """
     :return: 2-tuple:
      [0] full count matrix, with columns for spliced and unspliced regions
@@ -173,15 +198,24 @@ def convert(input_dir: Path) -> Tuple[AnnData, AnnData]:
     )
     spliced_anndata = add_split_spliced_unspliced(raw_labeled)
 
+    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path)
+    ensembl_hugo_mapper.annotate(raw_labeled)
+    ensembl_hugo_mapper.annotate(spliced_anndata)
+
     return raw_labeled, spliced_anndata
 
 
 if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("alevin_output_dir", type=Path)
+    p.add_argument(
+        "--ensembl_hugo_mapping_path",
+        type=Path,
+        default=DEFAULT_HUGO_ENSEMBL_MAPPING_PATH,
+    )
     args = p.parse_args()
 
-    raw, spliced = convert(args.alevin_output_dir)
+    raw, spliced = convert(args.alevin_output_dir, args.ensembl_hugo_mapping_path)
     raw.write_h5ad("raw_expr.h5ad")
     spliced.write_h5ad("expr.h5ad")
     spliced.write_zarr("expr.zarr")
