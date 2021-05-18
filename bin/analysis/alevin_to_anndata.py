@@ -13,7 +13,7 @@ from fastq_utils import smart_open
 
 from common import AnnDataLayer
 
-DEFAULT_HUGO_ENSEMBL_MAPPING_PATH = Path("/opt/data/ensembl_hugo_mapping.json.gz")
+DEFAULT_HUGO_ENSEMBL_MAPPING_PATH = Path("/opt/data/ensembl_hugo_mapping.json.xz")
 
 # As per https://gist.github.com/flying-sheep/f46e89b388fed736ff0b68fb8fd83af6
 # the break-even point for density seems to be around 0.6 to 0.7 for large enough
