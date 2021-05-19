@@ -52,7 +52,7 @@ def trim_reads(fastq_r1: Path, fastq_r2: Path, output_subdir: Path):
 
     command = [piece.format(input_fastq=fastq_r2) for piece in TRIM_COMMAND]
     fastq_r2_out = output_subdir / fastq_r2.name
-    command_str = '"{}"'.format(" ".join(quote(s) for s in command))
+    command_str = " ".join(quote(s) for s in command)
     print("Running", command_str, "with output", quote(fspath(fastq_r2_out)))
     with open(fastq_r2_out, "wb") as f:
         check_call(command, stdout=f)
