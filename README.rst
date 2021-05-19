@@ -27,6 +27,12 @@ repository, check out a tag, and invoke the pipeline as::
 (The ``master`` branch and ``latest`` Docker images may not always be in sync;
 checking out a version like ``v2.0`` is *highly* recommended.)
 
-Supported assays are ``10x`` for 10X Genomics Chromium v3, ``snareseq``,
-``sciseq``, and ``slideseq``. See ``cwltool pipeline.cwl --help`` for
-additional options.
+Supported assays:
+
+* ``10x_v2`` (single-cell)
+* ``10x_v2_sn`` (single-nucleus)
+* ``10x_v3`` (single-cell)
+* ``10x_v3_sn`` (single-nucleus)
+* ``snareseq``
+* ``sciseq``
+* ``slideseq``
