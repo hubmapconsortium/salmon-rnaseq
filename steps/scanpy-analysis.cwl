@@ -40,10 +40,6 @@ outputs:
     type: File
     outputBinding:
       glob: umap_embedding_density.pdf
-  qc_results:
-    type: File
-    outputBinding:
-      glob: qc_results.hdf5
   marker_gene_plot_t_test:
     type: File
     outputBinding:

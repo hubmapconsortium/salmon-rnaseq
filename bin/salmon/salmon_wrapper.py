@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
-from itertools import chain
 from os import environ, fspath
 from pathlib import Path
 from subprocess import check_call
-from typing import Iterable, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 from fastq_utils import find_grouped_fastq_files
 

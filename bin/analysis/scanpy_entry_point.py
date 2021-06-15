@@ -4,22 +4,10 @@ from pathlib import Path
 
 import anndata
 import matplotlib.pyplot as plt
-import pandas as pd
 import scanpy as sc
 
 from common import Assay
 from plot_utils import new_plot
-
-
-def qc_checks(adata: anndata.AnnData):
-    qc_by_cell, qc_by_gene = sc.pp.calculate_qc_metrics(adata)
-
-    # current directory is set up by the CWL runner
-    qc_path = Path("qc_results.hdf5").absolute()
-    print("Saving QC results to", qc_path)
-    with pd.HDFStore(qc_path) as store:
-        store["qc_by_cell"] = qc_by_cell
-        store["qc_by_gene"] = qc_by_gene
 
 
 def main(assay: Assay, h5ad_file: Path):
@@ -27,8 +15,6 @@ def main(assay: Assay, h5ad_file: Path):
     if assay.secondary_analysis_layer in adata.layers:
         adata.X = adata.layers[assay.secondary_analysis_layer]
     adata.var_names_make_unique()
-
-    qc_checks(adata)
 
     sc.pp.filter_cells(adata, min_genes=200)
     sc.pp.filter_genes(adata, min_cells=3)
