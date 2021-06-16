@@ -2,9 +2,9 @@ cwlVersion: v1.0
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch38:latest
-baseCommand: /opt/salmon_wrapper.py
-label: Run Salmon Alevin tool on FASTQ input
+    dockerPull: hubmap/scrna-trim-reads:latest
+baseCommand: /opt/trim_reads.py
+label: Trim FASTQ files
 
 # arguments are hardcoded in salmon_wrapper.py
 
@@ -13,7 +13,7 @@ inputs:
     type: string
     inputBinding:
       position: 0
-  trimmed_fastq_dir:
+  adj_fastq_dir:
     type: Directory
     inputBinding:
       position: 1
@@ -28,7 +28,7 @@ inputs:
       prefix: "--threads"
 
 outputs:
-  output_dir:
+  trimmed_fastq_dir:
     type: Directory
     outputBinding:
-      glob: salmon_out
+      glob: trimmed

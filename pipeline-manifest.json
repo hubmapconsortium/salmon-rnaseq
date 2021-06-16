@@ -21,8 +21,14 @@
 	},
 	{
 		"pattern": "qc_results\\.hdf5",
-		"description": "Quality control results, per-cell and per-gene, in HDF5 format",
+		"description": "Quality control results from Scanpy, per-cell and per-gene, in HDF5 format",
 		"edam_ontology_term": "EDAM_1.24.format_3590",
+		"is_qa_qc": true
+	},
+	{
+		"pattern": "qc_results\\.json",
+		"description": "Quality control report in JSON format",
+		"edam_ontology_term": "EDAM_1.24.format_3464",
 		"is_qa_qc": true
 	},
 	{

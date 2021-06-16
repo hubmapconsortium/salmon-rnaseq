@@ -1,35 +1,34 @@
 cwlVersion: v1.0
 class: CommandLineTool
-label: Assay-specific annotation of cell barcodes after quantification
+label: Compute QC metrics
 requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-analysis:latest
-baseCommand: /opt/annotate_cells.py
+baseCommand: /opt/compute_qc_metrics.py
 
 inputs:
   assay:
     type: string
     inputBinding:
       position: 0
-  h5ad_file:
+  h5ad_primary:
     type: File
     inputBinding:
       position: 1
-  orig_fastq_dirs:
-    type: Directory[]
+  h5ad_secondary:
+    type: File
     inputBinding:
       position: 2
-  metadata_json:
-    type: File?
+  salmon_dir:
+    type: Directory
     inputBinding:
       position: 3
-      prefix: '--metadata_json'
 outputs:
-  annotated_h5ad_file:
+  scanpy_qc_results:
     type: File
     outputBinding:
-      glob: 'expr.h5ad'
-  annotated_zarr_dir:
-    type: Directory
+      glob: qc_results.hdf5
+  qc_metrics:
+    type: File
     outputBinding:
-      glob: 'expr.zarr'
+      glob: qc_results.json

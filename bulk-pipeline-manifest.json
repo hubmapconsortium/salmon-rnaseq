@@ -1,0 +1,50 @@
+[
+	{
+		"pattern": "fastqc_output/.*\\.html",
+		"description": "FastQC report of input FASTQ file",
+		"edam_ontology_term": "EDAM_1.24.format_2331",
+		"is_qa_qc": true
+	},
+	{
+		"pattern": "expression_matrices\\.h5",
+		"description": "A hdf5 file containing transcript by sample matrices of TPM and number of reads",
+		"edam_ontology_term": "EDAM_1.24.format_3590",
+		"is_qa_qc": false
+	},
+	{
+		"pattern": "out/lib_format_counts\\.json",
+		"description": "JSON file reporting number of fragments with at least one compatible mapping, as well as the number that didn't",
+		"edam_ontology_term": "EDAM_1.24.format_3464",
+		"is_qa_qc": true
+	},
+	{
+		"pattern": "out/.*quant\\.sf",
+		"description": "TSV file reporting name, length, effective length, TPM, and numReads for each transcript",
+		"edam_ontology_term": "EDAM_1.24.format_3475",
+		"is_qa_qc": false
+	},
+	{
+		"pattern": "out/.*cmd_info\\.json",
+		"description": "JSON file recording main command line parameters used by salmon to produce these data",
+		"edam_ontology_term": "EDAM_1.24.format_3464",
+		"is_qa_qc": false
+	},
+	{
+		"pattern": "out/aux_info/ambig_info\\.tsv",
+		"description": "TSV file reporting numbers of uniquely mapped and ambiguous reads for each transcript",
+		"edam_ontology_term": "EDAM_1.24.format_3475",
+		"is_qa_qc": true
+	},
+	{
+		"pattern": "out/aux_info/fld\\.gz",
+		"description": "Gzipped binary file containing approximation of observed fragment length distributions",
+		"edam_ontology_term": "EDAM_1.25.format_3989",
+		"is_qa_qc": false
+	},
+	{
+		"pattern": "out/aux_info/meta_info\\.json",
+		"description": "JSON file with statistics about the run, e.g. number of fragments observed/mapped",
+		"edam_ontology_term": "EDAM_1.24.format_3464",
+		"is_qa_qc": false
+	}
+]

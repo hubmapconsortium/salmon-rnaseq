@@ -1,9 +1,9 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: Runs fastQC on each fastq file in fastq directory
-hints:
+requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.0.6
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/fastqc_wrapper.py
 
 inputs:

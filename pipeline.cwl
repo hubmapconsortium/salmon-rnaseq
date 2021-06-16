@@ -38,10 +38,14 @@ outputs:
     outputSource: fastqc/fastqc_dir
     type: Directory[]
     label: "Directory of FastQC output files, mirroring input directory structure"
-  qc_results:
-    outputSource: scanpy_analysis/qc_results
+  scanpy_qc_results:
+    outputSource: compute_qc_results/scanpy_qc_results
     type: File
-    label: "Quality control metrics"
+    label: "Quality control metrics from Scanpy"
+  qc_report:
+    outputSource: compute_qc_results/qc_metrics
+    type: File
+    label: "Quality control report in JSON format"
   dispersion_plot:
     outputSource: scanpy_analysis/dispersion_plot
     type: File
@@ -107,12 +111,24 @@ steps:
         source: assay
     out: [adj_fastq_dir, metadata_json]
     run: steps/adjust-barcodes.cwl
-  salmon:
+  trim_reads:
     in:
       orig_fastq_dirs:
         source: fastq_dir
       adj_fastq_dir:
         source: adjust_barcodes/adj_fastq_dir
+      assay:
+        source: assay
+      threads:
+        source: threads
+    out: [trimmed_fastq_dir]
+    run: steps/trim-reads.cwl
+  salmon:
+    in:
+      orig_fastq_dirs:
+        source: fastq_dir
+      trimmed_fastq_dir:
+        source: trim_reads/trimmed_fastq_dir
       assay:
         source: assay
       threads:
@@ -163,7 +179,6 @@ steps:
       h5ad_file:
         source: annotate_cells/annotated_h5ad_file
     out:
-      - qc_results
       - filtered_data_h5ad
       - filtered_data_zarr
       - umap_plot
@@ -185,3 +200,18 @@ steps:
       - embedding_stream_plot
     run: steps/scvelo-analysis.cwl
     label: "RNA velocity analysis via scVelo"
+  compute_qc_results:
+    in:
+      assay:
+        source: assay
+      h5ad_primary:
+        source: annotate_cells/annotated_h5ad_file
+      h5ad_secondary:
+        source: scanpy_analysis/filtered_data_h5ad
+      salmon_dir:
+        source: salmon/output_dir
+    out:
+      - scanpy_qc_results
+      - qc_metrics
+    run: steps/compute-qc-metrics.cwl
+    label: "Compute QC metrics"

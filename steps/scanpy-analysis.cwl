@@ -1,9 +1,9 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: Dimensionality reduction and clustering
-hints:
+requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.0.6
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scanpy_entry_point.py
 
 inputs:
@@ -40,10 +40,6 @@ outputs:
     type: File
     outputBinding:
       glob: umap_embedding_density.pdf
-  qc_results:
-    type: File
-    outputBinding:
-      glob: qc_results.hdf5
   marker_gene_plot_t_test:
     type: File
     outputBinding:
