@@ -2,7 +2,7 @@ FROM mruffalo/salmon-custom:1.3.0-hbm1-2-g629aba2931c3
 
 WORKDIR /opt
 
-RUN curl https://giygas.compbio.cs.cmu.edu/salmon/gencode-v35-salmon-index.tar | tar -xf -
+RUN curl https://assets.cmu.hubmapconsortium.org/salmon/gencode-v35-salmon-index.tar | tar -xf -
 
 RUN apt-get update \
  && apt-get -y install \
