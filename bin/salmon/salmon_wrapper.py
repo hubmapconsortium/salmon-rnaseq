@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from os import environ, fspath
 from pathlib import Path
 from subprocess import check_call
-from typing import Optional, Sequence, Tuple
+from typing import Iterable, Optional, Sequence, Tuple
 
 from fastq_utils import find_grouped_fastq_files
 
@@ -61,23 +61,19 @@ def read_expected_cell_count(directories: Sequence[Path]) -> Optional[int]:
         raise ValueError(message)
 
 
-def find_adj_fastq_files(directory: Path) -> Tuple[Path, Path]:
+def find_adj_fastq_files(directory: Path) -> Iterable[Tuple[Path, Path]]:
     # not general enough to implement in fastq-utils; very specific
     # to how we create "synthetic" barcode + UMI FASTQ files
-    barcode_umi_fastq = directory / BARCODE_UMI_FASTQ_PATH
+    for subdir in directory.iterdir():
+        barcode_umi_fastq = subdir / BARCODE_UMI_FASTQ_PATH
 
-    transcript_fastq = directory / TRANSCRIPT_FASTQ_PATH
-    transcript_fastq_gz = directory / TRANSCRIPT_FASTQ_GZ_PATH
+        transcript_fastq = subdir / TRANSCRIPT_FASTQ_PATH
+        transcript_fastq_gz = subdir / TRANSCRIPT_FASTQ_GZ_PATH
 
-    if transcript_fastq.is_file():
-        return barcode_umi_fastq, transcript_fastq
-    elif transcript_fastq_gz.is_file():
-        return barcode_umi_fastq, transcript_fastq_gz
-    else:
-        message = (
-            f"Couldn't find {TRANSCRIPT_FASTQ_PATH} or {TRANSCRIPT_FASTQ_GZ_PATH} in {directory}"
-        )
-        raise ValueError(message)
+        if transcript_fastq.is_file():
+            yield barcode_umi_fastq, transcript_fastq
+        elif transcript_fastq_gz.is_file():
+            yield barcode_umi_fastq, transcript_fastq_gz
 
 
 def find_slideseq_barcode_file(base_dir: Path) -> Path:
@@ -102,7 +98,17 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], trimmed_fastq_dir: Path,
         for piece in SALMON_COMMAND
     ]
 
-    fastq_pairs = find_grouped_fastq_files(trimmed_fastq_dir, 2)
+    fastq_pairs: Iterable[Sequence[Path]]
+    if assay.barcode_adj_performed:
+        if assay.barcode_adj_r1_r2:
+            fastq_pairs = list(find_grouped_fastq_files(trimmed_fastq_dir, 2))
+        else:
+            fastq_pairs = list(find_adj_fastq_files(trimmed_fastq_dir))
+    else:
+        fastq_pairs = list(find_grouped_fastq_files(trimmed_fastq_dir, 2))
+
+    if not fastq_pairs:
+        raise ValueError("No FASTQ files found")
 
     if assay.keep_all_barcodes:
         command.extend(["--keepCBFraction", "1"])
