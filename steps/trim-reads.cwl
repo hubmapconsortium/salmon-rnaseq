@@ -2,7 +2,7 @@ cwlVersion: v1.0
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-trim-reads:2.0.7
+    dockerPull: hubmap/scrna-trim-reads:latest
 baseCommand: /opt/trim_reads.py
 label: Trim FASTQ files
 
