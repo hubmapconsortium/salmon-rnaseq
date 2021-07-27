@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+import csv
 import json
 import re
+from copy import deepcopy
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Tuple
 
 from fastq_utils import Read, fastq_reader, smart_open
 
@@ -55,7 +57,7 @@ def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename
             id_pieces = transcript_read.read_id.lstrip("@").split("|")
             p7 = mapper.p7_mapping[id_pieces[2]]
             p5 = mapper.p5_mapping[id_pieces[3]]
-            rt2 = mapper.rt2_mapping[id_pieces[4]]
+            rt2 = mapper.rt2_mapping[id_pieces[4].split("_")[0]]
             umi = id_pieces[5]
 
             barcode_umi = p7 + p5 + rt2 + umi
@@ -68,20 +70,40 @@ def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename
             print(barcode_umi_read.serialize(), file=f)
 
 
+def read_barcode_file(barcode_file: Path) -> Dict[str, str]:
+    mapping = {}
+    with open(barcode_file, newline="") as f:
+        r = csv.DictReader(f)
+        for row in r:
+            mapping[row["RT.Barcode"]] = row["Index.Sequence"]
+    return mapping
+
+
 def main(directories: Iterable[Path], output_dir):
     mapper = BarcodeMapper()
     experiment_ids = set()
+    extra_barcode_mapping = {}
     for directory in directories:
+        mapper_copy = deepcopy(mapper)
+        for barcode_file in directory.glob("**/*_barcodes.csv"):
+            experiment_barcodes = read_barcode_file(barcode_file)
+            extra_barcode_mapping.update(experiment_barcodes)
+            mapper_copy.rt2_mapping.update(experiment_barcodes)
+
         for child in directory.iterdir():
             # no walrus operator; PyPy3 is at 3.6 as of writing this
             m = FASTQ_INPUT_PATTERN.match(child.name)
             if m:
                 basename = m.group("basename")
-                convert(mapper, child, output_dir, basename)
+                convert(mapper_copy, child, output_dir, basename)
                 experiment_ids.add(basename.split("-")[0])
 
     # TODO: relax this
     assert len(experiment_ids) == 1
     experiment_id = next(iter(experiment_ids))
     with open(METADATA_JSON_PATH, "w") as f:
-        json.dump({"experiment_id": experiment_id}, f)
+        metadata = {
+            "experiment_id": experiment_id,
+            "extra_barcodes": extra_barcode_mapping,
+        }
+        json.dump(metadata, f)

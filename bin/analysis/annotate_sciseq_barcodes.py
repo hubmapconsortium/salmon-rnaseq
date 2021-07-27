@@ -2,7 +2,7 @@
 import json
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import anndata
 import pandas as pd
@@ -30,10 +30,13 @@ class CellIdMapper:
                 mapping[pieces[1]] = pieces[0]
         return mapping
 
-    def __init__(self):
+    def __init__(self, extra_barcodes: Optional[Dict[str, str]]):
         labels = ["p5", "p7", "rt", "rt2"]
         for label in labels:
             setattr(self, f"{label}_mapping", self.read_barcode_mapping(f"{label}.txt"))
+
+        if extra_barcodes is not None:
+            self.rt2_mapping.update(extra_barcodes)
 
 
 def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str) -> anndata.AnnData:
@@ -56,9 +59,15 @@ def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str) ->
 def main(h5ad_file: Path, metadata_json_file: Path):
     data = anndata.read_h5ad(h5ad_file)
     with open(metadata_json_file) as f:
-        experiment_id = json.load(f)["experiment_id"]
+        metadata = json.load(f)
 
-    mapper = CellIdMapper()
+    experiment_id = metadata["experiment_id"]
+
+    extra_barcodes = None
+    if "extra_barcodes" in metadata:
+        extra_barcodes = {value: key for key, value in metadata["extra_barcodes"].items()}
+
+    mapper = CellIdMapper(extra_barcodes)
     return annotate(mapper, data, experiment_id)
 
 
