@@ -89,7 +89,14 @@ def find_slideseq_barcode_file(base_dir: Path) -> Path:
     return barcode_files[0]
 
 
-def main(assay: Assay, orig_fastq_dirs: Sequence[Path], trimmed_fastq_dir: Path, threads: int):
+def main(
+    assay: Assay,
+    orig_fastq_dirs: Sequence[Path],
+    trimmed_fastq_dir: Path,
+    expected_cell_count: Optional[int],
+    threads: Optional[int],
+):
+    threads = threads or 1
     command = [
         piece.format(
             salmon_option=assay.salmon_option,
@@ -122,7 +129,7 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], trimmed_fastq_dir: Path,
         barcode_file = find_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
 
-    maybe_cell_count = read_expected_cell_count(orig_fastq_dirs)
+    maybe_cell_count = read_expected_cell_count(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:
         command.extend(["--forceCells", str(maybe_cell_count)])
 
@@ -148,7 +155,14 @@ if __name__ == "__main__":
     p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("trimmed_fastq_dir", type=Path)
     p.add_argument("orig_fastq_dir", type=Path, nargs="+")
+    p.add_argument("--expected-cell-count", type=int)
     p.add_argument("-p", "--threads", type=int)
     args = p.parse_args()
 
-    main(args.assay, args.orig_fastq_dir, args.trimmed_fastq_dir, args.threads)
+    main(
+        args.assay,
+        args.orig_fastq_dir,
+        args.trimmed_fastq_dir,
+        args.expected_cell_count,
+        args.threads,
+    )

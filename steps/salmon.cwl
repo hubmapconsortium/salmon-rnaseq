@@ -26,6 +26,11 @@ inputs:
     inputBinding:
       position: 3
       prefix: "--threads"
+  expected_cell_count:
+    type: int?
+    inputBinding:
+      position: 4
+      prefix: "--expected-cell-count"
 
 outputs:
   output_dir:

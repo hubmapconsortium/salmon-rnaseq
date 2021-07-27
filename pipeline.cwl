@@ -17,6 +17,8 @@ inputs:
     label: "Number of threads for Salmon"
     type: int
     default: 1
+  expected_cell_count:
+    type: int?
 outputs:
   salmon_output:
     outputSource: salmon/output_dir
@@ -133,6 +135,8 @@ steps:
         source: assay
       threads:
         source: threads
+      expected_cell_count:
+        source: expected_cell_count
     out:
       - output_dir
     run: steps/salmon.cwl
