@@ -5,9 +5,17 @@ from pathlib import Path
 import anndata
 import pandas as pd
 
+barcode_matching_dir = "barcode_matching"
 
-def read_bead_pos(fastq_dir: Path) -> pd.DataFrame:
-    barcode_dir = fastq_dir / "barcode_matching"
+
+def read_bead_pos(dataset_dir: Path) -> pd.DataFrame:
+    barcode_matching_dirs = list(dataset_dir.glob(f"**/{barcode_matching_dir}"))
+    if l := len(barcode_matching_dirs) != 1:
+        message_pieces = [f"Need exactly 1 {barcode_matching_dir} directory, found {l}"]
+        message_pieces.extend(f"\t{d}" for d in barcode_matching_dirs)
+        raise ValueError("\n".join(message_pieces))
+
+    barcode_dir = barcode_matching_dirs[0]
     all_pos_raw = pd.read_csv(
         barcode_dir / "BeadLocations.txt",
         index_col=None,
@@ -21,9 +29,9 @@ def read_bead_pos(fastq_dir: Path) -> pd.DataFrame:
     return all_pos
 
 
-def annotate(h5ad_path: Path, raw_fastq_dir: Path) -> anndata.AnnData:
+def annotate(h5ad_path: Path, dataset_dir: Path) -> anndata.AnnData:
     d = anndata.read_h5ad(h5ad_path)
-    barcode_pos = read_bead_pos(raw_fastq_dir)
+    barcode_pos = read_bead_pos(dataset_dir)
 
     quant_bc_set = set(d.obs.index)
     pos_bc_set = set(barcode_pos.index)
