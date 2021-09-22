@@ -2,7 +2,7 @@ FROM mruffalo/salmon-custom:1.3.0-hbm1-3-g3d19f90fc5b8
 
 WORKDIR /opt
 
-RUN curl https://assets.cmu.hubmapconsortium.org/salmon/gencode-v35-salmon-index.tar | tar -xf -
+RUN curl https://s3.amazonaws.com/hubmap-pipeline-assets/salmon/gencode-v35-salmon-index.tar | tar -xf -
 
 RUN apt-get update \
  && apt-get -y install \
