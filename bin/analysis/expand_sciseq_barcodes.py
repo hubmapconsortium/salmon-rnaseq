@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+Expands a single sciRNA-seq FASTQ file into two: one containing
+the original transcript and one with barcode/UMI nucleotide sequences
+constructed from the mappings in this repository, for use as input
+to Salmon.
+"""
 import csv
 import json
 import re
@@ -29,6 +35,7 @@ class BarcodeMapper:
     p7_mapping: Dict[str, str]
     rt_mapping: Dict[str, str]
     rt2_mapping: Dict[str, str]
+    ligation_mapping: Dict[str, str]
 
     @classmethod
     def read_barcode_mapping(cls, filename) -> Dict[str, str]:
@@ -40,7 +47,7 @@ class BarcodeMapper:
         return mapping
 
     def __init__(self):
-        labels = ["p5", "p7", "rt", "rt2"]
+        labels = ["p5", "p7", "rt", "rt2", "ligation"]
         for label in labels:
             setattr(self, f"{label}_mapping", self.read_barcode_mapping(f"{label}.txt"))
 
@@ -57,10 +64,12 @@ def convert(mapper: BarcodeMapper, input_fastq: Path, output_dir: Path, basename
             id_pieces = transcript_read.read_id.lstrip("@").split("|")
             p7 = mapper.p7_mapping[id_pieces[2]]
             p5 = mapper.p5_mapping[id_pieces[3]]
-            rt2 = mapper.rt2_mapping[id_pieces[4].split("_")[0]]
+            rt2_id, lig_id = id_pieces[4].split("_")
+            rt2 = mapper.rt2_mapping[rt2_id]
+            lig = mapper.ligation_mapping[lig_id]
             umi = id_pieces[5]
 
-            barcode_umi = p7 + p5 + rt2 + umi
+            barcode_umi = umi + p7 + p5 + rt2 + lig
             barcode_umi_read = Read(
                 read_id=transcript_read.read_id,
                 seq=barcode_umi,

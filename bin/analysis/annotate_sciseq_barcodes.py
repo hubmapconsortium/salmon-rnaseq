@@ -10,9 +10,8 @@ import pandas as pd
 BARCODE_DATA_DIR = here = Path(__file__).parent / "data/sciseq"
 
 BARCODE_LENGTH = 10
-BARCODE_STARTS = [0, 10, 20]
+BARCODE_STARTS = [0, 10, 20, 30]
 BARCODE_SEGMENTS = [slice(start, start + BARCODE_LENGTH) for start in BARCODE_STARTS]
-UMI_SEGMENT = slice(0, 8)
 
 
 class CellIdMapper:
@@ -20,6 +19,7 @@ class CellIdMapper:
     p7_mapping: Dict[str, str]
     rt_mapping: Dict[str, str]
     rt2_mapping: Dict[str, str]
+    ligation_mapping: Dict[str, str]
 
     @classmethod
     def read_barcode_mapping(cls, filename) -> Dict[str, str]:
@@ -31,8 +31,7 @@ class CellIdMapper:
         return mapping
 
     def __init__(self, extra_barcodes: Optional[Dict[str, str]]):
-        labels = ["p5", "p7", "rt", "rt2"]
-        for label in labels:
+        for label in ["p5", "p7", "rt", "rt2", "ligation"]:
             setattr(self, f"{label}_mapping", self.read_barcode_mapping(f"{label}.txt"))
 
         if extra_barcodes is not None:
@@ -47,8 +46,9 @@ def annotate(mapper: CellIdMapper, data: anndata.AnnData, experiment_id: str) ->
         p7 = mapper.p7_mapping[barcode_pieces[0]]
         p5 = mapper.p5_mapping[barcode_pieces[1]]
         rt2 = mapper.rt2_mapping[barcode_pieces[2]]
+        lig = mapper.ligation_mapping[barcode_pieces[3]]
 
-        cell_id = f"{p7}_{p5}_{rt2}_{experiment_id}"
+        cell_id = f"{p7}_{p5}_{rt2}_{lig}_{experiment_id}"
         cell_ids.append(cell_id)
 
     data.obs.loc[:, "cell_id"] = pd.Series(cell_ids, index=data.obs.index)
