@@ -3,7 +3,7 @@ class: CommandLineTool
 
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:latest
+    dockerPull: hubmap/scrna-analysis:2.1.2
 
 baseCommand: /opt/make_expression_matrix.py
 label: Takes gene expression vectors from several bulk RNA samples and makes them into a gene by sample matrix
