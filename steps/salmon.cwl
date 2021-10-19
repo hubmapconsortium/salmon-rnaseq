@@ -2,7 +2,7 @@ cwlVersion: v1.0
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch38:2.1.1
+    dockerPull: hubmap/salmon-grch38:latest
 baseCommand: /opt/salmon_wrapper.py
 label: Run Salmon Alevin tool on FASTQ input
 
