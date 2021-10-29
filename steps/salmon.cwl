@@ -2,7 +2,9 @@ cwlVersion: v1.0
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch38:2.1.2
+    dockerPull: hubmap/salmon-grch38:latest
+  ResourceRequirement:
+    ramMin: 28672
 baseCommand: /opt/salmon_wrapper.py
 label: Run Salmon Alevin tool on FASTQ input
 
