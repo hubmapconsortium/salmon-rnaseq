@@ -16,10 +16,6 @@ outputs:
     type: File
     outputBinding:
       glob: scvelo_annotated.h5ad
-  annotated_zarr_dir:
-    type: Directory
-    outputBinding:
-      glob: scvelo_annotated.zarr
   embedding_grid_plot:
     type: File
     outputBinding:

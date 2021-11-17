@@ -218,4 +218,3 @@ if __name__ == "__main__":
     raw, spliced = convert(args.alevin_output_dir, args.ensembl_hugo_mapping_path)
     raw.write_h5ad("raw_expr.h5ad")
     spliced.write_h5ad("expr.h5ad")
-    spliced.write_zarr("expr.zarr")

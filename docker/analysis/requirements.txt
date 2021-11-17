@@ -16,7 +16,6 @@ scipy~=1.5.4
 scvelo~=0.2.2
 statsmodels~=0.12.1
 tables~=3.6.1
-zarr~=2.6.1
 
 git+https://github.com/andrewhill157/barcodeutils
 git+https://github.com/hubmapconsortium/fastq-utils@v0.2.3
