@@ -10,7 +10,6 @@ import annotate_sciseq_barcodes
 from common import Assay
 
 H5AD_PATH = Path("expr.h5ad")
-ZARR_PATH = H5AD_PATH.with_suffix(".zarr")
 
 
 def dummy_annotate_cells(h5ad_file: Path) -> anndata.AnnData:
@@ -34,7 +33,6 @@ def main(
         expr_data = dummy_annotate_cells(h5ad_file)
 
     expr_data.write_h5ad(H5AD_PATH)
-    expr_data.write_zarr(ZARR_PATH)
 
 
 if __name__ == "__main__":

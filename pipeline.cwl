@@ -28,10 +28,6 @@ outputs:
     outputSource: annotate_cells/annotated_h5ad_file
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
-  count_matrix_zarr:
-    outputSource: annotate_cells/annotated_zarr_dir
-    type: Directory
-    label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
   raw_count_matrix:
     outputSource: alevin_to_anndata/raw_expr_h5ad
     type: File
@@ -72,14 +68,6 @@ outputs:
       Full data set of filtered results: expression matrix, coordinates in
       dimensionality-reduced space (PCA and UMAP), cluster assignments via
       the Leiden algorithm, and marker genes for one cluster vs. rest
-  filtered_data_zarr:
-    outputSource: scanpy_analysis/filtered_data_zarr
-    type: Directory
-    label: Full data set of filtered results
-    doc: >-
-      Full data set of filtered results: expression matrix, coordinates in
-      dimensionality-reduced space (PCA and UMAP), cluster assignments via
-      the Leiden algorithm, and marker genes for one cluster vs. rest
   marker_gene_plot_t_test:
     outputSource: scanpy_analysis/marker_gene_plot_t_test
     type: File
@@ -92,10 +80,6 @@ outputs:
     outputSource: scvelo_analysis/annotated_h5ad_file
     type: File
     label: "scVelo-annotated h5ad file, including cell RNA velocity"
-  scvelo_annotated_zarr:
-    outputSource: scvelo_analysis/annotated_zarr_dir
-    type: Directory
-    label: "scVelo-annotated zarr directory, including cell RNA velocity"
   scvelo_embedding_grid_plot:
     outputSource: scvelo_analysis/embedding_grid_plot
     type: File
@@ -174,7 +158,6 @@ steps:
         source: adjust_barcodes/metadata_json
     out:
       - annotated_h5ad_file
-      - annotated_zarr_dir
     run: steps/annotate-cells.cwl
   scanpy_analysis:
     in:
@@ -184,7 +167,6 @@ steps:
         source: annotate_cells/annotated_h5ad_file
     out:
       - filtered_data_h5ad
-      - filtered_data_zarr
       - umap_plot
       - marker_gene_plot_t_test
       - marker_gene_plot_logreg
@@ -199,7 +181,6 @@ steps:
         source: annotate_cells/annotated_h5ad_file
     out:
       - annotated_h5ad_file
-      - annotated_zarr_dir
       - embedding_grid_plot
       - embedding_stream_plot
     run: steps/scvelo-analysis.cwl

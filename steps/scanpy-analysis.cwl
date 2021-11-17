@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Dimensionality reduction and clustering
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.3
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scanpy_entry_point.py
 
 inputs:
@@ -20,10 +20,6 @@ outputs:
     type: File
     outputBinding:
       glob: secondary_analysis.h5ad
-  filtered_data_zarr:
-    type: Directory
-    outputBinding:
-      glob: secondary_analysis.zarr
   dispersion_plot:
     type: File
     outputBinding:

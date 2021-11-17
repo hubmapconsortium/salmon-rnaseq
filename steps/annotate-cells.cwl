@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Assay-specific annotation of cell barcodes after quantification
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.3
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/annotate_cells.py
 
 inputs:
@@ -29,7 +29,3 @@ outputs:
     type: File
     outputBinding:
       glob: 'expr.h5ad'
-  annotated_zarr_dir:
-    type: Directory
-    outputBinding:
-      glob: 'expr.zarr'

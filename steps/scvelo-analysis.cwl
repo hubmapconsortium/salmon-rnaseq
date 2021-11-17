@@ -3,7 +3,7 @@ class: CommandLineTool
 label: RNA velocity analysis via scVelo
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.3
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scvelo_analysis.py
 
 inputs:
@@ -16,10 +16,6 @@ outputs:
     type: File
     outputBinding:
       glob: scvelo_annotated.h5ad
-  annotated_zarr_dir:
-    type: Directory
-    outputBinding:
-      glob: scvelo_annotated.zarr
   embedding_grid_plot:
     type: File
     outputBinding:
