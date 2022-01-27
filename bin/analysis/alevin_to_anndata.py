@@ -108,10 +108,10 @@ def expand_anndata(
 def add_split_spliced_unspliced(d: AnnData) -> AnnData:
     """
     :param d: AnnData with columns for both spliced and unspliced sequences
-    :return: an `AnnData` object (let's say `adata`) constructed from `lm`:
-      spliced and unspliced counts are added to compute `adata.X`, spliced
-      counts are stored in `adata.layers['spliced']` and unspliced counts
-      are likewise stored in `adata.layers['unspliced']`.
+    :return: an `AnnData` object (let's say `adata`) constructed from `d`:
+      spliced counts are stored in `adata.X` and `adata.layers['spliced']`,
+      unspliced counts are stored in `adata.layers['unspliced']`, and the
+      sum is stored in `adata.layers['spliced_unspliced_sum']`.
 
     >>> row_labels = ['c2', 'c1']
     >>> col_labels = ['g2', 'g1', 'g3-I', 'g2-I']
