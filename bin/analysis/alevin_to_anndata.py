@@ -202,9 +202,10 @@ def convert(input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, 
     )
     spliced_anndata = add_split_spliced_unspliced(raw_labeled)
 
-    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path)
-    ensembl_hugo_mapper.annotate(raw_labeled)
-    ensembl_hugo_mapper.annotate(spliced_anndata)
+    if ensembl_hugo_mapping_path.is_file():
+        ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path)
+        ensembl_hugo_mapper.annotate(raw_labeled)
+        ensembl_hugo_mapper.annotate(spliced_anndata)
 
     return raw_labeled, spliced_anndata
 
