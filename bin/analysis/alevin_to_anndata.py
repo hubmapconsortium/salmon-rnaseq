@@ -2,6 +2,7 @@
 import json
 from argparse import ArgumentParser
 from pathlib import Path
+from shutil import copy
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -13,7 +14,9 @@ from fastq_utils import smart_open
 
 from common import AnnDataLayer
 
-DEFAULT_HUGO_ENSEMBL_MAPPING_PATH = Path("/opt/data/ensembl_hugo_mapping.json.xz")
+DATA_PATH = Path("/opt/data")
+DEFAULT_HUGO_ENSEMBL_MAPPING_PATH = DATA_PATH / "ensembl_hugo_mapping.json.xz"
+GENOME_BUILD_PATH = DATA_PATH / "genome_build.json"
 
 # As per https://gist.github.com/flying-sheep/f46e89b388fed736ff0b68fb8fd83af6
 # the break-even point for density seems to be around 0.6 to 0.7 for large enough
@@ -218,3 +221,5 @@ if __name__ == "__main__":
     raw, spliced = convert(args.alevin_output_dir, args.ensembl_hugo_mapping_path)
     raw.write_h5ad("raw_expr.h5ad")
     spliced.write_h5ad("expr.h5ad")
+    if GENOME_BUILD_PATH.is_file():
+        copy(GENOME_BUILD_PATH, Path.cwd() / GENOME_BUILD_PATH.name)

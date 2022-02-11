@@ -20,3 +20,7 @@ outputs:
     type: File
     outputBinding:
       glob: expr.h5ad
+  genome_build_json:
+    type: File
+    outputBinding:
+      glob: genome_build.json

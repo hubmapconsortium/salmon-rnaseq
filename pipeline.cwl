@@ -31,7 +31,11 @@ outputs:
   raw_count_matrix:
     outputSource: alevin_to_anndata/raw_expr_h5ad
     type: File
-    label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic regions"
+    label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
+  genome_build_json:
+    outputSource: alevin_to_anndata/genome_build_json
+    type: File
+    label: "Genome build information in JSON format"
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
     type: Directory[]
@@ -144,6 +148,7 @@ steps:
     out:
       - expr_h5ad
       - raw_expr_h5ad
+      - genome_build_json
     run: steps/alevin-to-anndata.cwl
     label: "Convert Alevin output to AnnData object in h5ad format"
   annotate_cells:
