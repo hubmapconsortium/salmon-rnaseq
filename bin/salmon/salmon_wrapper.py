@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import csv
+import re
 from argparse import ArgumentParser
 from os import environ, fspath
 from pathlib import Path
@@ -31,18 +33,68 @@ SALMON_COMMAND = [
     "{threads}",
 ]
 
+cell_count_filename = "extras/expected_cell_count.txt"
+metadata_filename_pattern = re.compile(r"^[0-9A-Fa-f]{32}-metadata.tsv$")
+metadata_cell_count_field = "expected_cell_count"
 
-def read_expected_cell_count(directories: Sequence[Path]) -> Optional[int]:
-    cell_count_filename = "extras/expected_cell_count.txt"
 
+def find_metadata_file(directory: Path) -> Optional[Path]:
+    """
+    Finds and returns the first metadata file for a HuBMAP data set.
+    Does not check whether the dataset ID (32 hex characters) matches
+    the directory name, nor whether there might be multiple metadata files.
+    """
+    for file_path in directory.iterdir():
+        if metadata_filename_pattern.match(file_path.name):
+            return file_path
+
+
+def read_expected_cell_count(directory: Path) -> Optional[int]:
+    cell_count_from_file = None
+    cell_count_metadata = None
+
+    cell_count_file = directory / cell_count_filename
+    if cell_count_file.is_file():
+        with open(cell_count_file) as f:
+            cell_count_from_file = int(f.read().strip())
+            print(f"Read expected cell count from {cell_count_file}: {cell_count_from_file}")
+
+    maybe_metadata_file = find_metadata_file(directory)
+    if maybe_metadata_file.is_file():
+        with open(maybe_metadata_file, newline="") as f:
+            r = csv.DictReader(f, delimiter="\t")
+            metadata = next(r)
+            if (
+                metadata_cell_count_field in metadata
+                and metadata[metadata_cell_count_field].isdigit()
+            ):
+                cell_count_metadata = int(metadata[metadata_cell_count_field])
+                print(
+                    f"Read expected cell count from {maybe_metadata_file}: {cell_count_metadata}"
+                )
+
+    present_cell_counts = sum(x is not None for x in [cell_count_from_file, cell_count_metadata])
+    if present_cell_counts == 0:
+        return None
+    elif present_cell_counts == 1:
+        return cell_count_from_file or cell_count_metadata
+    else:
+        if cell_count_from_file == cell_count_metadata:
+            return cell_count_from_file
+        else:
+            message = (
+                f"Found mismatched cell counts: {cell_count_from_file} in {cell_count_file}, "
+                f"and {cell_count_metadata} in {maybe_metadata_file}"
+            )
+            raise ValueError(message)
+
+
+def read_expected_cell_counts(directories: Sequence[Path]) -> Optional[int]:
     cell_counts = []
     for directory in directories:
-        cell_count_file = directory / cell_count_filename
-        if cell_count_file.is_file():
-            with open(cell_count_file) as f:
-                cell_count = int(f.read().strip())
-                print(f"Read expected cell count from {cell_count_file}: {cell_count}")
-                cell_counts.append(cell_count)
+        cell_count = read_expected_cell_count(directory)
+        if cell_count is not None:
+            cell_counts.append(cell_count)
 
     dirs_with_cell_counts = len(cell_counts)
     if dirs_with_cell_counts == 0:
