@@ -3,7 +3,7 @@ class: CommandLineTool
 label: RNA velocity analysis via scVelo
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.5
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scvelo_analysis.py
 
 inputs:
