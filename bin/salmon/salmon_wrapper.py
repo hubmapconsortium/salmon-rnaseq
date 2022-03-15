@@ -181,7 +181,7 @@ def main(
         barcode_file = find_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
 
-    maybe_cell_count = read_expected_cell_count(orig_fastq_dirs) or expected_cell_count
+    maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:
         command.extend(["--forceCells", str(maybe_cell_count)])
 
