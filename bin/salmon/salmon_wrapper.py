@@ -60,7 +60,7 @@ def read_expected_cell_count(directory: Path) -> Optional[int]:
             print(f"Read expected cell count from {cell_count_file}: {cell_count_from_file}")
 
     maybe_metadata_file = find_metadata_file(directory)
-    if maybe_metadata_file.is_file():
+    if maybe_metadata_file and maybe_metadata_file.is_file():
         with open(maybe_metadata_file, newline="") as f:
             r = csv.DictReader(f, delimiter="\t")
             metadata = next(r)
