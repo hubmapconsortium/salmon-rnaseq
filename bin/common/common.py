@@ -49,7 +49,7 @@ class Assay(Enum):
         obj = object.__new__(cls)
         obj._value_ = key
         obj.salmon_option = salmon_option
-        self.libtype = libtype
+        obj.libtype = libtype
         obj.secondary_analysis_layer = secondary_analysis_layer
         obj.barcode_adj_performed = barcode_adj_performed
         obj.barcode_adj_r1_r2 = barcode_adj_r1_r2
