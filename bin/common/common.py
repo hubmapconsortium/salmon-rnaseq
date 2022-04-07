@@ -40,6 +40,7 @@ class Assay(Enum):
         cls,
         key: str,
         salmon_option: str,
+        libtype: str,
         secondary_analysis_layer: AnnDataLayer,
         barcode_adj_performed: bool,
         barcode_adj_r1_r2: bool,
@@ -48,6 +49,7 @@ class Assay(Enum):
         obj = object.__new__(cls)
         obj._value_ = key
         obj.salmon_option = salmon_option
+        self.libtype = libtype
         obj.secondary_analysis_layer = secondary_analysis_layer
         obj.barcode_adj_performed = barcode_adj_performed
         obj.barcode_adj_r1_r2 = barcode_adj_r1_r2
@@ -60,6 +62,7 @@ class Assay(Enum):
     CHROMIUM_V2 = (
         "10x_v2",
         "--chromium",
+        "A",
         AnnDataLayer.SPLICED,
         False,
         False,
@@ -68,6 +71,7 @@ class Assay(Enum):
     CHROMIUM_V3 = (
         "10x_v3",
         "--chromiumV3",
+        "A",
         AnnDataLayer.SPLICED,
         False,
         False,
@@ -76,6 +80,7 @@ class Assay(Enum):
     CHROMIUM_V2_SN = (
         "10x_v2_sn",
         "--chromium",
+        "A",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
         False,
         False,
@@ -84,6 +89,16 @@ class Assay(Enum):
     CHROMIUM_V3_SN = (
         "10x_v3_sn",
         "--chromiumV3",
+        "A",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        False,
+        False,
+        False,
+    )
+    DROPSEQ = (
+        "dropseq",
+        "--dropseq",
+        "ISR",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
         False,
         False,
@@ -92,6 +107,7 @@ class Assay(Enum):
     SNARESEQ = (
         "snareseq",
         "--snareseq",
+        "A",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
         True,
         False,
@@ -100,6 +116,7 @@ class Assay(Enum):
     SCISEQ = (
         "sciseq",
         "--sciseq",
+        "A",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
         True,
         True,
@@ -108,6 +125,7 @@ class Assay(Enum):
     SLIDESEQ = (
         "slideseq",
         "--slideseq",
+        "A",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
         True,
         False,

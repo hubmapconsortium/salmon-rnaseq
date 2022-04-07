@@ -22,7 +22,7 @@ SALMON_COMMAND = [
     "--index",
     "/opt/gencode.v35.intron-exon.sidx",
     "--libType",
-    "A",
+    "{libtype}",
     "--output",
     "salmon_out",
     "--dumpMtx",
