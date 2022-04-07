@@ -152,6 +152,7 @@ def main(
     command = [
         piece.format(
             salmon_option=assay.salmon_option,
+            libtype=assay.libtype,
             threads=threads,
         )
         for piece in SALMON_COMMAND
