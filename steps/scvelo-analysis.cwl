@@ -3,7 +3,7 @@ class: CommandLineTool
 label: RNA velocity analysis via scVelo
 hints:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.7
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scvelo_analysis.py
 
 inputs:
@@ -20,7 +20,3 @@ outputs:
     type: File
     outputBinding:
       glob: scvelo_embedding_grid.pdf
-  embedding_stream_plot:
-    type: File?
-    outputBinding:
-      glob: scvelo_embedding_stream.pdf

@@ -88,10 +88,6 @@ outputs:
     outputSource: scvelo_analysis/embedding_grid_plot
     type: File
     label: "scVelo velocity embedding grid plot"
-  scvelo_embedding_stream_plot:
-    outputSource: scvelo_analysis/embedding_stream_plot
-    type: File?
-    label: "scVelo velocity embedding stream plot"
 steps:
   adjust_barcodes:
     in:
@@ -187,7 +183,6 @@ steps:
     out:
       - annotated_h5ad_file
       - embedding_grid_plot
-      - embedding_stream_plot
     run: steps/scvelo-analysis.cwl
     label: "RNA velocity analysis via scVelo"
   compute_qc_results:
