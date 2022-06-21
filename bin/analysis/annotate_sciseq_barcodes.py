@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 import anndata
+import manhole
 import pandas as pd
 
 BARCODE_DATA_DIR = here = Path(__file__).parent / "data/sciseq"
@@ -72,6 +73,8 @@ def main(h5ad_file: Path, metadata_json_file: Path):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("h5ad_file", type=Path)
     p.add_argument("metadata_json_file", type=Path)

@@ -7,6 +7,7 @@ from pathlib import Path
 from subprocess import check_call
 from typing import Iterable, Optional, Sequence, Tuple
 
+import manhole
 from fastq_utils import find_grouped_fastq_files
 
 from common import (
@@ -204,6 +205,8 @@ def main(
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("trimmed_fastq_dir", type=Path)

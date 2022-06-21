@@ -3,6 +3,8 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Iterable
 
+import manhole
+
 import correct_snareseq_barcodes
 import expand_sciseq_barcodes
 import extract_slideseq_barcodes
@@ -24,6 +26,8 @@ def main(assay: Assay, input_dirs: Iterable[Path]):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("directory", type=Path, nargs="+")

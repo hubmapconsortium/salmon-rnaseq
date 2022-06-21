@@ -10,6 +10,7 @@ from os import fspath
 from pathlib import Path
 from typing import List, Tuple
 
+import manhole
 import pandas as pd
 
 
@@ -70,6 +71,8 @@ def main(quant_dir: Path):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     # Make this function take a directory and get the quant_sf files from it instead
     p.add_argument("quant_dir", type=Path)

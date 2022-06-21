@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import anndata
+import manhole
 import matplotlib.pyplot as plt
 import scanpy as sc
 import scvelo as scv
@@ -48,6 +49,8 @@ def main(spliced_h5ad_file: Path):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("alevin_h5ad_file", type=Path)
     args = p.parse_args()

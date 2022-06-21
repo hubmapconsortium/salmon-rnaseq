@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import anndata
+import manhole
 import pandas as pd
 
 barcode_matching_dir = "barcode_matching"
@@ -53,6 +54,8 @@ def annotate(h5ad_path: Path, dataset_dir: Path) -> anndata.AnnData:
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("h5ad_path", type=Path)
     p.add_argument("base_dir", type=Path)

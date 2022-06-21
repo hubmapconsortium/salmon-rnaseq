@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 import anndata
+import manhole
 
 import add_slideseq_coordinates
 import annotate_sciseq_barcodes
@@ -36,6 +37,8 @@ def main(
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("h5ad_file", type=Path)
