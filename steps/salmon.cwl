@@ -33,6 +33,11 @@ inputs:
     inputBinding:
       position: 4
       prefix: "--expected-cell-count"
+  keep_all_barcodes:
+    type: boolean?
+    inputBinding:
+      position: 5
+      prefix: "--keep-all-barcodes"
 
 outputs:
   output_dir:

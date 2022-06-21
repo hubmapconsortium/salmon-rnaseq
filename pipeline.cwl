@@ -19,6 +19,8 @@ inputs:
     default: 1
   expected_cell_count:
     type: int?
+  keep_all_barcodes:
+    type: boolean?
 outputs:
   salmon_output:
     outputSource: salmon/output_dir
@@ -121,6 +123,8 @@ steps:
         source: threads
       expected_cell_count:
         source: expected_cell_count
+      keep_all_barcodes:
+        source: keep_all_barcodes
     out:
       - output_dir
     run: steps/salmon.cwl

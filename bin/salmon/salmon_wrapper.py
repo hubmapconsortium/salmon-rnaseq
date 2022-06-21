@@ -146,6 +146,7 @@ def main(
     orig_fastq_dirs: Sequence[Path],
     trimmed_fastq_dir: Path,
     expected_cell_count: Optional[int],
+    keep_all_barcodes: bool,
     threads: Optional[int],
 ):
     threads = threads or 1
@@ -169,7 +170,7 @@ def main(
     if not fastq_pairs:
         raise ValueError("No FASTQ files found")
 
-    if assay.keep_all_barcodes:
+    if assay.keep_all_barcodes or keep_all_barcodes:
         command.extend(["--keepCBFraction", "1"])
     # hack
     if assay == Assay.SLIDESEQ:
@@ -208,6 +209,7 @@ if __name__ == "__main__":
     p.add_argument("trimmed_fastq_dir", type=Path)
     p.add_argument("orig_fastq_dir", type=Path, nargs="+")
     p.add_argument("--expected-cell-count", type=int)
+    p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
     args = p.parse_args()
 
@@ -216,5 +218,6 @@ if __name__ == "__main__":
         args.orig_fastq_dir,
         args.trimmed_fastq_dir,
         args.expected_cell_count,
+        args.keep_all_barcodes,
         args.threads,
     )
