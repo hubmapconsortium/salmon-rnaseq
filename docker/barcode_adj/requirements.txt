@@ -1,4 +1,4 @@
 biopython
 
 git+https://github.com/andrewhill157/barcodeutils
-git+https://github.com/hubmapconsortium/fastq-utils@v0.2.3
+git+https://github.com/hubmapconsortium/fastq-utils@v0.2.5
