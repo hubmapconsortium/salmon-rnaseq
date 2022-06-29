@@ -23,19 +23,19 @@ inputs:
     type: boolean?
 outputs:
   salmon_output:
-    outputSource: salmon/output_dir
+    outputSource: salmon_quantification/salmon_output
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix_h5ad:
-    outputSource: annotate_cells/annotated_h5ad_file
+    outputSource: salmon_quantification/count_matrix_h5ad
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
   raw_count_matrix:
-    outputSource: alevin_to_anndata/raw_expr_h5ad
+    outputSource: salmon_quantification/raw_count_matrix
     type: File
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
   genome_build_json:
-    outputSource: alevin_to_anndata/genome_build_json
+    outputSource: salmon_quantification/genome_build_json
     type: File
     label: "Genome build information in JSON format"
   fastqc_dir:
@@ -91,32 +91,10 @@ outputs:
     type: File
     label: "scVelo velocity embedding grid plot"
 steps:
-  adjust_barcodes:
+  salmon_quantification:
     in:
       fastq_dir:
         source: fastq_dir
-      assay:
-        source: assay
-    out: [adj_fastq_dir, metadata_json]
-    run: steps/adjust-barcodes.cwl
-  trim_reads:
-    in:
-      orig_fastq_dirs:
-        source: fastq_dir
-      adj_fastq_dir:
-        source: adjust_barcodes/adj_fastq_dir
-      assay:
-        source: assay
-      threads:
-        source: threads
-    out: [trimmed_fastq_dir]
-    run: steps/trim-reads.cwl
-  salmon:
-    in:
-      orig_fastq_dirs:
-        source: fastq_dir
-      trimmed_fastq_dir:
-        source: trim_reads/trimmed_fastq_dir
       assay:
         source: assay
       threads:
@@ -126,9 +104,11 @@ steps:
       keep_all_barcodes:
         source: keep_all_barcodes
     out:
-      - output_dir
-    run: steps/salmon.cwl
-    label: "Salmon Alevin, with index from GRCh38 transcriptome"
+      - salmon_output
+      - count_matrix_h5ad
+      - raw_count_matrix
+      - genome_build_json
+    run: steps/salmon-quantification.cwl
   fastqc:
     scatter: [fastq_dir]
     scatterMethod: dotproduct
@@ -141,35 +121,12 @@ steps:
       - fastqc_dir
     run: steps/fastqc.cwl
     label: "Run fastqc on all fastq files in fastq directory"
-  alevin_to_anndata:
-    in:
-      alevin_dir:
-        source: salmon/output_dir
-    out:
-      - expr_h5ad
-      - raw_expr_h5ad
-      - genome_build_json
-    run: steps/alevin-to-anndata.cwl
-    label: "Convert Alevin output to AnnData object in h5ad format"
-  annotate_cells:
-    in:
-      orig_fastq_dirs:
-        source: fastq_dir
-      assay:
-        source: assay
-      h5ad_file:
-        source: alevin_to_anndata/expr_h5ad
-      metadata_json:
-        source: adjust_barcodes/metadata_json
-    out:
-      - annotated_h5ad_file
-    run: steps/annotate-cells.cwl
   scanpy_analysis:
     in:
       assay:
         source: assay
       h5ad_file:
-        source: annotate_cells/annotated_h5ad_file
+        source: salmon_quantification/count_matrix_h5ad
     out:
       - filtered_data_h5ad
       - umap_plot
@@ -183,7 +140,7 @@ steps:
   scvelo_analysis:
     in:
       spliced_h5ad_file:
-        source: annotate_cells/annotated_h5ad_file
+        source: salmon_quantification/count_matrix_h5ad
     out:
       - annotated_h5ad_file
       - embedding_grid_plot
@@ -194,11 +151,11 @@ steps:
       assay:
         source: assay
       h5ad_primary:
-        source: annotate_cells/annotated_h5ad_file
+        source: salmon_quantification/count_matrix_h5ad
       h5ad_secondary:
         source: scanpy_analysis/filtered_data_h5ad
       salmon_dir:
-        source: salmon/output_dir
+        source: salmon_quantification/salmon_output
     out:
       - scanpy_qc_results
       - qc_metrics
