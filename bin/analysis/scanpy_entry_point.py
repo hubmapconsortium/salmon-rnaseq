@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import anndata
+import manhole
 import matplotlib.pyplot as plt
 import scanpy as sc
 
@@ -71,6 +72,8 @@ def main(assay: Assay, h5ad_file: Path):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("alevin_h5ad_file", type=Path)

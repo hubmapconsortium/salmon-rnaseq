@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterable, Mapping, Set
 
 import barcodeutils as bu
+import manhole
 from fastq_utils import Read, fastq_reader, find_grouped_fastq_files, revcomp
 
 from common import BARCODE_UMI_FASTQ_PATH, TRANSCRIPT_FASTQ_PATH
@@ -94,6 +95,8 @@ def main(
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("fastq_dirs", type=Path, nargs="+")
     p.add_argument("--barcode_list_file", type=Path, default=BARCODE_ALLOWLIST_FILE)

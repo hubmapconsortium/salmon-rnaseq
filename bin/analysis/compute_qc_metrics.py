@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 import anndata
+import manhole
 import pandas as pd
 import scanpy as sc
 
@@ -73,6 +74,7 @@ def main(assay: Assay, h5ad_primary: Path, h5ad_secondary: Path, salmon_dir: Pat
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("h5ad_primary", type=Path)

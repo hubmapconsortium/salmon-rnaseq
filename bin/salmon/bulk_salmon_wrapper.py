@@ -4,6 +4,7 @@ from os import fspath
 from pathlib import Path
 from subprocess import check_call
 
+import manhole
 from fastq_utils import find_grouped_fastq_files, get_sample_id_from_r1
 
 SALMON_COMMAND = [
@@ -62,6 +63,8 @@ def main(threads: int, directory: Path):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("-p", "--threads", type=int)
     p.add_argument("directory", type=Path)

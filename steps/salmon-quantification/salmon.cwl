@@ -2,7 +2,7 @@ cwlVersion: v1.0
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch38:2.1.9b1
+    dockerPull: hubmap/salmon-grch38:latest
   ResourceRequirement:
     ramMin: 28672
 baseCommand: /opt/salmon_wrapper.py
@@ -33,6 +33,11 @@ inputs:
     inputBinding:
       position: 4
       prefix: "--expected-cell-count"
+  keep_all_barcodes:
+    type: boolean?
+    inputBinding:
+      position: 5
+      prefix: "--keep-all-barcodes"
 
 outputs:
   output_dir:

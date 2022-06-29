@@ -6,6 +6,7 @@ from pathlib import Path
 from subprocess import check_call
 from typing import Tuple
 
+import manhole
 from fastq_utils import collect_fastq_files_by_directory
 
 FASTQC_COMMAND_TEMPLATE = [
@@ -55,6 +56,8 @@ def main(directory: Path, threads: int):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("directory", type=Path)
     p.add_argument("threads", type=int)

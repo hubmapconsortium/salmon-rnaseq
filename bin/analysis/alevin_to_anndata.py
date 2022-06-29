@@ -5,6 +5,7 @@ from pathlib import Path
 from shutil import copy
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
+import manhole
 import numpy as np
 import pandas as pd
 import scipy.io
@@ -209,6 +210,7 @@ def convert(input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, 
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
     p = ArgumentParser()
     p.add_argument("alevin_output_dir", type=Path)
     p.add_argument(

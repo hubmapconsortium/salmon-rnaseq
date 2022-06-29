@@ -6,6 +6,7 @@ from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import Iterable, Tuple
 
+import manhole
 from fastq_utils import Read
 
 from common import BARCODE_UMI_FASTQ_PATH, TRANSCRIPT_FASTQ_PATH
@@ -68,6 +69,8 @@ def main(source_dirs: Iterable[Path], output_dir: Path = Path()):
 
 
 if __name__ == "__main__":
+    manhole.install(activate_on="USR1")
+
     p = ArgumentParser()
     p.add_argument("directory", type=Path)
     args = p.parse_args()

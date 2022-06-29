@@ -1,34 +1,31 @@
 cwlVersion: v1.0
 class: CommandLineTool
+label: Assay-specific annotation of cell barcodes after quantification
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-trim-reads:2.1.9b1
-baseCommand: /opt/trim_reads.py
-label: Trim FASTQ files
-
-# arguments are hardcoded in salmon_wrapper.py
+    dockerPull: hubmap/scrna-analysis:latest
+baseCommand: /opt/annotate_cells.py
 
 inputs:
   assay:
     type: string
     inputBinding:
       position: 0
-  adj_fastq_dir:
-    type: Directory
+  h5ad_file:
+    type: File
     inputBinding:
       position: 1
   orig_fastq_dirs:
     type: Directory[]
     inputBinding:
       position: 2
-  threads:
-    type: int
+  metadata_json:
+    type: File?
     inputBinding:
       position: 3
-      prefix: "--threads"
-
+      prefix: '--metadata_json'
 outputs:
-  trimmed_fastq_dir:
-    type: Directory
+  annotated_h5ad_file:
+    type: File
     outputBinding:
-      glob: trimmed
+      glob: 'expr.h5ad'

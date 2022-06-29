@@ -11,7 +11,7 @@ import re
 from copy import deepcopy
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable
 
 from fastq_utils import Read, fastq_reader, smart_open
 
