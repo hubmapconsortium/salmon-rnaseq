@@ -37,6 +37,7 @@ SALMON_COMMAND = [
 cell_count_filename = "extras/expected_cell_count.txt"
 metadata_filename_pattern = re.compile(r"^[0-9A-Fa-f]{32}-metadata.tsv$")
 metadata_cell_count_field = "expected_cell_count"
+barcode_whitelist_path = Path("barcode_whitelist.txt")
 
 
 def find_metadata_file(directory: Path) -> Optional[Path]:
@@ -129,7 +130,7 @@ def find_adj_fastq_files(directory: Path) -> Iterable[Tuple[Path, Path]]:
             yield barcode_umi_fastq, transcript_fastq_gz
 
 
-def find_slideseq_barcode_file(base_dir: Path) -> Path:
+def adjust_slideseq_barcode_file(base_dir: Path) -> Path:
     pattern = "**/*matched_bead_barcodes.txt"
     barcode_files = list(base_dir.glob(pattern))
     if len(barcode_files) != 1:
@@ -139,7 +140,13 @@ def find_slideseq_barcode_file(base_dir: Path) -> Path:
         ]
         message_pieces.extend(f"\t{bf}" for bf in barcode_files)
         raise ValueError("\n".join(message_pieces))
-    return barcode_files[0]
+    print("Converting bead barcodes file", barcode_files[0])
+    with open(barcode_files[0]) as f:
+        barcodes = {line.strip().split("-")[0] for line in f}
+    with open(barcode_whitelist_path, "w") as f:
+        for barcode in sorted(barcodes):
+            print(barcode, file=f)
+    return barcode_whitelist_path
 
 
 def main(
@@ -180,7 +187,7 @@ def main(
         # between multiple input data sets
         if len(orig_fastq_dirs) != 1:
             raise ValueError("Need exactly 1 input directory for Slide-seq")
-        barcode_file = find_slideseq_barcode_file(orig_fastq_dirs[0])
+        barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
 
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
