@@ -5,11 +5,12 @@ from pathlib import Path
 import anndata
 import manhole
 import pandas as pd
+from common import Assay
 
 barcode_matching_dir = "barcode_matching"
 
 
-def read_bead_pos(dataset_dir: Path) -> pd.DataFrame:
+def read_slideseq_pos(dataset_dir: Path) -> pd.DataFrame:
     barcode_matching_dirs = list(dataset_dir.glob(f"**/{barcode_matching_dir}"))
     if l := len(barcode_matching_dirs) != 1:
         message_pieces = [f"Need exactly 1 {barcode_matching_dir} directory, found {l}"]
@@ -30,9 +31,16 @@ def read_bead_pos(dataset_dir: Path) -> pd.DataFrame:
     return all_pos
 
 
-def annotate(h5ad_path: Path, dataset_dir: Path) -> anndata.AnnData:
+def read_vizium_pos(dataset_dir: Path) -> pd.DataFrame:
+    pass
+
+def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnData:
+    assert assay in {Assay.SLIDESEQ, Assay.VIZIUM_FFPE}
     d = anndata.read_h5ad(h5ad_path)
-    barcode_pos = read_bead_pos(dataset_dir)
+    if assay == Assay.SLIDESEQ:
+        barcode_pos = read_slideseq_pos(dataset_dir)
+    elif assay == Assay.VIZIUM_FFPE:
+        barcode_pos = read_vizium_pos(dataset_dir)
 
     quant_bc_set = set(d.obs.index)
     pos_bc_set = set(barcode_pos.index)
