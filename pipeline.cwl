@@ -84,11 +84,11 @@ outputs:
     label: "Cluster marker genes, logreg method"
   scvelo_annotated_h5ad:
     outputSource: scvelo_analysis/annotated_h5ad_file
-    type: File
+    type: File?
     label: "scVelo-annotated h5ad file, including cell RNA velocity"
   scvelo_embedding_grid_plot:
     outputSource: scvelo_analysis/embedding_grid_plot
-    type: File
+    type: File?
     label: "scVelo velocity embedding grid plot"
 steps:
   salmon_quantification:
@@ -141,6 +141,8 @@ steps:
     in:
       spliced_h5ad_file:
         source: salmon_quantification/count_matrix_h5ad
+      assay_name:
+        source: assay
     out:
       - annotated_h5ad_file
       - embedding_grid_plot
