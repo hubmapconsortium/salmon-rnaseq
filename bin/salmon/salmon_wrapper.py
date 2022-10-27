@@ -17,11 +17,14 @@ from common import (
     Assay,
 )
 
+visium_index = ''
+other_index = '/opt/gencode.v35.intron-exon.sidx'
+
 SALMON_COMMAND = [
     "salmon",
     "alevin",
     "--index",
-    "/opt/gencode.v35.intron-exon.sidx",
+    "{index}",
     "--libType",
     "A",
     "--output",
@@ -158,10 +161,13 @@ def main(
     threads: Optional[int],
 ):
     threads = threads or 1
+    index = visium_index if assay in {Assay.VISIUM_FFPE} else other_index
+
     command = [
         piece.format(
             salmon_option=assay.salmon_option,
             threads=threads,
+            index=index
         )
         for piece in SALMON_COMMAND
     ]
