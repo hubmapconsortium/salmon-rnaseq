@@ -43,8 +43,8 @@ def find_index_input_file(fastq_dir):
 def format_index_input_file(index_input_file):
     df = pd.read_csv(index_input_file, skiprows=5) #Ignore the comments at the beginning of the file
     df = df[["gene_id", "probe_seq"]]
-    formatted_output_file_name = "visium_index_input.csv"
-    df.to_csv(formatted_output_file_name, header=False)
+    formatted_output_file_name = "visium_index_input.tsv"
+    df.to_csv(formatted_output_file_name, header=False, sep='\t')
     return formatted_output_file_name
 
 def main(
