@@ -37,8 +37,8 @@ def find_index_input_file(fastq_dir):
         dirpath = Path(dirpath_str)
         for filename in filenames:
             filepath = dirpath / filename
-                if filepath.match(probe_set_pattern):
-                    return filepath
+            if filepath.match(probe_set_pattern):
+                return filepath
 
 def format_index_input_file(index_input_file):
     df = pd.read_csv(index_input_file)
