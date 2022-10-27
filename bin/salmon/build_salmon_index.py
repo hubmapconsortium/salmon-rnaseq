@@ -2,7 +2,7 @@
 import csv
 import re
 from argparse import ArgumentParser
-from os import environ, fspath
+from os import environ, fspath, walk
 from pathlib import Path
 from subprocess import check_call
 from typing import Iterable, Optional, Sequence, Tuple
@@ -17,7 +17,7 @@ from common import (
     Assay,
 )
 
-metadata_filename_pattern = re.compile(r"^[0-9A-Fa-f]{32}/probe_set.csv$")
+metadata_filename_pattern = re.compile(r".*probe_set.csv$")
 
 SALMON_COMMAND = [
     "salmon",
@@ -33,9 +33,10 @@ def find_index_input_file(fastq_dir):
     """
     Finds and returns the first index input file for a HuBMAP data set.
     """
-    for file_path in fastq_dir.iterdir():
-        if metadata_filename_pattern.match(file_path.name):
-            return file_path
+    for root, dirs, files in walk(fastq_dir):
+        for file_path in files:
+            if metadata_filename_pattern.match(file_path.name):
+                return file_path
 
 def format_index_input_file(index_input_file):
     df = pd.read_csv(index_input_file)

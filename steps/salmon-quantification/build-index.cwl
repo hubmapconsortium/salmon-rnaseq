@@ -3,8 +3,8 @@ class: CommandLineTool
 label: Assay-specific adjustment of cell barcodes
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch-38:latest
-baseCommand: /opt/build_salmon_index.py
+    dockerPull: hubmap/salmon-grch38:visium-ffpe
+    baseCommand: /opt/build_salmon_index.py
 
 inputs:
   assay:
@@ -19,4 +19,4 @@ outputs:
   salmon_index:
     type: File?
     outputBinding:
-      glob: 'visium_index
+      glob: 'visium_index"
