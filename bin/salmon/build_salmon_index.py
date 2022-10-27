@@ -17,7 +17,7 @@ from common import (
     Assay,
 )
 
-metadata_filename_pattern = re.compile(r".*probe_set.csv$")
+probe_set_pattern = "probe_set.csv"
 
 SALMON_COMMAND = [
     "salmon",
@@ -33,10 +33,12 @@ def find_index_input_file(fastq_dir):
     """
     Finds and returns the first index input file for a HuBMAP data set.
     """
-    for root, dirs, files in walk(fastq_dir):
-        for file_path in files:
-            if metadata_filename_pattern.match(file_path.name):
-                return file_path
+    for dirpath_str, dirnames, filenames in walk(fastq_dir):
+        dirpath = Path(dirpath_str)
+        for filename in filenames:
+            filepath = dirpath / filename
+                if filepath.match(probe_set_pattern):
+                    return filepath
 
 def format_index_input_file(index_input_file):
     df = pd.read_csv(index_input_file)
