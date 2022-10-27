@@ -113,9 +113,9 @@ class Assay(Enum):
         False,
         False,
     )
-    VIZIUM_FFPE = (
-        "vizium-ffpe",
-        "--vizium-ffpe",
+    VISIUM_FFPE = (
+        "visium-ffpe",
+        "--visium-ffpe",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
         True,
         False,

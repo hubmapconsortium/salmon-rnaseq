@@ -31,7 +31,7 @@ def read_slideseq_pos(dataset_dir: Path) -> pd.DataFrame:
     return all_pos
 
 
-def read_vizium_pos(dataset_dir: Path) -> pd.DataFrame:
+def read_visium_pos(dataset_dir: Path) -> pd.DataFrame:
     pass
 
 def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnData:
@@ -39,8 +39,8 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnDat
     d = anndata.read_h5ad(h5ad_path)
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
-    elif assay == Assay.VIZIUM_FFPE:
-        barcode_pos = read_vizium_pos(dataset_dir)
+    elif assay == Assay.VISIUM_FFPE:
+        barcode_pos = read_visium_pos(dataset_dir)
 
     quant_bc_set = set(d.obs.index)
     pos_bc_set = set(barcode_pos.index)
@@ -67,7 +67,8 @@ if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("h5ad_path", type=Path)
     p.add_argument("base_dir", type=Path)
+    p.add_argument("assay", choices=list(Assay), type=Assay)
     args = p.parse_args()
 
-    d = annotate(args.h5ad_path, args.base_dir)
+    d = annotate(args.h5ad_path, args.base_dir, args.assay)
     d.write_h5ad("slideseq_pos_annotated.h5ad")

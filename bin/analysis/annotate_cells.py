@@ -25,7 +25,7 @@ def main(
 ):
     if assay == Assay.SCISEQ:
         expr_data = annotate_sciseq_barcodes.main(h5ad_file, metadata_json)
-    elif assay in {Assay.SLIDESEQ, Assay.VIZIUM_FFPE}:
+    elif assay in {Assay.SLIDESEQ, Assay.VISIUM_FFPE}:
         if len(raw_fastq_dirs) != 1:
             raise ValueError("Need exactly 1 input directory for Slide-seq")
         expr_data = add_spatial_coordinates.annotate(h5ad_file, raw_fastq_dirs[0], assay)

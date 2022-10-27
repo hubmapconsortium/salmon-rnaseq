@@ -8,11 +8,12 @@ import matplotlib.pyplot as plt
 import scanpy as sc
 import scvelo as scv
 
+from common import Assay
 from plot_utils import new_plot
 
 
-def main(spliced_h5ad_file: Path, assay_name:str):
-    if assay_name not in {"vizium-ffpe"}:
+def main(spliced_h5ad_file: Path, assay: Assay):
+    if assay not in {Assay.VISIUM_FFPE}:
         adata = anndata.read_h5ad(spliced_h5ad_file)
         adata.var_names_make_unique()
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
 
     p = ArgumentParser()
     p.add_argument("alevin_h5ad_file", type=Path)
-    p.add_argument("assay_name", type=str)
+    p.add_argument("assay", choices=list(Assay), type=Assay)
     args = p.parse_args()
 
-    main(args.alevin_h5ad_file, args.assay_name)
+    main(args.alevin_h5ad_file, args.assay)
