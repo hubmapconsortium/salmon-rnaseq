@@ -19,4 +19,4 @@ outputs:
   salmon_index:
     type: File?
     outputBinding:
-      glob: 'adj_fastq'
+      glob: 'visium_index

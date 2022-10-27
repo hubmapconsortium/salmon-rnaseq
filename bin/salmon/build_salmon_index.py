@@ -8,7 +8,7 @@ from subprocess import check_call
 from typing import Iterable, Optional, Sequence, Tuple
 
 import manhole
-from fastq_utils import find_grouped_fastq_files
+import pandas as pd
 
 from common import (
     BARCODE_UMI_FASTQ_PATH,
@@ -17,24 +17,32 @@ from common import (
     Assay,
 )
 
-visium_index = ''
+metadata_filename_pattern = re.compile(r"^[0-9A-Fa-f]{32}/probe_set.csv$")
 
 SALMON_COMMAND = [
     "salmon",
     "index",
     "-t",
     "{index_input_file}",
+    "-k7",
     "-i",
-    "transcripts_index",
-    "-k",
-    "31"
+    "visium_index"
 ]
 
 def find_index_input_file(fastq_dir):
-    pass
+    """
+    Finds and returns the first index input file for a HuBMAP data set.
+    """
+    for file_path in fastq_dir.iterdir():
+        if metadata_filename_pattern.match(file_path.name):
+            return file_path
 
 def format_index_input_file(index_input_file):
-    pass
+    df = pd.read_csv(index_input_file)
+    df = df[["gene_id", "probe_sequence"]]
+    formatted_output_file_name = "visium_index_input.csv"
+    df.to_csv(formatted_output_file_name, header=False)
+    return formatted_output_file_name
 
 def main(
     assay: Assay,
@@ -46,7 +54,7 @@ def main(
         formatted_index_input_file = format_index_input_file(index_input_file)
         command = [
             piece.format(
-                index_input_file=index_input_file
+                index_input_file=formatted_index_input_file
             )
             for piece in SALMON_COMMAND
         ]

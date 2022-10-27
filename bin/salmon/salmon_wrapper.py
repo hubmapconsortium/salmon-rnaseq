@@ -17,7 +17,7 @@ from common import (
     Assay,
 )
 
-visium_index = ''
+visium_index = 'visium_index'
 other_index = '/opt/gencode.v35.intron-exon.sidx'
 
 SALMON_COMMAND = [
