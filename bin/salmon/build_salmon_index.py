@@ -22,6 +22,7 @@ probe_set_pattern = "probe_set.csv"
 SALMON_COMMAND = [
     "salmon",
     "index",
+    "--features"
     "-t",
     "{index_input_file}",
     "-k7",
@@ -40,9 +41,21 @@ def find_index_input_file(fastq_dir):
             if filepath.match(probe_set_pattern):
                 return filepath
 
+def make_gene_ids_unique(df):
+    gene_counts = {}
+    for i in df.index:
+        gene_id = df.at[i, 'gene_id']
+        if gene_id not in gene_counts:
+            gene_counts[gene_id] = 0
+        else:
+            df.at[i, 'gene_id'] = gene_id + '-' + str(gene_counts[gene_id])
+        gene_counts[gene_id] += 1
+    return df
+
 def format_index_input_file(index_input_file):
     df = pd.read_csv(index_input_file, skiprows=5) #Ignore the comments at the beginning of the file
     df = df[["gene_id", "probe_seq"]]
+    df = make_gene_ids_unique(df)
     formatted_output_file_name = "visium_index_input.tsv"
     df.to_csv(formatted_output_file_name, header=False, sep='\t')
     return formatted_output_file_name
