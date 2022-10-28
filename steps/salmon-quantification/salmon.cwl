@@ -38,6 +38,11 @@ inputs:
     inputBinding:
       position: 5
       prefix: "--keep-all-barcodes"
+  visium_index:
+    type: Directory?
+    inputBinding:
+      position: 6
+      prefix: "--index_dir"
 
 outputs:
   output_dir:

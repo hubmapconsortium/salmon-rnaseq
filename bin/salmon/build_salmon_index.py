@@ -22,7 +22,7 @@ probe_set_pattern = "probe_set.csv"
 SALMON_COMMAND = [
     "salmon",
     "index",
-    "--features"
+    "--features",
     "-t",
     "{index_input_file}",
     "-k7",
@@ -57,7 +57,7 @@ def format_index_input_file(index_input_file):
     df = df[["gene_id", "probe_seq"]]
     df = make_gene_ids_unique(df)
     formatted_output_file_name = "visium_index_input.tsv"
-    df.to_csv(formatted_output_file_name, header=False, sep='\t')
+    df.to_csv(formatted_output_file_name, header=False, sep='\t', index=False)
     return formatted_output_file_name
 
 def main(

@@ -17,8 +17,7 @@ from common import (
     Assay,
 )
 
-visium_index = 'visium_index'
-other_index = '/opt/gencode.v35.intron-exon.sidx'
+base_index = '/opt/gencode.v35.intron-exon.sidx'
 
 SALMON_COMMAND = [
     "salmon",
@@ -159,9 +158,10 @@ def main(
     expected_cell_count: Optional[int],
     keep_all_barcodes: bool,
     threads: Optional[int],
+    index_dir: Path = None,
 ):
     threads = threads or 1
-    index = visium_index if assay in {Assay.VISIUM_FFPE} else other_index
+    index = index_dir if assay in {Assay.VISIUM_FFPE} else base_index
 
     command = [
         piece.format(
@@ -226,6 +226,7 @@ if __name__ == "__main__":
     p.add_argument("orig_fastq_dir", type=Path, nargs="+")
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
+    p.add_argument("--index_dir", action="store_true", nargs='?')
     p.add_argument("-p", "--threads", type=int)
     args = p.parse_args()
 
@@ -236,4 +237,5 @@ if __name__ == "__main__":
         args.expected_cell_count,
         args.keep_all_barcodes,
         args.threads,
+        args.index_dir,
     )
