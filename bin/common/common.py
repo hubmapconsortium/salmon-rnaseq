@@ -117,7 +117,7 @@ class Assay(Enum):
         "visium-ffpe",
         "--visium-ffpe",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
-        True,
+        False,
         False,
         False,
     )

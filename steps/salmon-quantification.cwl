@@ -37,14 +37,6 @@ outputs:
     label: "Genome build information in JSON format"
 
 steps:
-  build_index:
-    in:
-      fastq_dir:
-        source: fastq_dir
-      assay:
-        source: assay
-    out: [salmon_index]
-    run: salmon-quantification/build-index.cwl
   adjust_barcodes:
     in:
       fastq_dir:
@@ -79,8 +71,6 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
-      index_dir:
-        source: build_index/salmon_index
     out:
       - output_dir
     run: salmon-quantification/salmon.cwl
