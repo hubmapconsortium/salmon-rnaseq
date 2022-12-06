@@ -7,7 +7,6 @@ import manhole
 import matplotlib.pyplot as plt
 import scanpy as sc
 import scvelo as scv
-
 from plot_utils import new_plot
 
 

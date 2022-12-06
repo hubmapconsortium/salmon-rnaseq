@@ -197,12 +197,11 @@ def main(
     for r1_fastq_file, r2_fastq_file in fastq_pairs:
         fastq_extension = [
             "-1",
-            r1_fastq_file,
+            str(r1_fastq_file),
             "-2",
-            r2_fastq_file,
+            str(r2_fastq_file),
         ]
         command.extend(fastq_extension)
-
     print("Running:", " ".join(str(x) for x in command))
     env = environ.copy()
     # Necessary for Singularity; this environment variable isn't
