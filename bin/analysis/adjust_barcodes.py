@@ -3,11 +3,11 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Iterable
 
-import manhole
-
 import correct_snareseq_barcodes
 import expand_sciseq_barcodes
 import extract_slideseq_barcodes
+import manhole
+
 from common import ADJ_OUTPUT_DIR, Assay
 
 adj_funcs = {
