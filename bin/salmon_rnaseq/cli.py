@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 from subprocess import CompletedProcess
-import os
 from typing import Any
 
 import click
@@ -35,7 +35,9 @@ class Shell:
             str(Path(__file__).parent.parent.parent / "pipeline.cwl"),
             *args,
         ]
-        proc: CompletedProcess[Any] = subprocess.run(cmd, capture_output=capture_output, encoding="utf-8")
+        proc: CompletedProcess[Any] = subprocess.run(
+            cmd, capture_output=capture_output, encoding="utf-8"
+        )
         return proc
 
     def help(self) -> str:
@@ -55,7 +57,9 @@ class RichHelp(click.Command):
 
 @click.command(
     cls=RichHelp,
-    context_settings=dict(ignore_unknown_options=True, allow_extra_args=True, help_option_names=["-h", "--help"]),
+    context_settings=dict(
+        ignore_unknown_options=True, allow_extra_args=True, help_option_names=["-h", "--help"]
+    ),
 )
 @click.pass_context
 @click.option(
