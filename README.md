@@ -37,11 +37,10 @@ Docker containers.
 
 # Requirements
 
-Running the pipeline requires a CWL workflow execution engine and container
-runtime; we require [Docker](https://www.docker.com/) to run the pipeline.
+We require [Docker](https://www.docker.com/) to run the pipeline.
 
 Once Docker is installed run the Docker Daemon. On Linux, this is typically
-done by running ``sudo dockerd``. On Mac, this is done by clicking the Docker GUI app.
+done by running ``sudo dockerd``. On Mac, this is done by clicking the Docker GUI app. If you are using a M1 or newer silicon Mac, add ``export DOCKER_DEFAULT_PLATFORM=linux/amd64`` to your ``.zshrc`` file to avoid docker warnings and possible errors.
 
 # Installation
 
