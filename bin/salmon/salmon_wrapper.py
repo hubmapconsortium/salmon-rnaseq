@@ -79,7 +79,7 @@ def read_expected_cell_count(directory: Path) -> Optional[int]:
     if present_cell_counts == 0:
         return None
     elif present_cell_counts == 1:
-        return cell_count_from_file or cell_count_metadata
+        return cell_count_from_file or cell_count_metadata or 0
     else:
         if cell_count_from_file == cell_count_metadata:
             return cell_count_from_file

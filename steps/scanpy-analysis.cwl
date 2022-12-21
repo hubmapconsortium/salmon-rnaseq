@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Dimensionality reduction and clustering
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.10
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scanpy_entry_point.py
 
 inputs:
