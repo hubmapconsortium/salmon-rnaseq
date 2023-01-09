@@ -57,7 +57,7 @@ pip install -e .
 # Usage
 ```bash
 salmon-rnaseq --help
-salmon-rnaseq --assay ASSAY --fastq_dir FASTQ_DIR --threads THREADS
+salmon-rnaseq --assay ASSAY --fastq_dir FASTQ_DIR --threads THREADS -o OUTPUT_DIR
 ```
 
 Supported assays:

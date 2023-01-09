@@ -25,7 +25,7 @@ def single_file_fastqc(fastq_file_and_subdir: Tuple[Path, Path]):
     """
     command = [piece.format(out_dir=fastq_file_and_subdir[1]) for piece in FASTQC_COMMAND_TEMPLATE]
     command.append(fspath(fastq_file_and_subdir[0]))
-    print("Running", " ".join(command))
+    print("Running:", " ".join(command))
     check_call(command)
 
 

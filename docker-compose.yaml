@@ -1,22 +1,26 @@
 version: "3.9"
 services:
     analysis:
+      image: hubmap/scrna-analysis
       build: 
         context: ./
         dockerfile: docker/analysis/Dockerfile
-      container_name: hubmap/scrna-analysis
+      # restart: always
     barcode_adj:
+      image: hubmap/scrna-barcode-adj
       build: 
         context: ./
         dockerfile: docker/barcode_adj/Dockerfile
-      container_name: hubmap/scrna-barcode-adj
+      # restart: always
     trim_reads:
+      image: hubmap/scrna-trim-reads
       build: 
         context: ./
         dockerfile: docker/trim_reads/Dockerfile
-      container_name: hubmap/scrna-trim-reads
+      # restart: always
     salmon:
+      image: hubmap/salmon-grch38
       build: 
         context: ./
         dockerfile: docker/salmon/Dockerfile
-      container_name: hubmap/salmon-grch38
+      # restart: always

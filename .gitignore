@@ -1,14 +1,19 @@
 ### Genomics ###
 
-*.fastq
-*.fastq.gz
-*.h5ad
-*.hdf5
-*.pdf
-*.zarr
-.idea/
-__pycache__/
-out/
+# *.fastq
+# *.fastq.gz
+# *.h5ad
+# *.hdf5
+# *.pdf
+# *.zarr
+# .idea/
+# __pycache__/
+# out/
+
+### Pytest
+
+output
+
 
 ### VS Code ###
 
