@@ -24,9 +24,15 @@ repository, check out a tag, and invoke the pipeline as::
 
   cwltool pipeline.cwl --assay ASSAY --fastq_dir FASTQ_DIR --threads THREADS
 
+At least 28GB memory is required for the Salmon quantification step; this
+memory usage is due to inclusion of the entire GRCh38 reference genome as
+decoy sequences in the quantification index. See
+https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02151-8
+for more details.
+
 (The ``master`` branch and ``latest`` published Docker images may not always
 be in sync; checking out a version like ``v2.0.6`` is *highly* recommended
-before running the pipeline, unless building Docker images locally..)
+before running the pipeline, unless building Docker images locally.)
 
 Supported assays:
 
