@@ -37,6 +37,9 @@ Docker containers.
 
 # Requirements
 
+- 28Gbs of RAM
+- Docker
+
 We require [Docker](https://www.docker.com/) to run the pipeline.
 
 Once Docker is installed run the Docker Daemon. On Linux, this is typically
