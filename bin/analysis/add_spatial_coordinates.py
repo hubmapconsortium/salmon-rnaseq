@@ -6,9 +6,10 @@ import anndata
 import manhole
 import pandas as pd
 from common import Assay
+from os import walk
+from typing import Iterable
 
 barcode_matching_dir = "barcode_matching"
-
 
 def read_slideseq_pos(dataset_dir: Path) -> pd.DataFrame:
     barcode_matching_dirs = list(dataset_dir.glob(f"**/{barcode_matching_dir}"))
@@ -31,8 +32,28 @@ def read_slideseq_pos(dataset_dir: Path) -> pd.DataFrame:
     return all_pos
 
 
+def find_files(directory: Path, pattern: str) -> Iterable[Path]:
+    for dirpath_str, dirnames, filenames in walk(directory):
+        dirpath = Path(dirpath_str)
+        for filename in filenames:
+            filepath = dirpath / filename
+            if filepath.match(pattern):
+                yield filepath
+
 def read_visium_pos(dataset_dir: Path) -> pd.DataFrame:
-    pass
+    gpr_file = list(find_files(dataset_dir, "*.gpr"))[0]
+    gpr_df = pd.read_csv(gpr_file, sep='\t', skiprows=9)
+    gpr_df = gpr_df.set_index(['Column', 'Row'], inplace=False, drop=True)
+    plate_version_number = gpr_file.stem[1]
+    barcode_coords_file = Path(f"/opt/visium-v{plate_version_number}_coordinates.txt")
+    coords_df = pd.read_csv(barcode_coords_file, sep='\t', names=['barcode', 'Column', 'Row'])
+    coords_df = coords_df.set_index(['Column', 'Row'])
+    gpr_df['barcode'] = coords_df['barcode']
+    gpr_df = gpr_df[['barcode', 'X', 'Y']]
+    gpr_df = gpr_df[~gpr_df.barcode.isna()]
+    gpr_df = gpr_df.reset_index(inplace=False)
+    gpr_df = gpr_df.set_index('barcode', inplace=False, drop=True)
+    return gpr_df
 
 def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnData:
     assert assay in {Assay.SLIDESEQ, Assay.VIZIUM_FFPE}

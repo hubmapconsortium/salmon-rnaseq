@@ -85,7 +85,7 @@ def read_barcode_file(barcode_file: Path) -> Dict[str, str]:
         r = csv.DictReader(f)
         for row in r:
             mapping[row["RT.Barcode"]] = row["Index.Sequence"]
-    return mapping
+    return mappingcp SC2100542_GT21-27949_AATTTCGGGT-GAGGAGAGAG_S13_L003_R2_001.fastq
 
 
 def main(directories: Iterable[Path], output_dir):

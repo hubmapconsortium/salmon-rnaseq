@@ -115,7 +115,15 @@ class Assay(Enum):
     )
     VISIUM_FFPE = (
         "visium-ffpe",
-        "--visium-ffpe",
+        "--chromiumV3",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        False,
+        False,
+        False,
+    )
+    VISIUM_FF = (
+        "visium-ff",
+        "--chromiumV3",
         AnnDataLayer.SPLICED_UNSPLICED_SUM,
         False,
         False,

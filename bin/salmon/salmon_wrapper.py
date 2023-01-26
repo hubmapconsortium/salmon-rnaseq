@@ -18,6 +18,7 @@ from common import (
 )
 
 base_index = '/opt/gencode.v35.intron-exon.sidx'
+base_transcript_map = '/opt/gencode.v35.annotation.expanded.tx2gene.tsv'
 
 SALMON_COMMAND = [
     "salmon",
@@ -31,7 +32,7 @@ SALMON_COMMAND = [
     "--dumpMtx",
     "{salmon_option}",
     "--tgMap",
-    "/opt/gencode.v35.annotation.expanded.tx2gene.tsv",
+    "{transcript_map}",
     "-p",
     "{threads}",
 ]
@@ -158,16 +159,23 @@ def main(
     expected_cell_count: Optional[int],
     keep_all_barcodes: bool,
     threads: Optional[int],
-    index_dir: Path = None,
 ):
     threads = threads or 1
+
+    visium_plate_version = 1
+    visium_probe_set_version = 1
+
+    transcript_map = f"/opt/visiumv{visium_probe_set_version}.tx2gene.tsv" if assay in {Assay.VISIUM_FFPE} else base_transcript_map
+    index_dir = f"/opt/visium_v{visium_probe_set_version}_index/"
     index = index_dir if assay in {Assay.VISIUM_FFPE} else base_index
+
 
     command = [
         piece.format(
             salmon_option=assay.salmon_option,
             threads=threads,
-            index=index
+            index=index,
+            transcript_map=transcript_map
         )
         for piece in SALMON_COMMAND
     ]
@@ -195,6 +203,9 @@ def main(
             raise ValueError("Need exactly 1 input directory for Slide-seq")
         barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
+    elif assay in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
+        barcode_file = f'visium-v{visium_plate_version}.txt'
+        command.extend(['--whiteList', barcode_file])
 
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:
@@ -226,7 +237,6 @@ if __name__ == "__main__":
     p.add_argument("orig_fastq_dir", type=Path, nargs="+")
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
-    p.add_argument("--index_dir", action="store_true", nargs='?')
     p.add_argument("-p", "--threads", type=int)
     args = p.parse_args()
 
@@ -237,5 +247,4 @@ if __name__ == "__main__":
         args.expected_cell_count,
         args.keep_all_barcodes,
         args.threads,
-        args.index_dir,
     )
