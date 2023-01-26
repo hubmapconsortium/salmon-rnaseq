@@ -77,6 +77,8 @@ steps:
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
   alevin_to_anndata:
     in:
+      assay:
+        source: assay
       alevin_dir:
         source: salmon/output_dir
     out:

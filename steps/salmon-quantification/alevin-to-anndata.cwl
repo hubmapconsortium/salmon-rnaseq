@@ -7,6 +7,10 @@ requirements:
 baseCommand: /opt/alevin_to_anndata.py
 
 inputs:
+  assay:
+    type: string
+    inputBinding:
+      position: 0
   alevin_dir:
     type: Directory
     inputBinding:
