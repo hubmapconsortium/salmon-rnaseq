@@ -56,11 +56,11 @@ def read_visium_pos(dataset_dir: Path) -> pd.DataFrame:
     return gpr_df
 
 def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnData:
-    assert assay in {Assay.SLIDESEQ, Assay.VIZIUM_FFPE}
+    assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FFPE}
     d = anndata.read_h5ad(h5ad_path)
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
-    elif assay == Assay.VISIUM_FFPE:
+    elif assay in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
         barcode_pos = read_visium_pos(dataset_dir)
 
     quant_bc_set = set(d.obs.index)
