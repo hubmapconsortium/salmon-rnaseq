@@ -21,6 +21,8 @@ inputs:
     type: int?
   keep_all_barcodes:
     type: boolean?
+  visium_probe_set_version:
+    type: int?
 outputs:
   salmon_output:
     outputSource: salmon_quantification/salmon_output
@@ -103,6 +105,8 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
+      visium_probe_set_version:
+        source: visium_probe_set_version
     out:
       - salmon_output
       - count_matrix_h5ad

@@ -38,11 +38,11 @@ inputs:
     inputBinding:
       position: 5
       prefix: "--keep-all-barcodes"
-  visium_index:
-    type: Directory?
+  visium_probe_set_version:
+    type: int?
     inputBinding:
       position: 6
-      prefix: "--index_dir"
+      prefix: "--visium-probe-set-version"
 
 outputs:
   output_dir:

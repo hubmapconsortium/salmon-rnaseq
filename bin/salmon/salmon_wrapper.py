@@ -2,7 +2,7 @@
 import csv
 import re
 from argparse import ArgumentParser
-from os import environ, fspath
+from os import environ, fspath, walk
 from pathlib import Path
 from subprocess import check_call
 from typing import Iterable, Optional, Sequence, Tuple
@@ -40,8 +40,8 @@ SALMON_COMMAND = [
 cell_count_filename = "extras/expected_cell_count.txt"
 metadata_filename_pattern = re.compile(r"^[0-9A-Fa-f]{32}-metadata.tsv$")
 metadata_cell_count_field = "expected_cell_count"
+metadata_probe_set_version_field = "visium_probe_set_version"
 barcode_whitelist_path = Path("barcode_whitelist.txt")
-
 
 def find_metadata_file(directory: Path) -> Optional[Path]:
     """
@@ -53,6 +53,47 @@ def find_metadata_file(directory: Path) -> Optional[Path]:
         if metadata_filename_pattern.match(file_path.name):
             return file_path
 
+def find_files(directory: Path, pattern: str) -> Iterable[Path]:
+    for dirpath_str, dirnames, filenames in walk(directory):
+        dirpath = Path(dirpath_str)
+        for filename in filenames:
+            filepath = dirpath / filename
+            if filepath.match(pattern):
+                yield filepath
+
+def get_visium_plate_version(directory: Path) -> int:
+    gpr_file = list(find_files(directory, "*.gpr"))[0]
+    return int(gpr_file[1])
+
+def get_visium_probe_set_version(directory: Path, probe_set_version_parameter: int)-> int:
+    maybe_metadata_file = find_metadata_file(directory)
+    if maybe_metadata_file and maybe_metadata_file.is_file():
+        with open(maybe_metadata_file, newline="") as f:
+            r = csv.DictReader(f, delimiter="\t")
+            metadata = next(r)
+            if (
+                metadata_probe_set_version_field in metadata
+                and metadata[metadata_probe_set_version_field].isdigit()
+            ):
+                probe_set_version_metadata = int(metadata[metadata_probe_set_version_field])
+                print(
+                    f"Read expected cell count from {maybe_metadata_file}: {probe_set_version_metadata}"
+                )
+
+    present_cell_counts = sum(x is not None for x in [probe_set_version_parameter, probe_set_version_metadata])
+    if present_cell_counts == 0:
+        return None
+    elif present_cell_counts == 1:
+        return probe_set_version_parameter or probe_set_version_metadata or 0
+    else:
+        if probe_set_version_parameter == probe_set_version_metadata:
+            return probe_set_version_parameter
+        else:
+            message = (
+                f"Found mismatched cell counts: {probe_set_version_parameter} as parameter, "
+                f"and {probe_set_version_metadata} in {maybe_metadata_file}"
+            )
+            raise ValueError(message)
 
 def read_expected_cell_count(directory: Path) -> Optional[int]:
     cell_count_from_file = None
@@ -159,11 +200,12 @@ def main(
     expected_cell_count: Optional[int],
     keep_all_barcodes: bool,
     threads: Optional[int],
+    visium_probe_set_version: Optional[int],
 ):
     threads = threads or 1
 
-    visium_plate_version = 1
-    visium_probe_set_version = 1
+    visium_plate_version = get_visium_plate_version(orig_fastq_dirs[0])
+    visium_probe_set_version = get_visium_probe_set_version(orig_fastq_dirs[0], visium_probe_set_version)
 
     transcript_map = f"/opt/visiumv{visium_probe_set_version}.tx2gene.tsv" if assay in {Assay.VISIUM_FFPE} else base_transcript_map
     index_dir = f"/opt/visium_v{visium_probe_set_version}_index/"
@@ -195,12 +237,13 @@ def main(
     if assay.keep_all_barcodes or keep_all_barcodes:
         command.extend(["--keepCBFraction", "1"])
     # hack
-    if assay == Assay.SLIDESEQ:
+    if assay in {Assay.SLIDESEQ, Assay.VISIUM_FF, Assay.VISIUM_FFPE}:
         # Don't support multiple input directories for Slide-seq; this will
         # likely cause significantly incorrect results due to barcode overlap
         # between multiple input data sets
         if len(orig_fastq_dirs) != 1:
             raise ValueError("Need exactly 1 input directory for Slide-seq")
+    if assay in {Assay.SLIDESEQ}:
         barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
     elif assay in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
@@ -238,6 +281,7 @@ if __name__ == "__main__":
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
+    p.add_argument("--visium-probe-set-version", type=int, nargs="?")
     args = p.parse_args()
 
     main(
@@ -247,4 +291,5 @@ if __name__ == "__main__":
         args.expected_cell_count,
         args.keep_all_barcodes,
         args.threads,
+        args.visium_probe_set_version,
     )

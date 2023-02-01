@@ -18,6 +18,8 @@ inputs:
     type: int?
   keep_all_barcodes:
     type: boolean?
+  visium_probe_set_version:
+    type: int?
 outputs:
   salmon_output:
     outputSource: salmon/output_dir
@@ -71,6 +73,8 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
+      visium_probe_set_version:
+        source: visium_probe_set_version
     out:
       - output_dir
     run: salmon-quantification/salmon.cwl
