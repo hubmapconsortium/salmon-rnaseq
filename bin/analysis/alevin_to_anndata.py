@@ -201,10 +201,15 @@ def convert(assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path) -> T
         cols=gene_names,
     )
 
-    spliced_anndata = raw_labeled if assay in {Assay.VISIUM_FFPE} else add_split_spliced_unspliced(raw_labeled)
-
     ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path)
-    ensembl_hugo_mapper.annotate(raw_labeled)
+
+    if assay in {Assay.VISIUM_FFPE}:
+        spliced_anndata = raw_labeled
+        raw_labeled = None
+    else:
+        spliced_anndata = add_split_spliced_unspliced(raw_labeled)
+        ensembl_hugo_mapper.annotate(raw_labeled)
+
     ensembl_hugo_mapper.annotate(spliced_anndata)
 
     return raw_labeled, spliced_anndata
@@ -223,7 +228,8 @@ if __name__ == "__main__":
     args = p.parse_args()
 
     raw, spliced = convert(args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path)
-    raw.write_h5ad("raw_expr.h5ad")
+    if raw:
+        raw.write_h5ad("raw_expr.h5ad")
     spliced.write_h5ad("expr.h5ad")
     if GENOME_BUILD_PATH.is_file():
         copy(GENOME_BUILD_PATH, Path.cwd() / GENOME_BUILD_PATH.name)

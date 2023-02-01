@@ -32,7 +32,7 @@ outputs:
     label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
   raw_count_matrix:
     outputSource: salmon_quantification/raw_count_matrix
-    type: File
+    type: File?
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
   genome_build_json:
     outputSource: salmon_quantification/genome_build_json

@@ -29,7 +29,7 @@ outputs:
     label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
   raw_count_matrix:
     outputSource: alevin_to_anndata/raw_expr_h5ad
-    type: File
+    type: File?
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
   genome_build_json:
     outputSource: alevin_to_anndata/genome_build_json

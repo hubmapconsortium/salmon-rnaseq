@@ -17,7 +17,7 @@ inputs:
       position: 1
 outputs:
   raw_expr_h5ad:
-    type: File
+    type: File?
     outputBinding:
       glob: raw_expr.h5ad
   expr_h5ad:
