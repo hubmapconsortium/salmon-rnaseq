@@ -24,6 +24,35 @@ class cd:
         os.chdir(self.savedPath)
 
 
+def pathing(path: str, new: bool = False, overwrite: bool = True) -> Path:
+    """Guarantees correct expansion rules for pathing.
+    :param Union[str, Path] path: path of folder or file you wish to expand.
+    :param bool new: will check if distination exists if new  (will check parent path regardless).
+    :return: A pathlib.Path object.
+    >>> pathing('~/Desktop/folderofgoodstuffs/')
+    /home/user/Desktop/folderofgoodstuffs
+    """
+    path = Path(path)
+    # Expand shortened path
+    if str(path)[0] == "~":
+        path = path.expanduser()
+    # Exand local path
+    if str(path)[0] == ".":
+        path = path.resolve()
+    else:
+        path = path.absolute()
+    # Making sure new paths don't exist while also making sure existing paths actually exist.
+    if new:
+        if not path.parent.exists():
+            raise ValueError(f"ERROR ::: Parent directory of {path} does not exist.")
+        if path.exists() and not overwrite:
+            raise ValueError(f"ERROR ::: {path} already exists!")
+    else:
+        if not path.exists():
+            raise ValueError(f"ERROR ::: Path {path} does not exist.")
+    return path
+
+
 class Shell:
     """Shell wrapper for cwtool pipeline.cwl"""
 
@@ -85,6 +114,13 @@ def main(ctx: click.Context, outdir: str) -> None:
     if not ctx.args:
         click.echo(Shell().help())
         ctx.exit()
+
+    Path(outdir).mkdir(exist_ok=True)
+    for i, arg in enumerate(ctx.args):
+        if Path(arg).exists():
+            ctx.args[i] = str(pathing(arg))
+    outdir = str(pathing(outdir))
+
     with cd(outdir):
         Shell.run(ctx.args)
 

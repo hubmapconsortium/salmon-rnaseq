@@ -1,0 +1,36 @@
+[2023-02-14 19:54:38.536] [alevinLog] [info] Found 612263 transcripts(+194 decoys, +39 short and +0 duplicate names in the index)
+[2023-02-14 19:54:39.008] [alevinLog] [info] Filled with 612302 txp to gene entries 
+[2023-02-14 19:54:39.119] [alevinLog] [info] Found all transcripts to gene mappings
+[2023-02-14 19:54:39.184] [alevinLog] [info] Processing barcodes files (if Present) 
+
+ 
+[2023-02-14 19:54:39.213] [alevinLog] [info] Done barcode density calculation.
+[2023-02-14 19:54:39.213] [alevinLog] [info] # Barcodes Used: [32m50000[0m / [31m50000[0m.
+[2023-02-14 19:54:39.227] [alevinLog] [info] Knee found left boundary at [32m 575 [0m
+[2023-02-14 19:54:40.109] [alevinLog] [warning] Gauss Prediction 585 Too far from knee prediction skipping it
+[2023-02-14 19:54:40.109] [alevinLog] [info] Learned InvCov: 419.27 normfactor: 904.42
+[2023-02-14 19:54:40.109] [alevinLog] [info] Total [32m705[0m(has [32m201[0m low confidence) barcodes
+[2023-02-14 19:54:40.817] [alevinLog] [info] Done True Barcode Sampling
+[2023-02-14 19:54:40.819] [alevinLog] [info] Total 19.104% reads will be thrown away because of noisy Cellular barcodes.
+[2023-02-14 19:54:40.834] [alevinLog] [info] Done populating Z matrix
+[2023-02-14 19:54:40.834] [alevinLog] [info] Total 0 CB got sequence corrected
+[2023-02-14 19:54:40.834] [alevinLog] [info] Done indexing Barcodes
+[2023-02-14 19:54:40.834] [alevinLog] [info] Total Unique barcodes found: 7388
+[2023-02-14 19:54:40.834] [alevinLog] [info] Used Barcodes except Whitelist: 0
+[2023-02-14 19:54:41.537] [alevinLog] [info] Done with Barcode Processing; Moving to Quantify
+
+[2023-02-14 19:54:41.537] [alevinLog] [info] parsing read library format
+[2023-02-14 19:55:18.583] [alevinLog] [info] Starting optimizer
+
+
+[2023-02-14 19:55:19.292] [alevinLog] [warning] mrna file not provided; using is 1 less feature for whitelisting
+[2023-02-14 19:55:19.292] [alevinLog] [warning] rrna file not provided; using is 1 less feature for whitelisting
+[2023-02-14 19:55:22.208] [alevinLog] [info] Total 13660.00 UMI after deduplicating.
+[2023-02-14 19:55:22.208] [alevinLog] [info] Total 32 BiDirected Edges.
+[2023-02-14 19:55:22.208] [alevinLog] [info] Total 5 UniDirected Edges.
+[2023-02-14 19:55:22.208] [alevinLog] [warning] Skipped 45 barcodes due to No mapped read
+[2023-02-14 19:55:22.222] [alevinLog] [info] Clearing EqMap; Might take some time.
+[2023-02-14 19:55:22.234] [alevinLog] [warning] Num Low confidence barcodes too less 157 < 200.Can't performing whitelisting; Skipping
+[2023-02-14 19:55:22.234] [alevinLog] [info] Starting dumping cell v gene counts in mtx format
+[2023-02-14 19:55:22.278] [alevinLog] [info] Finished dumping counts into mtx
+[2023-02-14 19:55:22.280] [alevinLog] [info] Finished optimizer
