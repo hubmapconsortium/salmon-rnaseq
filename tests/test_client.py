@@ -18,21 +18,39 @@ def test_command_line_interface(fixture_setup):
     assert "--help" in help_result.output
 
 
+def test_command_line_10x_v2_sn(fixture_setup):
+    runner = CliRunner()
+    source_path = fixture_setup.get_dir_10x_v2_sn()
+    proc = runner.invoke(
+        cli.main,
+        [
+            "--assay",
+            "10x_v2_sn",
+            "--threads",
+            str(multiprocessing.cpu_count()),
+            "--fastq_dir",
+            source_path + "/input",
+            "-o",
+            source_path + "/output",
+        ],
+    )
+    print(proc)
+    
+
 def test_command_line_10x_v3_sn(fixture_setup):
     runner = CliRunner()
-    dir_10x_v2_sn = fixture_setup.get_dir_10x_v3_sn()
+    source_path = fixture_setup.get_dir_10x_v3_sn()
     proc = runner.invoke(
         cli.main,
         [
             "--assay",
             "10x_v3_sn",
             "--threads",
-            "4",
+            str(multiprocessing.cpu_count()),
             "--fastq_dir",
-            dir_10x_v2_sn + "/input",
+            source_path + "/input",
             "-o",
-            dir_10x_v2_sn + "/output",
-            # fixture_setup.tmp_path,
+            source_path + "/output",
         ],
     )
     print(proc)
