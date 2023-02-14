@@ -35,7 +35,7 @@ def test_command_line_10x_v2_sn(fixture_setup):
         ],
     )
     print(proc)
-    
+
 
 def test_command_line_10x_v3_sn(fixture_setup):
     runner = CliRunner()
