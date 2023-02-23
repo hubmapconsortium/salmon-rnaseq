@@ -43,14 +43,19 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
 def read_visium_pos(dataset_dir: Path) -> pd.DataFrame:
     gpr_file = list(find_files(dataset_dir, "*.gpr"))[0]
     gpr_df = pd.read_csv(gpr_file, sep='\t', skiprows=9)
+    print(f"len gpr_df.index: {len(gpr_df.index)}")
+    gpr_df = gpr_df[gpr_df['Block'] == 1]
     gpr_df = gpr_df.set_index(['Column', 'Row'], inplace=False, drop=True)
     plate_version_number = gpr_file.stem[1]
-    barcode_coords_file = Path(f"/opt/visium-v{plate_version_number}_coordinates.txt")
+    barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
     coords_df = pd.read_csv(barcode_coords_file, sep='\t', names=['barcode', 'Column', 'Row'])
     coords_df = coords_df.set_index(['Column', 'Row'])
+    print(f"len coords_df.index: {len(coords_df.index)}")
     gpr_df['barcode'] = coords_df['barcode']
     gpr_df = gpr_df[['barcode', 'X', 'Y']]
+    print(f"len gpr_df with barcodes: {len(gpr_df.index)}")
     gpr_df = gpr_df[~gpr_df.barcode.isna()]
+    print(f"len gpr_df with barcodes non_null: {len(gpr_df.index)}")
     gpr_df = gpr_df.reset_index(inplace=False)
     gpr_df = gpr_df.set_index('barcode', inplace=False, drop=True)
     return gpr_df
@@ -58,17 +63,23 @@ def read_visium_pos(dataset_dir: Path) -> pd.DataFrame:
 def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnData:
     assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FFPE}
     d = anndata.read_h5ad(h5ad_path)
+    print(f"adata.obs.index: {len(d.obs.index)}")
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
     elif assay in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
         barcode_pos = read_visium_pos(dataset_dir)
 
     quant_bc_set = set(d.obs.index)
+    print(f"len quant_bc set: {len(quant_bc_set)}")
     pos_bc_set = set(barcode_pos.index)
+    print(f"len pos_bc set:  {len(pos_bc_set)}")
     overlap = quant_bc_set & pos_bc_set
+    print(f"len overlap: {len(overlap)}")
     positions_overlap = barcode_pos.loc[list(overlap), :]
 
     quant_minus_pos = quant_bc_set - pos_bc_set
+    print(f"len quant_minus_pos: {len(quant_minus_pos)}")
+    print(f"len pos_minus_quant: {len(pos_bc_set - quant_bc_set)}")
     positions_missing = pd.DataFrame(
         index=list(quant_minus_pos),
         columns=barcode_pos.columns,
@@ -92,4 +103,4 @@ if __name__ == "__main__":
     args = p.parse_args()
 
     d = annotate(args.h5ad_path, args.base_dir, args.assay)
-    d.write_h5ad("slideseq_pos_annotated.h5ad")
+    d.write_h5ad("spatial_pos_annotated.h5ad")

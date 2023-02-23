@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM pypy:3.8
 
 ENV DEBIAN_FRONTEND=noninteractive
 

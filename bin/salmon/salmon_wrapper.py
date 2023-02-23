@@ -26,7 +26,7 @@ SALMON_COMMAND = [
     "--index",
     "{index}",
     "--libType",
-    "A",
+    "ISR",
     "--output",
     "salmon_out",
     "--dumpMtx",
@@ -63,9 +63,10 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
 
 def get_visium_plate_version(directory: Path) -> int:
     gpr_file = list(find_files(directory, "*.gpr"))[0]
-    return int(gpr_file[1])
+    return int(gpr_file.stem[1])
 
-def get_visium_probe_set_version(directory: Path, probe_set_version_parameter: int)-> int:
+def get_visium_probe_set_version(directory: Path, probe_set_version_parameter: int = None)-> int:
+    probe_set_version_metadata = None
     maybe_metadata_file = find_metadata_file(directory)
     if maybe_metadata_file and maybe_metadata_file.is_file():
         with open(maybe_metadata_file, newline="") as f:
@@ -80,17 +81,17 @@ def get_visium_probe_set_version(directory: Path, probe_set_version_parameter: i
                     f"Read expected cell count from {maybe_metadata_file}: {probe_set_version_metadata}"
                 )
 
-    present_cell_counts = sum(x is not None for x in [probe_set_version_parameter, probe_set_version_metadata])
-    if present_cell_counts == 0:
+    present_probe_set_versions = sum(x is not None for x in [probe_set_version_parameter, probe_set_version_metadata])
+    if present_probe_set_versions == 0:
         return None
-    elif present_cell_counts == 1:
+    elif present_probe_set_versions == 1:
         return probe_set_version_parameter or probe_set_version_metadata or 0
     else:
         if probe_set_version_parameter == probe_set_version_metadata:
             return probe_set_version_parameter
         else:
             message = (
-                f"Found mismatched cell counts: {probe_set_version_parameter} as parameter, "
+                f"Found mismatched probe set versions: {probe_set_version_parameter} as parameter, "
                 f"and {probe_set_version_metadata} in {maybe_metadata_file}"
             )
             raise ValueError(message)
@@ -247,8 +248,9 @@ def main(
         barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
     elif assay in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
-        barcode_file = f'visium-v{visium_plate_version}.txt'
-        command.extend(['--whiteList', barcode_file])
+        barcode_file = f'/opt/visium-v{visium_plate_version}.txt'
+        command.extend(['--whitelist', barcode_file])
+        command.extend(['--writeUnmappedNames', '--writeOrphanLinks', '--recoverOrphans'])
 
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:

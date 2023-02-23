@@ -49,14 +49,22 @@ class EnsemblHugoMapper:
         self.mapping = {}
 
     @classmethod
-    def populate(cls, path: Path):
+    def populate(cls, path: Path, assay: Assay):
         self = cls()
         with smart_open(path) as f:
-            self.mapping.update(json.load(f))
+            if assay in {Assay.VISIUM_FFPE}:
+                versioned_dict = json.load(f)
+                unversioned_dict = {key.split('.')[0]:versioned_dict[key] for key in versioned_dict}
+                self.mapping.update(unversioned_dict)
+            else:
+                self.mapping.update(json.load(f))
         return self
 
-    def annotate(self, data: AnnData):
-        symbols = [self.mapping.get(e) for e in data.var.index]
+    def annotate(self, data: AnnData, assay: Assay):
+        if assay in {Assay.VISIUM_FFPE}:
+            symbols = [self.mapping.get(e.replace("DEPRECATED_", "")) for e in data.var.index]
+        else:
+            symbols = [self.mapping.get(e) for e in data.var.index]
         data.var.loc[
             :,
             "hugo_symbol",
@@ -201,16 +209,17 @@ def convert(assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path) -> T
         cols=gene_names,
     )
 
-    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path)
+    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path, assay)
 
     if assay in {Assay.VISIUM_FFPE}:
         spliced_anndata = raw_labeled
         raw_labeled = None
     else:
         spliced_anndata = add_split_spliced_unspliced(raw_labeled)
-        ensembl_hugo_mapper.annotate(raw_labeled)
+        ensembl_hugo_mapper.annotate(raw_labeled, assay)
 
-    ensembl_hugo_mapper.annotate(spliced_anndata)
+    ensembl_hugo_mapper.annotate(spliced_anndata, assay)
+    print(spliced_anndata.var.hugo_symbol.unique())
 
     return raw_labeled, spliced_anndata
 
@@ -218,8 +227,8 @@ def convert(assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path) -> T
 if __name__ == "__main__":
     manhole.install(activate_on="USR1")
     p = ArgumentParser()
-    p.add_argument("alevin_output_dir", type=Path)
     p.add_argument("assay", choices=list(Assay), type=Assay)
+    p.add_argument("alevin_output_dir", type=Path)
     p.add_argument(
         "--ensembl_hugo_mapping_path",
         type=Path,
