@@ -8,6 +8,7 @@ import pandas as pd
 from common import Assay
 from os import walk
 from typing import Iterable
+import read_visium_positions
 
 barcode_matching_dir = "barcode_matching"
 
@@ -40,46 +41,26 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             if filepath.match(pattern):
                 yield filepath
 
-def read_visium_pos(dataset_dir: Path) -> pd.DataFrame:
-    gpr_file = list(find_files(dataset_dir, "*.gpr"))[0]
-    gpr_df = pd.read_csv(gpr_file, sep='\t', skiprows=9)
-    print(f"len gpr_df.index: {len(gpr_df.index)}")
-    gpr_df = gpr_df[gpr_df['Block'] == 1]
-    gpr_df = gpr_df.set_index(['Column', 'Row'], inplace=False, drop=True)
-    plate_version_number = gpr_file.stem[1]
-    barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
-    coords_df = pd.read_csv(barcode_coords_file, sep='\t', names=['barcode', 'Column', 'Row'])
-    coords_df = coords_df.set_index(['Column', 'Row'])
-    print(f"len coords_df.index: {len(coords_df.index)}")
-    gpr_df['barcode'] = coords_df['barcode']
-    gpr_df = gpr_df[['barcode', 'X', 'Y']]
-    print(f"len gpr_df with barcodes: {len(gpr_df.index)}")
-    gpr_df = gpr_df[~gpr_df.barcode.isna()]
-    print(f"len gpr_df with barcodes non_null: {len(gpr_df.index)}")
-    gpr_df = gpr_df.reset_index(inplace=False)
-    gpr_df = gpr_df.set_index('barcode', inplace=False, drop=True)
-    return gpr_df
-
-def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnData:
+def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Path = None, metadata_dir: Path = None) -> anndata.AnnData:
     assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FFPE}
     d = anndata.read_h5ad(h5ad_path)
     print(f"adata.obs.index: {len(d.obs.index)}")
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
-    elif assay in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
-        barcode_pos = read_visium_pos(dataset_dir)
+    elif assay in {Assay.VISIUM_FF}:
+        barcode_pos, slide_id, scale_factor, spot_diameter = read_visium_positions(img_dir, metadata_dir)
+        d.obs['Tissue Coverage Fraction'] = barcode_pos['Tissue Coverage Fraction']
+        spatial_key = "spatial"
+        library_id = slide_id
+        d.uns[spatial_key] = {library_id: {}}
+        d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": scale_factor, "spot_diameter_fullres": spot_diameter}
 
     quant_bc_set = set(d.obs.index)
-    print(f"len quant_bc set: {len(quant_bc_set)}")
     pos_bc_set = set(barcode_pos.index)
-    print(f"len pos_bc set:  {len(pos_bc_set)}")
     overlap = quant_bc_set & pos_bc_set
-    print(f"len overlap: {len(overlap)}")
     positions_overlap = barcode_pos.loc[list(overlap), :]
 
     quant_minus_pos = quant_bc_set - pos_bc_set
-    print(f"len quant_minus_pos: {len(quant_minus_pos)}")
-    print(f"len pos_minus_quant: {len(pos_bc_set - quant_bc_set)}")
     positions_missing = pd.DataFrame(
         index=list(quant_minus_pos),
         columns=barcode_pos.columns,
@@ -89,6 +70,7 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay) -> anndata.AnnDat
     quant_pos = pd.concat([positions_overlap, positions_missing])
     quant_pos_ordered = quant_pos.loc[d.obs.index, :]
     d.obsm["X_spatial"] = quant_pos_ordered.to_numpy()
+    d.obsm["spatial"] = d.obsm["X_spatial"]
 
     return d
 

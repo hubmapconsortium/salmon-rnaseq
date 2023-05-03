@@ -13,7 +13,7 @@ from plot_utils import new_plot
 
 
 def main(spliced_h5ad_file: Path, assay: Assay):
-    if assay not in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
+    if assay not in {Assay.VISIUM_FF}:
         adata = anndata.read_h5ad(spliced_h5ad_file)
         adata.var_names_make_unique()
 

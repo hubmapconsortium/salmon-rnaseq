@@ -10,6 +10,12 @@ inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"
     type: Directory[]
+  img_dir:
+    label: "Directory containing TIFF image data (for Visium assay)"
+    type: Directory?
+  metadata_dir:
+    label: "Directory containing metadata, including gpr slide file (for Visium assay)"
+    type: Directory?
   assay:
     label: "scRNA-seq assay"
     type: string
@@ -21,8 +27,6 @@ inputs:
     type: int?
   keep_all_barcodes:
     type: boolean?
-  visium_probe_set_version:
-    type: int?
 outputs:
   salmon_output:
     outputSource: salmon_quantification/salmon_output
@@ -92,11 +96,39 @@ outputs:
     outputSource: scvelo_analysis/embedding_grid_plot
     type: File?
     label: "scVelo velocity embedding grid plot"
+  ome_tiff_file:
+    outputSource: ome_tiff/ome_tiff_file
+    type: File?
+  squidpy_annotated_h5ad:
+    outputSource: squidpy_analysis/squidpy_annotated_h5ad
+    type: File?
+  neighborhood_enrichment_plot:
+    outputSource: squidpy_analysis/neighborhood_enrichment_plot
+    type: File?
+  co_occurrence_plot:
+    outputSource: squidpy_analysis/co_occurrence_plot
+    type: File?
+  interaction_matrix_plot:
+    outputSource: squidpy_analysis/interaction_matrix_plot
+    type: File?
+  centrality_scores_plot:
+    outputSource: squidpy_analysis/centrality_scores_plot
+    type: File?
+  ripley_plot:
+    outputSource: squidpy_analysis/ripley_plot
+    type: File?
+  squidpy_spatial_plot:
+    outputSource: squidpy_analysis/spatial_plot
+    type: File?
 steps:
   salmon_quantification:
     in:
       fastq_dir:
         source: fastq_dir
+      img_dir:
+        source: img_dir
+      metadata_dir:
+        source: metadata_dir
       assay:
         source: assay
       threads:
@@ -105,8 +137,6 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
-      visium_probe_set_version:
-        source: visium_probe_set_version
     out:
       - salmon_output
       - count_matrix_h5ad
@@ -152,6 +182,24 @@ steps:
       - embedding_grid_plot
     run: steps/scvelo-analysis.cwl
     label: "RNA velocity analysis via scVelo"
+  squidpy_analysis:
+    in:
+      assay:
+        source: assay
+      h5ad_file:
+        source: scanpy_analysis/filtered_data_h5ad
+      img_dir:
+        source: img_dir
+    out:
+      - squidpy_annotated_h5ad
+      - neighborhood_enrichment_plot
+      - co_occurrence_plot
+      - interaction_matrix_plot
+      - ripley_plot
+      - centrality_scores_plot
+      - spatial_plot
+    run: steps/squidpy-analysis.cwl
+    label: "Spatial analysis via SquidPy"
   compute_qc_results:
     in:
       assay:
@@ -167,3 +215,11 @@ steps:
       - qc_metrics
     run: steps/compute-qc-metrics.cwl
     label: "Compute QC metrics"
+  ome_tiff:
+    in:
+      img_dir:
+        source: img_dir
+    out:
+      - ome_tiff_file
+    run: steps/ome-tiff-convert.cwl
+    label: "Convert tiff image to ome tiff"

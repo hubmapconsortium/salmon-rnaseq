@@ -18,8 +18,10 @@ inputs:
     type: int?
   keep_all_barcodes:
     type: boolean?
-  visium_probe_set_version:
-    type: int?
+  img_dir:
+    type: Directory?
+  metadata_dir:
+    type: Directory?
 outputs:
   salmon_output:
     outputSource: salmon/output_dir
@@ -73,8 +75,6 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
-      visium_probe_set_version:
-        source: visium_probe_set_version
     out:
       - output_dir
     run: salmon-quantification/salmon.cwl
@@ -99,6 +99,10 @@ steps:
         source: assay
       h5ad_file:
         source: alevin_to_anndata/expr_h5ad
+      img_dir:
+        source: img_dir
+      metadata_dir:
+        source: metadata_dir
       metadata_json:
         source: adjust_barcodes/metadata_json
     out:

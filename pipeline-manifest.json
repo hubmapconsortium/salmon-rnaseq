@@ -71,5 +71,10 @@
 		"description": "FastQC report of input FASTQ file",
 		"edam_ontology_term": "EDAM_1.24.format_2331",
 		"is_qa_qc": true
+	},
+	{
+		"pattern": ".*\\.ome.tiff",
+		"description": "Experimental imaging data in OME-TIFF format",
+		"edam_ontology_term": "EDAM_1.24.format_3727",
 	}
 ]

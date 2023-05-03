@@ -39,10 +39,6 @@ inputs:
       position: 5
       prefix: "--keep-all-barcodes"
   visium_probe_set_version:
-    type: int?
-    inputBinding:
-      position: 6
-      prefix: "--visium-probe-set-version"
 
 outputs:
   output_dir:

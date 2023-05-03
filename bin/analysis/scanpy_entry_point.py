@@ -10,12 +10,18 @@ import scanpy as sc
 from common import Assay
 from plot_utils import new_plot
 
+TISSUE_COVERAGE_CUTOFF = 0.7
+
 
 def main(assay: Assay, h5ad_file: Path):
     adata = anndata.read_h5ad(h5ad_file)
     if assay.secondary_analysis_layer in adata.layers:
         adata.X = adata.layers[assay.secondary_analysis_layer]
     adata.var_names_make_unique()
+
+    if 'Tissue Coverage Fraction' in adata.obs.columns:
+        adata = adata[adata.obs['Tissue Coverage Fraction'] >= TISSUE_COVERAGE_CUTOFF]
+        adata.obs = adata.obs.drop('Tissue Coverage Fraction')
 
     sc.pp.filter_cells(adata, min_genes=200)
     sc.pp.filter_genes(adata, min_cells=3)

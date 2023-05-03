@@ -57,17 +57,6 @@ def trim_reads(fastq_r1: Path, fastq_r2: Path, output_subdir: Path):
     with open(fastq_r2_out, "wb") as f:
         check_call(command, stdout=f)
 
-def trim_seq_and_qual(read):
-    return Read(read.read_id, read.seq[0:50], read.unused, read.qual[0:50])
-
-def trim_reads_visium_ffpe(fastq_r1: Path, fastq_r2: Path, output_subdir: Path):
-    reads = fastq_reader(fastq_r2)
-    trimmed_reads = [trim_seq_and_qual(read) for read in reads]
-    fastq_r2_out = output_subdir / fastq_r2.name
-    with open(fastq_r2_out, "a") as f:
-        for read in trimmed_reads:
-            f.write(read.serialize())
-            f.write('\n')
 
 def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, threads: int):
     fastq_pairs: Iterable[Sequence[Path]]
@@ -86,9 +75,8 @@ def main(assay: Assay, orig_fastq_dirs: Sequence[Path], adj_fastq_dir: Path, thr
         for i, (r1_fastq_file, r2_fastq_file) in enumerate(fastq_pairs, 1):
             subdir = OUTPUT_PATH / str(i)
             subdir.mkdir(exist_ok=True, parents=True)
-            callable = trim_reads_visium_ffpe if assay == Assay.VISIUM_FFPE else trim_reads
             future = executor.submit(
-                callable,
+                trim_reads,
                 r1_fastq_file,
                 r2_fastq_file,
                 subdir,

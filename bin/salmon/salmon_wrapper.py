@@ -17,8 +17,8 @@ from common import (
     Assay,
 )
 
-base_index = '/opt/gencode.v35.intron-exon.sidx'
-base_transcript_map = '/opt/gencode.v35.annotation.expanded.tx2gene.tsv'
+index = '/opt/gencode.v35.intron-exon.sidx'
+transcript_map = '/opt/gencode.v35.annotation.expanded.tx2gene.tsv'
 
 SALMON_COMMAND = [
     "salmon",
@@ -64,37 +64,6 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
 def get_visium_plate_version(directory: Path) -> int:
     gpr_file = list(find_files(directory, "*.gpr"))[0]
     return int(gpr_file.stem[1])
-
-def get_visium_probe_set_version(directory: Path, probe_set_version_parameter: int = None)-> int:
-    probe_set_version_metadata = None
-    maybe_metadata_file = find_metadata_file(directory)
-    if maybe_metadata_file and maybe_metadata_file.is_file():
-        with open(maybe_metadata_file, newline="") as f:
-            r = csv.DictReader(f, delimiter="\t")
-            metadata = next(r)
-            if (
-                metadata_probe_set_version_field in metadata
-                and metadata[metadata_probe_set_version_field].isdigit()
-            ):
-                probe_set_version_metadata = int(metadata[metadata_probe_set_version_field])
-                print(
-                    f"Read expected cell count from {maybe_metadata_file}: {probe_set_version_metadata}"
-                )
-
-    present_probe_set_versions = sum(x is not None for x in [probe_set_version_parameter, probe_set_version_metadata])
-    if present_probe_set_versions == 0:
-        return None
-    elif present_probe_set_versions == 1:
-        return probe_set_version_parameter or probe_set_version_metadata or 0
-    else:
-        if probe_set_version_parameter == probe_set_version_metadata:
-            return probe_set_version_parameter
-        else:
-            message = (
-                f"Found mismatched probe set versions: {probe_set_version_parameter} as parameter, "
-                f"and {probe_set_version_metadata} in {maybe_metadata_file}"
-            )
-            raise ValueError(message)
 
 def read_expected_cell_count(directory: Path) -> Optional[int]:
     cell_count_from_file = None
@@ -201,17 +170,10 @@ def main(
     expected_cell_count: Optional[int],
     keep_all_barcodes: bool,
     threads: Optional[int],
-    visium_probe_set_version: Optional[int],
 ):
     threads = threads or 1
 
-    visium_plate_version = get_visium_plate_version(orig_fastq_dirs[0])
-    visium_probe_set_version = get_visium_probe_set_version(orig_fastq_dirs[0], visium_probe_set_version)
-
-    transcript_map = f"/opt/visiumv{visium_probe_set_version}.tx2gene.tsv" if assay in {Assay.VISIUM_FFPE} else base_transcript_map
-    index_dir = f"/opt/visium_v{visium_probe_set_version}_index/"
-    index = index_dir if assay in {Assay.VISIUM_FFPE} else base_index
-
+    visium_plate_version = 1
 
     command = [
         piece.format(
@@ -238,7 +200,7 @@ def main(
     if assay.keep_all_barcodes or keep_all_barcodes:
         command.extend(["--keepCBFraction", "1"])
     # hack
-    if assay in {Assay.SLIDESEQ, Assay.VISIUM_FF, Assay.VISIUM_FFPE}:
+    if assay in {Assay.SLIDESEQ, Assay.VISIUM_FF}:
         # Don't support multiple input directories for Slide-seq; this will
         # likely cause significantly incorrect results due to barcode overlap
         # between multiple input data sets
@@ -247,10 +209,9 @@ def main(
     if assay in {Assay.SLIDESEQ}:
         barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
-    elif assay in {Assay.VISIUM_FFPE, Assay.VISIUM_FF}:
+    elif assay in {Assay.VISIUM_FF}:
         barcode_file = f'/opt/visium-v{visium_plate_version}.txt'
         command.extend(['--whitelist', barcode_file])
-        command.extend(['--writeUnmappedNames', '--writeOrphanLinks', '--recoverOrphans'])
 
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:
