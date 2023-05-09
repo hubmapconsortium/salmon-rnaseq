@@ -6,9 +6,9 @@ import anndata
 import manhole
 import matplotlib.pyplot as plt
 import scanpy as sc
+from plot_utils import new_plot
 
 from common import Assay
-from plot_utils import new_plot
 
 
 def main(assay: Assay, h5ad_file: Path):
