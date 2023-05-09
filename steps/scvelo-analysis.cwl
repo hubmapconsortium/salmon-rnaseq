@@ -1,9 +1,12 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: RNA velocity analysis via scVelo
-hints:
+requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-analysis:latest
+  EnvVarRequirement:
+    envDef:
+      TMPDIR: "/tmp"
 baseCommand: /opt/scvelo_analysis.py
 
 inputs:
