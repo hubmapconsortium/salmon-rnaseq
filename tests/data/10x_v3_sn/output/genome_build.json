@@ -1,7 +1,0 @@
-{
-    "genome": "grch38",
-    "annotations": {
-        "source": "GENCODE",
-        "version": 35
-    }
-}
