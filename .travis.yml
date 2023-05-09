@@ -2,6 +2,6 @@ dist: focal
 language: python
 python: 3.8
 install:
-  - pip install -r requirements-test.txt
+  - pip install .
 script:
-  - ./test.sh
+  - pre-commit run --all-files
