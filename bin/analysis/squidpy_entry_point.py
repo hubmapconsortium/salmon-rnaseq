@@ -18,7 +18,7 @@ import re
 import cv2
 import numpy as np
 
-ome_tiff_pattern = re.compile(r"(?P<basename>.*)\.tif(f?)$")
+ome_tiff_pattern = re.compile(r"(?P<basename>.*)\.ome\.tiff(f?)$")
 
 def find_ome_tiffs(input_dir: Path) -> Iterable[Path]:
     """

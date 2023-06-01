@@ -262,7 +262,7 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
 
 def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.0713, 0.0899), blur_size=255, morph_kernel_size=153):
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
-    img_path = list(find_files(img_dir, "*.tiff"))[0]
+    img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
 
     gpr = pd.read_table(gpr_path, skiprows=9)
 
