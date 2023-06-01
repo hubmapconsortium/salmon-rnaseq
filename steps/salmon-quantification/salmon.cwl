@@ -38,7 +38,6 @@ inputs:
     inputBinding:
       position: 5
       prefix: "--keep-all-barcodes"
-  visium_probe_set_version:
 
 outputs:
   output_dir:

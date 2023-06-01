@@ -52,19 +52,12 @@ class EnsemblHugoMapper:
     def populate(cls, path: Path, assay: Assay):
         self = cls()
         with smart_open(path) as f:
-            if assay in {Assay.VISIUM_FFPE}:
-                versioned_dict = json.load(f)
-                unversioned_dict = {key.split('.')[0]:versioned_dict[key] for key in versioned_dict}
-                self.mapping.update(unversioned_dict)
-            else:
-                self.mapping.update(json.load(f))
+            self.mapping.update(json.load(f))
         return self
 
     def annotate(self, data: AnnData, assay: Assay):
-        if assay in {Assay.VISIUM_FFPE}:
-            symbols = [self.mapping.get(e.replace("DEPRECATED_", "")) for e in data.var.index]
-        else:
-            symbols = [self.mapping.get(e) for e in data.var.index]
+
+        symbols = [self.mapping.get(e) for e in data.var.index]
         data.var.loc[
             :,
             "hugo_symbol",
@@ -211,15 +204,10 @@ def convert(assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path) -> T
 
     ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path, assay)
 
-    if assay in {Assay.VISIUM_FFPE}:
-        spliced_anndata = raw_labeled
-        raw_labeled = None
-    else:
-        spliced_anndata = add_split_spliced_unspliced(raw_labeled)
-        ensembl_hugo_mapper.annotate(raw_labeled, assay)
+    spliced_anndata = add_split_spliced_unspliced(raw_labeled)
+    ensembl_hugo_mapper.annotate(raw_labeled, assay)
 
     ensembl_hugo_mapper.annotate(spliced_anndata, assay)
-    print(spliced_anndata.var.hugo_symbol.unique())
 
     return raw_labeled, spliced_anndata
 
@@ -239,6 +227,7 @@ if __name__ == "__main__":
     raw, spliced = convert(args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path)
     if raw:
         raw.write_h5ad("raw_expr.h5ad")
+    print(spliced)
     spliced.write_h5ad("expr.h5ad")
     if GENOME_BUILD_PATH.is_file():
         copy(GENOME_BUILD_PATH, Path.cwd() / GENOME_BUILD_PATH.name)

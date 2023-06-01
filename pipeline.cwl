@@ -215,11 +215,3 @@ steps:
       - qc_metrics
     run: steps/compute-qc-metrics.cwl
     label: "Compute QC metrics"
-  ome_tiff:
-    in:
-      img_dir:
-        source: img_dir
-    out:
-      - ome_tiff_file
-    run: steps/ome-tiff-convert.cwl
-    label: "Convert tiff image to ome tiff"

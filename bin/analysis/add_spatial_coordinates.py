@@ -42,18 +42,19 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
                 yield filepath
 
 def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Path = None, metadata_dir: Path = None) -> anndata.AnnData:
-    assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FFPE}
+    print(metadata_dir)
+    assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FF}
     d = anndata.read_h5ad(h5ad_path)
-    print(f"adata.obs.index: {len(d.obs.index)}")
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
     elif assay in {Assay.VISIUM_FF}:
-        barcode_pos, slide_id, scale_factor, spot_diameter = read_visium_positions(img_dir, metadata_dir)
+        barcode_pos, slide_id, scale_factor, spot_diameter = read_visium_positions.read_visium_positions(metadata_dir, img_dir)
         d.obs['Tissue Coverage Fraction'] = barcode_pos['Tissue Coverage Fraction']
         spatial_key = "spatial"
         library_id = slide_id
         d.uns[spatial_key] = {library_id: {}}
         d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": scale_factor, "spot_diameter_fullres": spot_diameter}
+        print(d.obs.columns)
 
     quant_bc_set = set(d.obs.index)
     pos_bc_set = set(barcode_pos.index)
@@ -71,6 +72,7 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Path = N
     quant_pos_ordered = quant_pos.loc[d.obs.index, :]
     d.obsm["X_spatial"] = quant_pos_ordered.to_numpy()
     d.obsm["spatial"] = d.obsm["X_spatial"]
+    print(d.obs.columns)
 
     return d
 

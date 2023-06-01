@@ -26,7 +26,7 @@ SALMON_COMMAND = [
     "--index",
     "{index}",
     "--libType",
-    "ISR",
+    "A",
     "--output",
     "salmon_out",
     "--dumpMtx",
@@ -244,7 +244,6 @@ if __name__ == "__main__":
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
-    p.add_argument("--visium-probe-set-version", type=int, nargs="?")
     args = p.parse_args()
 
     main(
@@ -254,5 +253,4 @@ if __name__ == "__main__":
         args.expected_cell_count,
         args.keep_all_barcodes,
         args.threads,
-        args.visium_probe_set_version,
     )

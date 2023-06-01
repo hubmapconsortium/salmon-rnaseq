@@ -21,7 +21,8 @@ def main(assay: Assay, h5ad_file: Path):
 
     if 'Tissue Coverage Fraction' in adata.obs.columns:
         adata = adata[adata.obs['Tissue Coverage Fraction'] >= TISSUE_COVERAGE_CUTOFF]
-        adata.obs = adata.obs.drop('Tissue Coverage Fraction')
+        print(adata.obs.columns)
+        adata.obs = adata.obs.drop('Tissue Coverage Fraction', axis=1)
 
     sc.pp.filter_cells(adata, min_genes=200)
     sc.pp.filter_genes(adata, min_cells=3)

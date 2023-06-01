@@ -15,6 +15,7 @@ from typing import Iterable
 
 import sys
 import cv2
+import tifffile as tf
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from scipy.spatial import distance
@@ -58,6 +59,11 @@ def fiducial_filter(img, distance, filter=1):
     '''
 
     '''
+
+    print(distance)
+    print(img.shape)
+    distance = (int(distance[0]*img.shape[0]), int(distance[1]*img.shape[1]))
+    print(distance)
 
     if filter:
         mask = np.zeros(img.shape, dtype='uint8')
@@ -235,6 +241,7 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected):
 
     fractions = []
     # find fraction of occupancy
+
     for idx in fiducial_idx:
         roi = new_img == idx
         denom = tissue[roi]  # faster but more memory intensive
@@ -253,12 +260,16 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             if filepath.match(pattern):
                 yield filepath
 
-def get_gpr_df(metadata_dir, img_dir, threshold, crop_dim=(650, 800), blur_size=255, morph_kernel_size=153):
+def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.0713, 0.0899), blur_size=255, morph_kernel_size=153):
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.tiff"))[0]
 
     gpr = pd.read_table(gpr_path, skiprows=9)
-    img = cv2.imread(str(img_path))
+
+    try:
+        img = cv2.imread(str(img_path))
+    except:
+        img = tf.imread(img_path)
 
     if threshold is None:
         threshold = gpr['Dia.'].iloc[0] / np.average(img.shape[:2])  # rough estimate
@@ -304,27 +315,26 @@ def get_gpr_df(metadata_dir, img_dir, threshold, crop_dim=(650, 800), blur_size=
     match_slide.loc[:, 'Tissue Coverage Fraction'] = fractions
     return match_slide, scale_factor, spot_spatial_diameter
 
-def read_visium_pos(metadata_dir: Path, img_dir: Path, cutoff=0.0):
-    threshold = 0
+def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
     gpr_file = list(find_files(metadata_dir, "*.gpr"))[0]
     slide_id = gpr_file.stem
-    gpr_df, scale_factor, spot_spatial_diameter = get_gpr_df(metadata_dir, img_dir, threshold)
+    gpr_df, scale_factor, spot_spatial_diameter = get_gpr_df(metadata_dir, img_dir)
     gpr_df = gpr_df.set_index(['Column', 'Row'], inplace=False, drop=True)
     plate_version_number = gpr_file.stem[1]
-    barcode_coords_file = Path(f"/opt/visium-v{plate_version_number}_coordinates.txt")
+    barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
     coords_df = pd.read_csv(barcode_coords_file, sep='\t', names=['barcode', 'Column', 'Row'])
     coords_df['Row'] = coords_df['Row'] + 1
     coords_df['Row'] = coords_df['Row'] // 2
     coords_df = coords_df.set_index(['Column', 'Row'])
     gpr_df['barcode'] = coords_df['barcode']
-    gpr_df = gpr_df[['barcode', 'X', 'Y']]
+    gpr_df = gpr_df[['barcode', 'X', 'Y', 'Tissue Coverage Fraction']]
     gpr_df = gpr_df.reset_index(inplace=False)
     gpr_df = gpr_df.set_index('barcode', inplace=False, drop=True)
     return gpr_df, slide_id, scale_factor, spot_spatial_diameter
 
 
 def main(metadata_dir: Path, img_dir: Path):
-    return read_visium_pos(metadata_dir, img_dir)
+    return read_visium_positions(metadata_dir, img_dir)
 
 if __name__ == "__main__":
     manhole.install(activate_on="USR1")
