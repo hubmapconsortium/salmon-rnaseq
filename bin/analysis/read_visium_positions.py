@@ -48,8 +48,7 @@ def segment_tissue(img, crop_img, blur_size, morph_kernel_size=153):
     # Perform morphological operations to remove small artifacts and fill gaps
     # kernel = np.ones((morph_kernel_size, morph_kernel_size), np.uint8)
     # binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-    tissue = fiducial_filter(binary, crop_img, filter=0)
-
+    tissue, _ = fiducial_filter(binary, crop_img, filter=0)
     # connected components to do
 
     return tissue
@@ -78,27 +77,32 @@ def fiducial_filter(img, distance, filter=1):
         mask[:, :distance[1]] = 0
         mask[:, -distance[1]:] = 0
 
-    return img * mask
+    return img * mask, distance
 
-
-def detect_fiducial_spots(img, distance):
-    fiducial_crop_img = fiducial_filter(img, distance)
+def detect_fiducial_spots(img, distance, hough_transform, hough_scale):
+    fiducial_crop_img, cropped_pixels = fiducial_filter(img, distance)
 
     gray = cv2.cvtColor(fiducial_crop_img, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
     blank_img = np.zeros(blurred.shape)
 
+    # parameters for circle detection
+    average_pixels = np.average(cropped_pixels)
+    mindist = int(average_pixels / hough_scale[0])
+    minr = int(average_pixels / hough_scale[1])
+    maxr = int(average_pixels / hough_scale[2])
+
     # Detect circles using Hough Circle Transform
     circles = cv2.HoughCircles(
         blurred,
         cv2.HOUGH_GRADIENT,
-        dp=1,
-        minDist=50,
-        param1=100,
-        param2=80,
-        minRadius=50,
-        maxRadius=175
+        dp=hough_transform[0],  #best values: [1, 2] - higher there will be more accumulation leading to more circles overlapping but more circles detected
+        minDist=mindist, #best values ~ 2x average of min and max radius
+        param1=hough_transform[1], # higher of threshold for canny edge detector - greater the value the more strigent the detection of circles
+        param2=hough_transform[2], # smaller the more false circles will be detected
+        minRadius=minr, #range: 200-300
+        maxRadius=maxr #range: 200-300
     )
 
     if circles is not None:
@@ -260,7 +264,10 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             if filepath.match(pattern):
                 yield filepath
 
-def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.0713, 0.0899), blur_size=255, morph_kernel_size=153):
+def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.071313, 0.089899), blur_size=255, morph_kernel_size=153):
+    hough_scale = [5.771, 12.545, 11.09]
+    hough_parameters = [2, 20, 50]
+
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
 
@@ -292,7 +299,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.0713, 0.0899),
 
     print('Starting fiducial spot detection from image...')
     # find fiducial beads in the tissue
-    fiducial_spots, fiducial_pixel_diameter = detect_fiducial_spots(img, crop_dim)
+    fiducial_spots, fiducial_pixel_diameter = detect_fiducial_spots(img, crop_dim, hough_parameters, hough_scale)
     print('Finish fiducial spot detection.')
 
     print('Finding best reference frame and slide...')
@@ -319,6 +326,8 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
     gpr_file = list(find_files(metadata_dir, "*.gpr"))[0]
     slide_id = gpr_file.stem
     gpr_df, scale_factor, spot_spatial_diameter = get_gpr_df(metadata_dir, img_dir)
+    spot_spatial_diameter = gpr_df['Dia.'].iloc[0]
+    scale_factor = 1
     gpr_df = gpr_df.set_index(['Column', 'Row'], inplace=False, drop=True)
     plate_version_number = gpr_file.stem[1]
     barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
