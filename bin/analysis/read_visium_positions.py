@@ -326,8 +326,10 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
     gpr_file = list(find_files(metadata_dir, "*.gpr"))[0]
     slide_id = gpr_file.stem
     gpr_df, scale_factor, spot_spatial_diameter = get_gpr_df(metadata_dir, img_dir)
-    spot_spatial_diameter = gpr_df['Dia.'].iloc[0]
-    scale_factor = 1
+#    gpr_df = pd.read_table(gpr_file, skiprows=9)
+#    gpr_df = gpr_df[gpr_df['Block'] == 2]
+#    spot_spatial_diameter = gpr_df['Dia.'].iloc[0]
+#    scale_factor = 1
     gpr_df = gpr_df.set_index(['Column', 'Row'], inplace=False, drop=True)
     plate_version_number = gpr_file.stem[1]
     barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
@@ -336,6 +338,7 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
     coords_df['Row'] = coords_df['Row'] // 2
     coords_df = coords_df.set_index(['Column', 'Row'])
     gpr_df['barcode'] = coords_df['barcode']
+#    gpr_df['Tissue Coverage Fraction'] = 1
     gpr_df = gpr_df[['barcode', 'X', 'Y', 'Tissue Coverage Fraction']]
     gpr_df = gpr_df.reset_index(inplace=False)
     gpr_df = gpr_df.set_index('barcode', inplace=False, drop=True)

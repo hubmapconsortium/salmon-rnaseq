@@ -21,15 +21,15 @@ inputs:
       position: 2
 outputs:
   squidpy_annotated_h5ad:
-    type: File
+    type: File?
     outputBinding:
       glob: squidpy_annotated.h5ad
   neighborhood_enrichment_plot:
-    type: File
+    type: File?
     outputBinding:
       glob: neighborhood_enrichment.pdf
   co_occurrence_plot:
-    type: File
+    type: File?
     outputBinding:
       glob: co_occurrence.pdf
   spatial_plot:
@@ -37,14 +37,14 @@ outputs:
     outputBinding:
       glob: spatial_scatter.pdf
   interaction_matrix_plot:
-    type: File
+    type: File?
     outputBinding:
       glob: interaction_matrix.pdf
   centrality_scores_plot:
-    type: File
+    type: File?
     outputBinding:
       glob: centrality_scores.pdf
   ripley_plot:
-    type: File
+    type: File?
     outputBinding:
       glob: ripley.pdf

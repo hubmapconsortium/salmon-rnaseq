@@ -16,6 +16,9 @@ inputs:
   metadata_dir:
     label: "Directory containing metadata, including gpr slide file (for Visium assay)"
     type: Directory?
+  spaceranger_dir:
+    label: "Directory containing spaceranger results (for Visium assay)"
+    type: Directory?
   assay:
     label: "scRNA-seq assay"
     type: string
@@ -88,6 +91,14 @@ outputs:
     outputSource: scanpy_analysis/marker_gene_plot_logreg
     type: File
     label: "Cluster marker genes, logreg method"
+  raw_spaceranger_h5ad:
+    outputSource: spaceranger_conversion/raw_spaceranger_h5ad
+    type: File?
+    label: "Spaceranger raw results converted to h5ad format"
+  filtered_spaceranger_h5ad:
+    outputSource: spaceranger_conversion/filtered_spaceranger_h5ad
+    type: File?
+    label: "Spaceranger filtered results converted to h5ad format"
   scvelo_annotated_h5ad:
     outputSource: scvelo_analysis/annotated_h5ad_file
     type: File?
@@ -199,6 +210,17 @@ steps:
       - centrality_scores_plot
       - spatial_plot
     run: steps/squidpy-analysis.cwl
+    label: "Spatial analysis via SquidPy"
+  spaceranger_conversion:
+    in:
+      assay:
+        source: assay
+      spaceranger_dir:
+        source: spaceranger_dir
+    out:
+      - raw_spaceranger_h5ad
+      - filtered_spaceranger_h5ad
+    run: steps/spaceranger-conversion.cwl
     label: "Spatial analysis via SquidPy"
   compute_qc_results:
     in:
