@@ -2,7 +2,8 @@ FROM mruffalo/salmon-custom:1.3.0-hbm1-5-g6e3ad33829a9
 
 WORKDIR /opt
 
-RUN curl https://s3.amazonaws.com/hubmap-pipeline-assets/salmon/gencode-v35-salmon-index.tar | tar -xf -
+RUN curl https://giygas.compbio.cs.cmu.edu/gencode.v39.intron-exon.sidx.tar | tar -xf - \
+ && curl -O https://giygas.compbio.cs.cmu.edu/gencode.v39.annotation.expanded.tx2gene.tsv
 
 RUN apt-get update \
  && apt-get -y install \
