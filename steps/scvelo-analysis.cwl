@@ -3,7 +3,7 @@ class: CommandLineTool
 label: RNA velocity analysis via scVelo
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:latest
+    dockerPull: hubmap/scrna-analysis:2.1.13-gencode39
   EnvVarRequirement:
     envDef:
       TMPDIR: "/tmp"
