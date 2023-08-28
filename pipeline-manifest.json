@@ -1,78 +1,78 @@
 [
-	{
-		"pattern": "secondary_analysis\\.h5ad",
-		"description": "Normalized gene expression with additional metadata, in HDF5 format, readable with the 'anndata' Python package",
-		"edam_ontology_term": "EDAM_1.24.format_3590",
-		"is_data_product":  true
-	},
-	{
-		"pattern": "scvelo_annotated\\.h5ad",
-		"description": "RNA velocity results, in HDF5 format, readable with the 'anndata' Python package",
-		"edam_ontology_term": "EDAM_1.24.format_3590",
-		"is_data_product":  true
-	},
-	{
-		"pattern": "expr\\.h5ad",
-		"description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package, intronic counts as AnnData layer",
-		"edam_ontology_term": "EDAM_1.24.format_3590",
-		"is_data_product":  true
-	},
-	{
-		"pattern": "raw_expr\\.h5ad",
-		"description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package, intronic counts as separate columns",
-		"edam_ontology_term": "EDAM_1.24.format_3590"
-	},
-	{
-		"pattern": "genome_build\\.json",
-		"description": "Genome build information in JSON format",
-		"edam_ontology_term": "EDAM_1.24.format_3464"
-	},
-	{
-		"pattern": "qc_results\\.hdf5",
-		"description": "Quality control results from Scanpy, per-cell and per-gene, in HDF5 format",
-		"edam_ontology_term": "EDAM_1.24.format_3590",
-		"is_qa_qc": true
-	},
-	{
-		"pattern": "qc_results\\.json",
-		"description": "Quality control report in JSON format",
-		"edam_ontology_term": "EDAM_1.24.format_3464",
-		"is_qa_qc": true
-	},
-	{
-		"pattern": "dispersion_plot\\.pdf",
-		"description": "Disperson plot of gene expression",
-		"edam_ontology_term": "EDAM_1.24.format_3508"
-	},
-	{
-		"pattern": "umap_by_leiden_cluster\\.pdf",
-		"description": "UMAP plot of cells, colored by Leiden cluster ID",
-		"edam_ontology_term": "EDAM_1.24.format_3508"
-	},
-	{
-		"pattern": "umap_embedding_density\\.pdf",
-		"description": "UMAP plot of cells, colored by embedding density",
-		"edam_ontology_term": "EDAM_1.24.format_3508"
-	},
-	{
-		"pattern": "umap_embedding_density\\.pdf",
-		"description": "UMAP plot of cells, colored by embedding density",
-		"edam_ontology_term": "EDAM_1.24.format_3508"
-	},
-	{
-		"pattern": "spatial_pos_by_leiden_cluster\\.pdf",
-		"description": "Spatial plot of cells, colored by Leiden cluster ID",
-		"edam_ontology_term": "EDAM_1.24.format_3508"
-	},
-	{
-		"pattern": "scvelo_embedding_grid\\.pdf",
-		"description": "scVelo RNA velocity grid plot",
-		"edam_ontology_term": "EDAM_1.24.format_3508"
-	},
-	{
-		"pattern": "fastqc_output/.*\\.html",
-		"description": "FastQC report of input FASTQ file",
-		"edam_ontology_term": "EDAM_1.24.format_2331",
-		"is_qa_qc": true
-	}
+    {
+        "pattern": "secondary_analysis\\.h5ad",
+        "description": "Normalized gene expression with additional metadata, in HDF5 format, readable with the 'anndata' Python package",
+        "edam_ontology_term": "EDAM_1.24.format_3590",
+        "is_data_product": true,
+    },
+    {
+        "pattern": "scvelo_annotated\\.h5ad",
+        "description": "RNA velocity results, in HDF5 format, readable with the 'anndata' Python package",
+        "edam_ontology_term": "EDAM_1.24.format_3590",
+        "is_data_product": true,
+    },
+    {
+        "pattern": "expr\\.h5ad",
+        "description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package, intronic counts as AnnData layer",
+        "edam_ontology_term": "EDAM_1.24.format_3590",
+        "is_data_product": true,
+    },
+    {
+        "pattern": "raw_expr\\.h5ad",
+        "description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package, intronic counts as separate columns",
+        "edam_ontology_term": "EDAM_1.24.format_3590",
+    },
+    {
+        "pattern": "genome_build\\.json",
+        "description": "Genome build information in JSON format",
+        "edam_ontology_term": "EDAM_1.24.format_3464",
+    },
+    {
+        "pattern": "qc_results\\.hdf5",
+        "description": "Quality control results from Scanpy, per-cell and per-gene, in HDF5 format",
+        "edam_ontology_term": "EDAM_1.24.format_3590",
+        "is_qa_qc": true,
+    },
+    {
+        "pattern": "qc_results\\.json",
+        "description": "Quality control report in JSON format",
+        "edam_ontology_term": "EDAM_1.24.format_3464",
+        "is_qa_qc": true,
+    },
+    {
+        "pattern": "dispersion_plot\\.pdf",
+        "description": "Disperson plot of gene expression",
+        "edam_ontology_term": "EDAM_1.24.format_3508",
+    },
+    {
+        "pattern": "umap_by_leiden_cluster\\.pdf",
+        "description": "UMAP plot of cells, colored by Leiden cluster ID",
+        "edam_ontology_term": "EDAM_1.24.format_3508",
+    },
+    {
+        "pattern": "umap_embedding_density\\.pdf",
+        "description": "UMAP plot of cells, colored by embedding density",
+        "edam_ontology_term": "EDAM_1.24.format_3508",
+    },
+    {
+        "pattern": "umap_embedding_density\\.pdf",
+        "description": "UMAP plot of cells, colored by embedding density",
+        "edam_ontology_term": "EDAM_1.24.format_3508",
+    },
+    {
+        "pattern": "spatial_pos_by_leiden_cluster\\.pdf",
+        "description": "Spatial plot of cells, colored by Leiden cluster ID",
+        "edam_ontology_term": "EDAM_1.24.format_3508",
+    },
+    {
+        "pattern": "scvelo_embedding_grid\\.pdf",
+        "description": "scVelo RNA velocity grid plot",
+        "edam_ontology_term": "EDAM_1.24.format_3508",
+    },
+    {
+        "pattern": "fastqc_output/.*\\.html",
+        "description": "FastQC report of input FASTQ file",
+        "edam_ontology_term": "EDAM_1.24.format_2331",
+        "is_qa_qc": true,
+    },
 ]
