@@ -15,7 +15,7 @@
 		"pattern": "expr\\.h5ad",
 		"description": "Raw gene expression, in HDF5 format, readable with the 'anndata' Python package, intronic counts as AnnData layer",
 		"edam_ontology_term": "EDAM_1.24.format_3590",
-		"is_data_product":  true,
+		"is_data_product":  true
 	},
 	{
 		"pattern": "raw_expr\\.h5ad",
