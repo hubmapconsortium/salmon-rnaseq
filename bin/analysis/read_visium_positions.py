@@ -19,6 +19,7 @@ import tifffile as tf
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from scipy.spatial import distance
+from scipy.spatial.distance import cdist
 
 TISSUE_COVERAGE_CUTOFF = 0.7
 
@@ -59,25 +60,68 @@ def fiducial_filter(img, distance, filter=1):
 
     '''
 
-    print(distance)
-    print(img.shape)
-    distance = (int(distance[0]*img.shape[0]), int(distance[1]*img.shape[1]))
-    print(distance)
+    distance = (int(distance[0] * img.shape[0]), int(distance[1] * img.shape[0]), int(distance[2] * img.shape[1]),
+                int(distance[3] * img.shape[1]))
 
     if filter:
         mask = np.zeros(img.shape, dtype='uint8')
-        mask[:distance[0], :] = 1
-        mask[-distance[0]:, :] = 1
+        mask[:distance[2], :] = 1
+        mask[-distance[3]:, :] = 1
         mask[:, :distance[1]] = 1
-        mask[:, -distance[1]:] = 1
+        mask[:, -distance[0]:] = 1
     else:
         mask = np.ones(img.shape, dtype='uint8')
-        mask[:distance[0], :] = 0
-        mask[-distance[0]:, :] = 0
+        mask[:distance[2], :] = 0
+        mask[-distance[3]:, :] = 0
         mask[:, :distance[1]] = 0
-        mask[:, -distance[1]:] = 0
+        mask[:, -distance[0]:] = 0
 
     return img * mask, distance
+
+def crop_image(image_array, threshold=0, padding=10):
+    """
+    Crop the input image to remove the background.
+    :param input_image: Image to be cropped
+    :param padding: Optional padding around the cropped image
+    :param bg_color: Background color to be cropped. Default is white.
+    :return: Cropped image
+    """
+
+    y, x = np.where(image_array > threshold)
+
+    y_min, y_max = np.min(y), np.max(y)
+    x_min, x_max = np.min(x), np.max(x)
+
+    cropped_array = image_array[y_min - padding:y_max + padding, x_min - padding:x_max + padding]
+
+    return cropped_array
+
+def circle_attributes(contour, circularity_threshold=0.85):
+
+    area = cv2.contourArea(contour)
+    perimeter = cv2.arcLength(contour, True)
+
+    if perimeter == 0:
+        return False, 0, (0, 0)
+
+    circularity = 4 * np.pi * area / (perimeter ** 2)
+
+    M = cv2.moments(contour)
+
+    if M['m00'] == 0:
+        return False, (None, )
+
+    cx = int(M['m10'] / M['m00'])
+    cy = int(M['m01'] / M['m00'])
+
+    if circularity > circularity_threshold:
+        # Compute the average distance from centroid to contour points
+        distances = [cv2.pointPolygonTest(contour, (cx, cy), True)]
+        radius = np.mean(distances)
+
+        return True, (cx, cy, abs(radius))
+
+    return False, (None, )
 
 def detect_fiducial_spots(img, distance, hough_transform, hough_scale):
     fiducial_crop_img, cropped_pixels = fiducial_filter(img, distance)
