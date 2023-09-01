@@ -9,8 +9,16 @@ from common import Assay
 from os import walk
 from typing import Iterable
 import read_visium_positions
+import numpy as np
 
 barcode_matching_dir = "barcode_matching"
+
+def apply_affine_transform(coords, affine):
+    ones = np.ones((coords.shape[0],1))
+    coords_concat = np.append(coords, ones, axis=1)
+    coords_transform = np.dot(affine, coords_concat.T).T
+    coords_trim = np.delete(coords_transform, 2, axis=1)
+    return coords_trim
 
 def read_slideseq_pos(dataset_dir: Path) -> pd.DataFrame:
     barcode_matching_dirs = list(dataset_dir.glob(f"**/{barcode_matching_dir}"))
@@ -42,19 +50,18 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
                 yield filepath
 
 def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Path = None, metadata_dir: Path = None) -> anndata.AnnData:
-    print(metadata_dir)
     assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FF}
     d = anndata.read_h5ad(h5ad_path)
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
     elif assay in {Assay.VISIUM_FF}:
-        barcode_pos, slide_id, scale_factor, spot_diameter = read_visium_positions.read_visium_positions(metadata_dir, img_dir)
+        barcode_pos, slide_id, scale_factor, spot_diameter, affine_matrix = read_visium_positions.read_visium_positions(metadata_dir, img_dir)
         d.obs['Tissue Coverage Fraction'] = barcode_pos['Tissue Coverage Fraction']
+#        d.obs['Tissue'] = barcode_pos['Tissue']
         spatial_key = "spatial"
         library_id = slide_id
         d.uns[spatial_key] = {library_id: {}}
-        d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": scale_factor, "spot_diameter_fullres": spot_diameter}
-        print(d.obs.columns)
+        d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": 1.0, "spot_diameter_fullres": spot_diameter}
 
     quant_bc_set = set(d.obs.index)
     pos_bc_set = set(barcode_pos.index)
@@ -69,10 +76,15 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Path = N
     )
 
     quant_pos = pd.concat([positions_overlap, positions_missing])
-    quant_pos_ordered = quant_pos.loc[d.obs.index, :]
-    d.obsm["X_spatial"] = quant_pos_ordered.to_numpy()
-    d.obsm["spatial"] = d.obsm["X_spatial"]
-    print(d.obs.columns)
+    quant_pos_ordered = quant_pos.loc[d.obs.index, ["X", 'Y']] if assay in {assay.VISIUM_FF} else quant_pos.loc[d.obs.index]
+
+    if assay in {assay.VISIUM_FF}:
+        d.obsm["X_spatial"] = apply_affine_transform(quant_pos_ordered.to_numpy(), affine_matrix)
+        d.obsm["spatial"] = d.obsm["X_spatial"]
+        d.obsm["X_spatial_gpr"] = quant_pos_ordered.to_numpy()
+
+    else:
+        d.obsm["X_spatial"] = quant_pos_ordered.to_numpy()
 
     return d
 

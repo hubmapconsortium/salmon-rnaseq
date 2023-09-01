@@ -39,10 +39,16 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
         if img_dir:
             tiff_file = list(find_ome_tiffs(input_dir=img_dir))[0]
-#            img = cv2.imread(fspath(tiff_file[0]))
+            img = cv2.imread(fspath(tiff_file))
+            library_id = list(adata.uns["spatial"].keys())[0]
+            adata.uns["spatial"][library_id]["images"] = {"hires": img}
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
+
+        with new_plot():
+            sq.pl.spatial_scatter(adata, color="leiden")
+            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
 
         with new_plot():
             sq.pl.nhood_enrichment(adata, cluster_key="leiden")
@@ -66,11 +72,11 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             sq.pl.interaction_matrix(adata, cluster_key="leiden")
             plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
 
-        sq.gr.ripley(adata, cluster_key="leiden")
+#        sq.gr.ripley(adata, cluster_key="leiden")
 
-        with new_plot():
-            sq.pl.ripley(adata, cluster_key="leiden")
-            plt.savefig("ripley.pdf", bbox_inches="tight")
+#        with new_plot():
+#            sq.pl.ripley(adata, cluster_key="leiden")
+#            plt.savefig("ripley.pdf", bbox_inches="tight")
 
         output_file = Path("squidpy_annotated.h5ad")
         print("Saving output to", output_file.absolute())
