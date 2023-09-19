@@ -1,0 +1,15 @@
+{
+    "total_reads": 250000,
+    "noisy_cb_reads": 47021,
+    "noisy_umi_reads": 0,
+    "used_reads": 202979,
+    "pct_reads_mapped": 63.589600000000004,
+    "barcodes_total": 19348,
+    "barcodes_used": 812,
+    "barcodes_pre_filtering": 342,
+    "deduplicated_umis": 134102,
+    "mean_umis_per_cell": 245,
+    "mean_genes_per_cell": 279,
+    "pct_counts_exonic": 55.055975914001465,
+    "pct_counts_intronic": 44.94401812553406
+}

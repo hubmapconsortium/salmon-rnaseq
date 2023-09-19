@@ -9,7 +9,6 @@ import numpy as np
 import scanpy as sc
 import scipy.sparse
 import scvelo as scv
-
 from plot_utils import new_plot
 
 component_neighbor_count = 50

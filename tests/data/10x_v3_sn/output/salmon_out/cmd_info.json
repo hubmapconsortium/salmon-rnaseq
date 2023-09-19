@@ -1,0 +1,15 @@
+{
+    "salmon_version": "?",
+    "index": "/opt/gencode.v35.intron-exon.sidx",
+    "libType": "A",
+    "output": "salmon_out",
+    "dumpMtx": [],
+    "chromiumV3": [],
+    "tgMap": "/opt/gencode.v35.annotation.expanded.tx2gene.tsv",
+    "threads": "12",
+    "mates1": "/var/lib/cwl/stg8a8a6f19-d988-482b-b960-d7cb08f5d254/trimmed/2/500_PBMC_3p_LT_Chromium_X_S4_L004_R1_001.fastq.gz",
+    "mates2": "/var/lib/cwl/stg8a8a6f19-d988-482b-b960-d7cb08f5d254/trimmed/2/500_PBMC_3p_LT_Chromium_X_S4_L004_R2_001.fastq.gz",
+    "mates1": "/var/lib/cwl/stg8a8a6f19-d988-482b-b960-d7cb08f5d254/trimmed/1/500_PBMC_3p_LT_Chromium_X_S4_L003_R1_001.fastq.gz",
+    "mates2": "/var/lib/cwl/stg8a8a6f19-d988-482b-b960-d7cb08f5d254/trimmed/1/500_PBMC_3p_LT_Chromium_X_S4_L003_R2_001.fastq.gz",
+    "auxDir": "aux_info"
+}

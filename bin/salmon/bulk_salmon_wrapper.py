@@ -42,9 +42,9 @@ def main(threads: int, directory: Path):
 
         fastq_extension = [
             "-1",
-            fspath(r1_fastq_file),
+            str(fspath(r1_fastq_file)),
             "-2",
-            fspath(r2_fastq_file),
+            str(fspath(r2_fastq_file)),
         ]
 
         command.extend(fastq_extension)
