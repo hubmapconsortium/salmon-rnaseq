@@ -42,6 +42,10 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             img = cv2.imread(fspath(tiff_file))
             library_id = list(adata.uns["spatial"].keys())[0]
             adata.uns["spatial"][library_id]["images"] = {"hires": img}
+            adata.uns["spatial"][library_id]["scalefactors"] = {
+                "tissue_hires_scalef": 1.0,
+                "spot_diameter_fullres": 89,
+            }
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")

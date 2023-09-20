@@ -378,6 +378,9 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.071313, 0.0898
         img = cv2.imread(str(img_path))
     except:
         img = tf.imread(img_path)
+        img = np.transpose(img, (1, 2, 0))
+
+    img = downsample_image(img, scale_factor)
 
     if threshold is None:
         threshold = gpr['Dia.'].iloc[0] / np.average(img.shape[:2])  # rough estimate
@@ -386,7 +389,6 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.071313, 0.0898
     img = cv2.warpAffine(img, rotational_matrix, (img.shape[1], img.shape[0]))
     #Does the unrotated image get used for anything after this?
 
-    img = downsample_image(img, scale_factor)
 
     # big beads = [1, 3, 5, 7] with corresponding inside beads = [2, 4, 6, 8] - # corresponds to block
     # get the frame or big beads that you need for alignment

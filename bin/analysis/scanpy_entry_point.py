@@ -10,8 +10,7 @@ import scanpy as sc
 from common import Assay
 from plot_utils import new_plot
 
-TISSUE_COVERAGE_CUTOFF = 0.7
-
+TISSUE_COVERAGE_CUTOFF = 1.0
 
 def main(assay: Assay, h5ad_file: Path):
     adata = anndata.read_h5ad(h5ad_file)
@@ -23,7 +22,7 @@ def main(assay: Assay, h5ad_file: Path):
         adata = adata[adata.obs['Tissue Coverage Fraction'] >= TISSUE_COVERAGE_CUTOFF]
         adata.obs = adata.obs.drop('Tissue Coverage Fraction', axis=1)
 
-    sc.pp.filter_cells(adata, min_genes=200)
+#    sc.pp.filter_cells(adata, min_genes=200)
     sc.pp.filter_genes(adata, min_cells=3)
 
     # add the total counts per cell as observations-annotation to adata
