@@ -45,7 +45,7 @@ def circle_attributes(contour, circularity_threshold=0.85):
     return False, (None, )
 
 
-def detect_fiducial_spots_segment_tissue(img, threshold, binary_threshold=125, blur_size=255, min_neighbors=5):
+def detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors, binary_threshold=125, blur_size=255):
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     kernel_close = np.ones((100, 100), np.uint8) #morphological kernel
@@ -72,8 +72,8 @@ def detect_fiducial_spots_segment_tissue(img, threshold, binary_threshold=125, b
 
     print(f"Number of detected beads BEFORE Outlier Filter: {len(new_circles)}")
     #filter for outliers
-    threshold_distance = determine_threshold_distance(new_circles)
-    new_circles = filter_outliers_distance(new_circles, threshold_distance)
+    threshold_distance = determine_threshold_distance(new_circles, min_neighbors)
+    new_circles = filter_outliers_distance(new_circles, threshold_distance, min_neighbors)
     print(f"Number of detected beads AFTER Outlier Filter: {len(new_circles)}")
 
     #check for minimum amount of circles detected
@@ -195,31 +195,11 @@ def get_rotation_matrix(image):
 
     rotation_matrix_2D = cv2.getRotationMatrix2D(center, avg_angles, 1)
 
-    #reduce dimensions
-    rotation_matrix_2D[:, 2] = [0, 0]
+    rotation_matrix = np.vstack([rotation_matrix, [0, 0, 1]])
 
     return rotation_matrix_2D
-def compose_affine_transform(centroid, rotational_matrix):
 
-    # Translation to origin
-    T1 = np.array([
-        [1, 0, -centroid[0]],
-        [0, 1, -centroid[1]],
-        [0, 0, 1]
-    ])
-
-    # Translation back
-    T2 = np.array([
-        [1, 0, centroid[0]],
-        [0, 1, centroid[1]],
-        [0, 0, 1]
-    ])
-
-    # Combine transformations
-    A = np.dot(T2, np.dot(T1.T, rotational_matrix).T).T
-    return A
-
-def filter_outliers_distance(data, threshold_distance, min_neighbors=5):
+def filter_outliers_distance(data, threshold_distance, min_neighbors):
     """
     Filters out outliers based on distance.
 
@@ -243,7 +223,7 @@ def filter_outliers_distance(data, threshold_distance, min_neighbors=5):
     return data[is_valid]
 
 
-def compute_kth_distances(data, k=5):
+def compute_kth_distances(data, k):
     """
     Compute the distance of each point to its kth nearest neighbor.
     """
@@ -255,7 +235,7 @@ def compute_kth_distances(data, k=5):
     return sorted_distances[:, k]
 
 
-def determine_threshold_distance(data, k=5):
+def determine_threshold_distance(data, k):
     kth_distances = compute_kth_distances(data, k)
     kth_distances = np.sort(kth_distances)
 
@@ -306,14 +286,15 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
                              [0, 0, 1]]
 
     affine_matrix = np.dot(inverse_affine_matrix, affine_matrix_first)
+
+    # inverse rotational matrix to transform back to original image space
+    r_inv = np.linalg.inv(rotational_matrix)
+    # output final transform
+    affine_transform = np.dot(r_inv, affine_matrix).T
+    
     # scale back to original resolution
-    affine_matrix *= 4
-    #get centroid
-    centroids = np.dot(np.hstack([filtered_slide, np.ones((slide.shape[0], 1))]), affine_matrix.T).mean(axis=0)
-    #get rotation
-    rotational_transform = compose_affine_transform(centroids, np.vstack([rotational_matrix, [0, 0, 1]]))
-    affine_transform = np.dot(affine_matrix.T, rotational_transform)
-    affine_matrix[2, 2] = 1
+    affine_transform *= 4
+    affine_transform[2, 2] = 1
     # convert slide of coordinates to image
     new_img = np.zeros(tissue.shape)
     # round to int
@@ -341,7 +322,7 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
 
     fractions = np.asarray(fractions)
 
-    return fractions, affine_matrix
+    return fractions, affine_transform
 
 def find_files(directory: Path, pattern: str) -> Iterable[Path]:
     for dirpath_str, dirnames, filenames in walk(directory):
@@ -364,11 +345,8 @@ def downsample_image(image, scale_factor):
     return np.asarray(resized_image)
 
 
-def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.071313, 0.089899), blur_size=255,
-               morph_kernel_size=153, scale_factor=4):
-    hough_scale = [5.771, 12.545, 11.09]
-    hough_parameters = [2, 20, 50]
-
+def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighbors=3):
+    
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
 
@@ -386,7 +364,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.071313, 0.0898
         threshold = gpr['Dia.'].iloc[0] / np.average(img.shape[:2])  # rough estimate
 
     rotational_matrix = get_rotation_matrix(img)
-    img = cv2.warpAffine(img, rotational_matrix, (img.shape[1], img.shape[0]))
+    img = cv2.warpPerspective(img, rotational_matrix, (img.shape[1], img.shape[0]))
     #Does the unrotated image get used for anything after this?
 
 
@@ -403,7 +381,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, crop_dim=(0.071313, 0.0898
 
     print('Starting fiducial spot detection from image...')
     # find fiducial beads in the tissue
-    fiducial_spots, tissue, pixel_diameter = detect_fiducial_spots_segment_tissue(img, threshold)
+    fiducial_spots, tissue, pixel_diameter = detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors)
     match_slide_idx, detected_2_frame, frame_2_detected, scaler_fs_detected = slide_match(frames, fiducial_spots,
                                                                                           threshold)
     match_slide = tiles[match_slide_idx].copy()
