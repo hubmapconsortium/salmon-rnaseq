@@ -17,7 +17,7 @@ barcode_matching_dir = "barcode_matching"
 def apply_affine_transform(coords, affine):
     ones = np.ones((coords.shape[0],1))
     coords_concat = np.append(coords, ones, axis=1)
-    coords_transform = np.dot(coords_concat, affine)
+    coords_transform = coords_concat @ affine
     coords_trim = np.delete(coords_transform, 2, axis=1)
     return coords_trim
 
