@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Optional
 
 import anndata
 import manhole
@@ -49,12 +50,12 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             if filepath.match(pattern):
                 yield filepath
 
-def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Path = None, metadata_dir: Path = None) -> anndata.AnnData:
+def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional[Path] = None, metadata_dir: Optional[Path] = None) -> anndata.AnnData:
     assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FF}
     d = anndata.read_h5ad(h5ad_path)
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
-    elif assay in {Assay.VISIUM_FF}:
+    elif assay == Assay.VISIUM_FF:
         barcode_pos, slide_id, scale_factor, spot_diameter, affine_matrix = read_visium_positions.read_visium_positions(metadata_dir, img_dir)
         d.obs['Tissue Coverage Fraction'] = barcode_pos['Tissue Coverage Fraction']
 #        d.obs['Tissue'] = barcode_pos['Tissue']
@@ -78,7 +79,7 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Path = N
     quant_pos = pd.concat([positions_overlap, positions_missing])
     quant_pos_ordered = quant_pos.loc[d.obs.index, ["X", 'Y']] if assay in {assay.VISIUM_FF} else quant_pos.loc[d.obs.index]
 
-    if assay in {assay.VISIUM_FF}:
+    if assay == assay.VISIUM_FF:
         d.obsm["X_spatial"] = apply_affine_transform(quant_pos_ordered.to_numpy(), affine_matrix)
         d.obsm["spatial"] = d.obsm["X_spatial"]
         d.obsm["X_spatial_gpr"] = quant_pos_ordered.to_numpy()
