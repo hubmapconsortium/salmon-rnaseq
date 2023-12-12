@@ -1,0 +1,6 @@
+squidpy
+opencv-python
+numpy==1.22.0
+pandas==1.3.0
+manhole~=1.8
+

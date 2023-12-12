@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Dimensionality reduction and clustering
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.15
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/scanpy_entry_point.py
 
 inputs:
@@ -28,7 +28,7 @@ outputs:
     type: File
     outputBinding:
       glob: umap_by_leiden_cluster.pdf
-  slideseq_plot:
+  spatial_plot:
     type: File?
     outputBinding:
       glob: spatial_pos_by_leiden_cluster.pdf
