@@ -14,12 +14,18 @@ inputs:
     type: File
     inputBinding:
       position: 1
+
+  assay_name:
+    type: string
+    inputBinding:
+      position: 2
+
 outputs:
   annotated_h5ad_file:
-    type: File
+    type: File?
     outputBinding:
       glob: scvelo_annotated.h5ad
   embedding_grid_plot:
-    type: File
+    type: File?
     outputBinding:
       glob: scvelo_embedding_grid.pdf

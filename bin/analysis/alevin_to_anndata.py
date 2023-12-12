@@ -13,7 +13,7 @@ import scipy.sparse
 from anndata import AnnData
 from fastq_utils import smart_open
 
-from common import AnnDataLayer
+from common import AnnDataLayer, Assay
 
 DATA_PATH = Path("/opt/data")
 DEFAULT_HUGO_ENSEMBL_MAPPING_PATH = DATA_PATH / "ensembl_hugo_mapping.json.xz"
@@ -49,13 +49,14 @@ class EnsemblHugoMapper:
         self.mapping = {}
 
     @classmethod
-    def populate(cls, path: Path):
+    def populate(cls, path: Path, assay: Assay):
         self = cls()
         with smart_open(path) as f:
             self.mapping.update(json.load(f))
         return self
 
-    def annotate(self, data: AnnData):
+    def annotate(self, data: AnnData, assay: Assay):
+
         symbols = [self.mapping.get(e) for e in data.var.index]
         data.var.loc[
             :,
@@ -177,7 +178,7 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
     return adata
 
 
-def convert(input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, AnnData]:
+def convert(assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, AnnData]:
     """
     :return: 2-tuple:
      [0] full count matrix, with columns for spliced and unspliced regions
@@ -200,11 +201,13 @@ def convert(input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, 
         rows=cb_names,
         cols=gene_names,
     )
-    spliced_anndata = add_split_spliced_unspliced(raw_labeled)
 
-    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path)
-    ensembl_hugo_mapper.annotate(raw_labeled)
-    ensembl_hugo_mapper.annotate(spliced_anndata)
+    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path, assay)
+
+    spliced_anndata = add_split_spliced_unspliced(raw_labeled)
+    ensembl_hugo_mapper.annotate(raw_labeled, assay)
+
+    ensembl_hugo_mapper.annotate(spliced_anndata, assay)
 
     return raw_labeled, spliced_anndata
 
@@ -212,6 +215,7 @@ def convert(input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, 
 if __name__ == "__main__":
     manhole.install(activate_on="USR1")
     p = ArgumentParser()
+    p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("alevin_output_dir", type=Path)
     p.add_argument(
         "--ensembl_hugo_mapping_path",
@@ -220,8 +224,10 @@ if __name__ == "__main__":
     )
     args = p.parse_args()
 
-    raw, spliced = convert(args.alevin_output_dir, args.ensembl_hugo_mapping_path)
-    raw.write_h5ad("raw_expr.h5ad")
+    raw, spliced = convert(args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path)
+    if raw:
+        raw.write_h5ad("raw_expr.h5ad")
+    print(spliced)
     spliced.write_h5ad("expr.h5ad")
     if GENOME_BUILD_PATH.is_file():
         copy(GENOME_BUILD_PATH, Path.cwd() / GENOME_BUILD_PATH.name)

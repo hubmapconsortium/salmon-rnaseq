@@ -18,6 +18,10 @@ inputs:
     type: int?
   keep_all_barcodes:
     type: boolean?
+  img_dir:
+    type: Directory?
+  metadata_dir:
+    type: Directory?
 outputs:
   salmon_output:
     outputSource: salmon/output_dir
@@ -29,7 +33,7 @@ outputs:
     label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
   raw_count_matrix:
     outputSource: alevin_to_anndata/raw_expr_h5ad
-    type: File
+    type: File?
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
   genome_build_json:
     outputSource: alevin_to_anndata/genome_build_json
@@ -77,6 +81,8 @@ steps:
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
   alevin_to_anndata:
     in:
+      assay:
+        source: assay
       alevin_dir:
         source: salmon/output_dir
     out:
@@ -93,6 +99,10 @@ steps:
         source: assay
       h5ad_file:
         source: alevin_to_anndata/expr_h5ad
+      img_dir:
+        source: img_dir
+      metadata_dir:
+        source: metadata_dir
       metadata_json:
         source: adjust_barcodes/metadata_json
     out:

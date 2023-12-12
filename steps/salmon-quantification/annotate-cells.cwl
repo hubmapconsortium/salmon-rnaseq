@@ -19,10 +19,20 @@ inputs:
     type: Directory[]
     inputBinding:
       position: 2
+  img_dir:
+    type: Directory?
+    inputBinding:
+      position: 3
+      prefix: '--img_dir'
+  metadata_dir:
+    type: Directory?
+    inputBinding:
+      position: 4
+      prefix: '--metadata_dir'
   metadata_json:
     type: File?
     inputBinding:
-      position: 3
+      position: 5
       prefix: '--metadata_json'
 outputs:
   annotated_h5ad_file:

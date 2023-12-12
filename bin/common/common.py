@@ -113,3 +113,11 @@ class Assay(Enum):
         False,
         False,
     )
+    VISIUM_FF = (
+        "visium-ff",
+        "--chromiumV3",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        False,
+        False,
+        False,
+    )

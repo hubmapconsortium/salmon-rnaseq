@@ -28,7 +28,7 @@ outputs:
     type: File
     outputBinding:
       glob: umap_by_leiden_cluster.pdf
-  slideseq_plot:
+  spatial_plot:
     type: File?
     outputBinding:
       glob: spatial_pos_by_leiden_cluster.pdf

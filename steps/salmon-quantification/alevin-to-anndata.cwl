@@ -7,13 +7,17 @@ requirements:
 baseCommand: /opt/alevin_to_anndata.py
 
 inputs:
+  assay:
+    type: string
+    inputBinding:
+      position: 0
   alevin_dir:
     type: Directory
     inputBinding:
       position: 1
 outputs:
   raw_expr_h5ad:
-    type: File
+    type: File?
     outputBinding:
       glob: raw_expr.h5ad
   expr_h5ad:

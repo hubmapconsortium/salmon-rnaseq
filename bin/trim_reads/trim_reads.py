@@ -9,7 +9,7 @@ from shutil import copy
 from subprocess import check_call
 from typing import Iterable, Sequence, Tuple
 
-from fastq_utils import find_grouped_fastq_files
+from fastq_utils import find_grouped_fastq_files, fastq_reader, Read
 
 from common import (
     BARCODE_UMI_FASTQ_PATH,

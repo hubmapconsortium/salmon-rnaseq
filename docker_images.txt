@@ -2,3 +2,4 @@ hubmap/scrna-barcode-adj docker/barcode_adj/Dockerfile  base_directory_build
 hubmap/scrna-analysis docker/analysis/Dockerfile	base_directory_build
 hubmap/scrna-trim-reads	docker/trim_reads/Dockerfile	base_directory_build
 hubmap/salmon-grch38	docker/salmon/Dockerfile	base_directory_build
+hubmap/squidpy-analysis docker/squidpy/Dockerfile   base_directory_build

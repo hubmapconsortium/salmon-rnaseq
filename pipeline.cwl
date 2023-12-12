@@ -10,6 +10,15 @@ inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"
     type: Directory[]
+  img_dir:
+    label: "Directory containing TIFF image data (for Visium assay)"
+    type: Directory?
+  metadata_dir:
+    label: "Directory containing metadata, including gpr slide file (for Visium assay)"
+    type: Directory?
+  spaceranger_dir:
+    label: "Directory containing spaceranger results (for Visium assay)"
+    type: Directory?
   assay:
     label: "scRNA-seq assay"
     type: string
@@ -32,7 +41,7 @@ outputs:
     label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
   raw_count_matrix:
     outputSource: salmon_quantification/raw_count_matrix
-    type: File
+    type: File?
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
   genome_build_json:
     outputSource: salmon_quantification/genome_build_json
@@ -62,8 +71,8 @@ outputs:
     outputSource: scanpy_analysis/umap_density_plot
     type: File
     label: "UMAP dimensionality reduction plot, colored by cell density"
-  slideseq_plot:
-    outputSource: scanpy_analysis/slideseq_plot
+  spatial_plot:
+    outputSource: scanpy_analysis/spatial_plot
     type: File?
     label: "Slide-seq bead plot, colored by Leiden cluster"
   filtered_data_h5ad:
@@ -82,19 +91,55 @@ outputs:
     outputSource: scanpy_analysis/marker_gene_plot_logreg
     type: File
     label: "Cluster marker genes, logreg method"
+  raw_spaceranger_h5ad:
+    outputSource: spaceranger_conversion/raw_spaceranger_h5ad
+    type: File?
+    label: "Spaceranger raw results converted to h5ad format"
+  filtered_spaceranger_h5ad:
+    outputSource: spaceranger_conversion/filtered_spaceranger_h5ad
+    type: File?
+    label: "Spaceranger filtered results converted to h5ad format"
   scvelo_annotated_h5ad:
     outputSource: scvelo_analysis/annotated_h5ad_file
-    type: File
+    type: File?
     label: "scVelo-annotated h5ad file, including cell RNA velocity"
   scvelo_embedding_grid_plot:
     outputSource: scvelo_analysis/embedding_grid_plot
-    type: File
+    type: File?
     label: "scVelo velocity embedding grid plot"
+  ome_tiff_file:
+    outputSource: ome_tiff/ome_tiff_file
+    type: File?
+  squidpy_annotated_h5ad:
+    outputSource: squidpy_analysis/squidpy_annotated_h5ad
+    type: File?
+  neighborhood_enrichment_plot:
+    outputSource: squidpy_analysis/neighborhood_enrichment_plot
+    type: File?
+  co_occurrence_plot:
+    outputSource: squidpy_analysis/co_occurrence_plot
+    type: File?
+  interaction_matrix_plot:
+    outputSource: squidpy_analysis/interaction_matrix_plot
+    type: File?
+  centrality_scores_plot:
+    outputSource: squidpy_analysis/centrality_scores_plot
+    type: File?
+  ripley_plot:
+    outputSource: squidpy_analysis/ripley_plot
+    type: File?
+  squidpy_spatial_plot:
+    outputSource: squidpy_analysis/spatial_plot
+    type: File?
 steps:
   salmon_quantification:
     in:
       fastq_dir:
         source: fastq_dir
+      img_dir:
+        source: img_dir
+      metadata_dir:
+        source: metadata_dir
       assay:
         source: assay
       threads:
@@ -134,18 +179,49 @@ steps:
       - marker_gene_plot_logreg
       - dispersion_plot
       - umap_density_plot
-      - slideseq_plot
+      - spatial_plot
     run: steps/scanpy-analysis.cwl
     label: "Secondary analysis via ScanPy"
   scvelo_analysis:
     in:
       spliced_h5ad_file:
         source: salmon_quantification/count_matrix_h5ad
+      assay_name:
+        source: assay
     out:
       - annotated_h5ad_file
       - embedding_grid_plot
     run: steps/scvelo-analysis.cwl
     label: "RNA velocity analysis via scVelo"
+  squidpy_analysis:
+    in:
+      assay:
+        source: assay
+      h5ad_file:
+        source: scanpy_analysis/filtered_data_h5ad
+      img_dir:
+        source: img_dir
+    out:
+      - squidpy_annotated_h5ad
+      - neighborhood_enrichment_plot
+      - co_occurrence_plot
+      - interaction_matrix_plot
+      - ripley_plot
+      - centrality_scores_plot
+      - spatial_plot
+    run: steps/squidpy-analysis.cwl
+    label: "Spatial analysis via SquidPy"
+  spaceranger_conversion:
+    in:
+      assay:
+        source: assay
+      spaceranger_dir:
+        source: spaceranger_dir
+    out:
+      - raw_spaceranger_h5ad
+      - filtered_spaceranger_h5ad
+    run: steps/spaceranger-conversion.cwl
+    label: "Spatial analysis via SquidPy"
   compute_qc_results:
     in:
       assay:
