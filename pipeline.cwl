@@ -16,9 +16,6 @@ inputs:
   metadata_dir:
     label: "Directory containing metadata, including gpr slide file (for Visium assay)"
     type: Directory?
-  spaceranger_dir:
-    label: "Directory containing spaceranger results (for Visium assay)"
-    type: Directory?
   assay:
     label: "scRNA-seq assay"
     type: string
@@ -95,10 +92,6 @@ outputs:
     outputSource: spaceranger_conversion/raw_spaceranger_h5ad
     type: File?
     label: "Spaceranger raw results converted to h5ad format"
-  filtered_spaceranger_h5ad:
-    outputSource: spaceranger_conversion/filtered_spaceranger_h5ad
-    type: File?
-    label: "Spaceranger filtered results converted to h5ad format"
   scvelo_annotated_h5ad:
     outputSource: scvelo_analysis/annotated_h5ad_file
     type: File?
@@ -107,9 +100,6 @@ outputs:
     outputSource: scvelo_analysis/embedding_grid_plot
     type: File?
     label: "scVelo velocity embedding grid plot"
-  ome_tiff_file:
-    outputSource: ome_tiff/ome_tiff_file
-    type: File?
   squidpy_annotated_h5ad:
     outputSource: squidpy_analysis/squidpy_annotated_h5ad
     type: File?
