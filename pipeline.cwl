@@ -211,17 +211,6 @@ steps:
       - spatial_plot
     run: steps/squidpy-analysis.cwl
     label: "Spatial analysis via SquidPy"
-  spaceranger_conversion:
-    in:
-      assay:
-        source: assay
-      spaceranger_dir:
-        source: spaceranger_dir
-    out:
-      - raw_spaceranger_h5ad
-      - filtered_spaceranger_h5ad
-    run: steps/spaceranger-conversion.cwl
-    label: "Spatial analysis via SquidPy"
   compute_qc_results:
     in:
       assay:
