@@ -195,9 +195,9 @@ def get_rotation_matrix(image):
 
     rotation_matrix_2D = cv2.getRotationMatrix2D(center, avg_angles, 1)
 
-    rotation_matrix = np.vstack([rotation_matrix, [0, 0, 1]])
+    rotation_matrix = np.vstack([rotation_matrix_2D, [0, 0, 1]])
 
-    return rotation_matrix_2D
+    return rotation_matrix
 
 def filter_outliers_distance(data, threshold_distance, min_neighbors):
     """

@@ -11,6 +11,7 @@ from os import walk
 from typing import Iterable
 import read_visium_positions
 import numpy as np
+from aicsimageio.readers.ome_tiff_reader import OmeTiffReader
 
 barcode_matching_dir = "barcode_matching"
 
@@ -60,7 +61,7 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional
         d.obs['Tissue Coverage Fraction'] = barcode_pos['Tissue Coverage Fraction']
 #        d.obs['Tissue'] = barcode_pos['Tissue']
         spatial_key = "spatial"
-        library_id = slide_id
+        library_id = "visium"
         d.uns[spatial_key] = {library_id: {}}
         d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": 1.0, "spot_diameter_fullres": spot_diameter}
 
@@ -82,6 +83,13 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional
     if assay == assay.VISIUM_FF:
         d.obsm["X_spatial"] = apply_affine_transform(quant_pos_ordered.to_numpy(), affine_matrix)
         d.obsm["spatial"] = d.obsm["X_spatial"]
+        img_files = find_files(img_dir, "*.ome.tif*")
+        img_files_list = list(img_files)
+        img_file = img_files_list[0]
+        img = OmeTiffReader(img_file)
+        physical_pixel_sizes = img.physical_pixel_sizes
+        d.obsm["X_spatial"][:, 0] *= physical_pixel_sizes[2]
+        d.obsm["X_spatial"][:, 1] *= physical_pixel_sizes[1]
         d.obsm["X_spatial_gpr"] = quant_pos_ordered.to_numpy()
 
     else:
