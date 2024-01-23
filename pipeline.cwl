@@ -88,10 +88,6 @@ outputs:
     outputSource: scanpy_analysis/marker_gene_plot_logreg
     type: File
     label: "Cluster marker genes, logreg method"
-  raw_spaceranger_h5ad:
-    outputSource: spaceranger_conversion/raw_spaceranger_h5ad
-    type: File?
-    label: "Spaceranger raw results converted to h5ad format"
   scvelo_annotated_h5ad:
     outputSource: scvelo_analysis/annotated_h5ad_file
     type: File?
