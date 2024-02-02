@@ -7,9 +7,10 @@ manhole~=1.8
 matplotlib~=3.5.1
 networkx~=2.7
 # pinned for numba
-numpy<1.22
+numpy==1.22
 opencv-python
 pandas~=1.4.1
+pint
 scanpy~=1.8.2
 scipy~=1.8.0
 scvelo~=0.2.4

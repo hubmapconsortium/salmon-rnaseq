@@ -8,12 +8,55 @@ import manhole
 import pandas as pd
 from common import Assay
 from os import walk
-from typing import Iterable
+from typing import Iterable, Literal, Callable, Tuple, List
 import read_visium_positions
 import numpy as np
-from aicsimageio.readers.ome_tiff_reader import OmeTiffReader
+import aicsimageio
+import xml.etree.ElementTree as ET
+from pint import Quantity, UnitRegistry
+import re
 
+schema_url_pattern = re.compile(r"\{(.+)\}OME")
 barcode_matching_dir = "barcode_matching"
+
+def get_schema_url(ome_xml_root_node: ET.Element) -> str:
+    if m := schema_url_pattern.match(ome_xml_root_node.tag):
+        return m.group(1)
+    raise ValueError(f"Couldn't extract schema URL from tag name {ome_xml_root_node.tag}")
+
+def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[UnitRegistry, Quantity]:
+    """
+    Returns area of each pixel (if dimensions == 2) or volume of each
+    voxel (if dimensions == 3) as a pint.Quantity. Also returns the
+    unit registry associated with these dimensions, with a 'cell' unit
+    added to the defaults
+    """
+    reg = UnitRegistry()
+    reg.define("cell = []")
+
+    # aicsimageio parses the OME-XML metadata when loading an image,
+    # and uses that metadata to populate various data structures in
+    # the AICSImage object. The AICSImage.metadata.to_xml() function
+    # constructs a new OME-XML string from that metadata, so anything
+    # ignored by aicsimageio won't be present in that XML document.
+    # Unfortunately, current aicsimageio ignores physical size units,
+    # so we have to parse the original XML ourselves:
+    root = ET.fromstring(img.xarray_dask_data.unprocessed[270])
+    schema_url = get_schema_url(root)
+    pixel_node_attrib = root.findall(f".//{{{schema_url}}}Pixels")[0].attrib
+
+    dimensions = 2
+    dimension_names = "XYZ"
+
+    values = []
+    units = []
+    for _, dimension in zip(range(dimensions), dimension_names):
+        unit = pixel_node_attrib[f"PhysicalSize{dimension}Unit"]
+        value = float(pixel_node_attrib[f"PhysicalSize{dimension}"])
+        values.append(value)
+        units.append(unit)
+
+    return values, units
 
 def apply_affine_transform(coords, affine):
     ones = np.ones((coords.shape[0],1))
@@ -63,7 +106,7 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional
         spatial_key = "spatial"
         library_id = "visium"
         d.uns[spatial_key] = {library_id: {}}
-        d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": 1.0, "spot_diameter_fullres": spot_diameter}
+        d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": 1.0, "spot_diameter_fullres": 454}
 
     quant_bc_set = set(d.obs.index)
     pos_bc_set = set(barcode_pos.index)
@@ -82,14 +125,16 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional
 
     if assay == assay.VISIUM_FF:
         d.obsm["X_spatial"] = apply_affine_transform(quant_pos_ordered.to_numpy(), affine_matrix)
-        d.obsm["spatial"] = d.obsm["X_spatial"]
+        d.obsm["spatial"] = d.obsm["X_spatial"].copy()
         img_files = find_files(img_dir, "*.ome.tif*")
         img_files_list = list(img_files)
         img_file = img_files_list[0]
-        img = OmeTiffReader(img_file)
-        physical_pixel_sizes = img.physical_pixel_sizes
-        d.obsm["X_spatial"][:, 0] *= physical_pixel_sizes[2]
-        d.obsm["X_spatial"][:, 1] *= physical_pixel_sizes[1]
+        img = aicsimageio.AICSImage(img_file)
+        values, units = physical_dimension_func(img)
+        d.uns['X_spatial_units'] = 'µm'
+        unit_conversion_dict = {'µm':1.0, 'mm':1000.0, 'm':1000000.0, 'nm':0.001}
+        d.obsm["X_spatial"][:, 0] *= (values[0] * unit_conversion_dict[units[0]])
+        d.obsm["X_spatial"][:, 1] *= (values[1] * unit_conversion_dict[units[1]])
         d.obsm["X_spatial_gpr"] = quant_pos_ordered.to_numpy()
 
     else:
