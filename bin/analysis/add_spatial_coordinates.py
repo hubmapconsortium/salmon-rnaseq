@@ -45,12 +45,9 @@ def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[UnitRegistry, Q
     schema_url = get_schema_url(root)
     pixel_node_attrib = root.findall(f".//{{{schema_url}}}Pixels")[0].attrib
 
-    dimensions = 2
-    dimension_names = "XYZ"
-
     values = []
     units = []
-    for _, dimension in zip(range(dimensions), dimension_names):
+    for dimension in "XY":
         unit = pixel_node_attrib[f"PhysicalSize{dimension}Unit"]
         value = float(pixel_node_attrib[f"PhysicalSize{dimension}"])
         values.append(value)
@@ -131,10 +128,12 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional
         img_file = img_files_list[0]
         img = aicsimageio.AICSImage(img_file)
         values, units = physical_dimension_func(img)
+        ureg = UnitRegistry()
+        Q_ = ureg.Quantity
         d.uns['X_spatial_units'] = 'µm'
-        unit_conversion_dict = {'µm':1.0, 'mm':1000.0, 'm':1000000.0, 'nm':0.001}
-        d.obsm["X_spatial"][:, 0] *= (values[0] * unit_conversion_dict[units[0]])
-        d.obsm["X_spatial"][:, 1] *= (values[1] * unit_conversion_dict[units[1]])
+        d.obsm["X_spatial"][:, 0] *= (values[0])
+        d.obsm["X_spatial"][:, 1] *= (values[1])
+        d.obsm["X_spatial"] = Q_(d.obsm["X_spatial"], ureg(units[0])).to("micrometer").magnitude
         d.obsm["X_spatial_gpr"] = quant_pos_ordered.to_numpy()
 
     else:
