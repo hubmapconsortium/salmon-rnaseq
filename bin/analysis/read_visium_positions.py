@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
+import sys
 from argparse import ArgumentParser
-from pathlib import Path
-
-import pandas as pd
 from os import walk
-import manhole
+from pathlib import Path
 from typing import Iterable
 
-import sys
 import cv2
-import tifffile as tf
+import manhole
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+import pandas as pd
+import tifffile as tf
+from PIL import Image
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
-from PIL import Image
+from sklearn.preprocessing import MinMaxScaler
 
 
 def circle_attributes(contour, circularity_threshold=0.85):
@@ -25,15 +24,15 @@ def circle_attributes(contour, circularity_threshold=0.85):
     if perimeter == 0:
         return False, 0, (0, 0)
 
-    circularity = 4 * np.pi * area / (perimeter ** 2)
+    circularity = 4 * np.pi * area / (perimeter**2)
 
     M = cv2.moments(contour)
 
-    if M['m00'] == 0:
-        return False, (None, )
+    if M["m00"] == 0:
+        return False, (None,)
 
-    cx = int(M['m10'] / M['m00'])
-    cy = int(M['m01'] / M['m00'])
+    cx = int(M["m10"] / M["m00"])
+    cy = int(M["m01"] / M["m00"])
 
     if circularity > circularity_threshold:
         # Compute the average distance from centroid to contour points
@@ -42,16 +41,18 @@ def circle_attributes(contour, circularity_threshold=0.85):
 
         return True, (cx, cy, abs(radius))
 
-    return False, (None, )
+    return False, (None,)
 
 
-def detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors, binary_threshold=125, blur_size=255):
+def detect_fiducial_spots_segment_tissue(
+    img, threshold, min_neighbors, binary_threshold=125, blur_size=255
+):
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    kernel_close = np.ones((100, 100), np.uint8) #morphological kernel
+    kernel_close = np.ones((100, 100), np.uint8)  # morphological kernel
     kernel_dilate = np.ones((20, 20), np.uint8)
 
-    #convert image to binary
+    # convert image to binary
     _, binary_mask = cv2.threshold(gray, binary_threshold, 255, cv2.THRESH_BINARY)
     binary_mask = cv2.bitwise_not(binary_mask)
     binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, kernel_close)
@@ -63,7 +64,7 @@ def detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors, binary_t
 
     blank_img = np.zeros(blurred.shape)
 
-    #connected components
+    # connected components
     contours, _ = cv2.findContours(edge_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     new_circles = list(filter(lambda x: x[0], map(circle_attributes, contours)))
     new_circles = np.asarray([x[1] for x in new_circles])
@@ -71,12 +72,12 @@ def detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors, binary_t
     new_circles = new_circles.astype(int)
 
     print(f"Number of detected beads BEFORE Outlier Filter: {len(new_circles)}")
-    #filter for outliers
+    # filter for outliers
     threshold_distance = determine_threshold_distance(new_circles, min_neighbors)
     new_circles = filter_outliers_distance(new_circles, threshold_distance, min_neighbors)
     print(f"Number of detected beads AFTER Outlier Filter: {len(new_circles)}")
 
-    #check for minimum amount of circles detected
+    # check for minimum amount of circles detected
     if len(new_circles) < threshold:
         sys.exit(f"Detected fiducial beads: {len(new_circles)} < threshold: {threshold}")
 
@@ -89,8 +90,8 @@ def detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors, binary_t
 
     average_diameter = np.average(diameters)
 
-    print('Finish fiducial spot detection.')
-    print('Starting tissue segmentation...')
+    print("Finish fiducial spot detection.")
+    print("Starting tissue segmentation...")
 
     black_pixels = np.where(gray == 0)
 
@@ -107,12 +108,9 @@ def detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors, binary_t
     # Apply Otsu's thresholding method to create a binary image
     _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-
-    print('Finish tissue segmentation.')
-
+    print("Finish tissue segmentation.")
 
     return new_circles, binary, average_diameter
-
 
 
 def slide_match(frames, fiducial_spots, threshold):
@@ -132,10 +130,12 @@ def slide_match(frames, fiducial_spots, threshold):
     # filter frames to only important
     # diameter = frames[0]['Dia.'].iloc[0] #should be the same along all columns - 105
 
-    filtered_frames = [frames[i][['X', 'Y']] for i in range(len(frames))]
+    filtered_frames = [frames[i][["X", "Y"]] for i in range(len(frames))]
     normalized_frames = [scaler.fit_transform(frame) for frame in filtered_frames]
 
-    distance_transform_frames = [distance.cdist(normalized_fiducial_spots, frame) for frame in normalized_frames]
+    distance_transform_frames = [
+        distance.cdist(normalized_fiducial_spots, frame) for frame in normalized_frames
+    ]
     match_idx_per_frame = [np.argmin(frame, axis=1) for frame in distance_transform_frames]
 
     # find percentage of spots found for detected -> frame && frame -> detected fiducial spots
@@ -152,7 +152,7 @@ def slide_match(frames, fiducial_spots, threshold):
         mask = np.asarray(dist_value)
         thresholded = mask[mask < threshold]
 
-        assert (mask.shape[0] == normalized_fiducial_spots.shape[0])
+        assert mask.shape[0] == normalized_fiducial_spots.shape[0]
 
         match_sum.append(sum(mask))
         detected_2_frame.append(thresholded.shape[0] / mask.shape[0])
@@ -162,6 +162,7 @@ def slide_match(frames, fiducial_spots, threshold):
     match_idx = np.argmin(match_sum)
 
     return match_idx, detected_2_frame, frame_2_detected, scaler_fs_detected
+
 
 def get_rotation_matrix(image):
     # Blur the image slightly to remove noise.
@@ -199,6 +200,7 @@ def get_rotation_matrix(image):
 
     return rotation_matrix
 
+
 def filter_outliers_distance(data, threshold_distance, min_neighbors):
     """
     Filters out outliers based on distance.
@@ -213,9 +215,12 @@ def filter_outliers_distance(data, threshold_distance, min_neighbors):
     is_valid = np.zeros(num_samples, dtype=bool)
 
     for i in range(num_samples):
-        distances = np.linalg.norm(data - data[i],
-                                   axis=1)  # Compute the distance from the i-th point to every other point.
-        num_neighbors = np.sum(distances < threshold_distance) - 1  # Subtract 1 to exclude the point itself.
+        distances = np.linalg.norm(
+            data - data[i], axis=1
+        )  # Compute the distance from the i-th point to every other point.
+        num_neighbors = (
+            np.sum(distances < threshold_distance) - 1
+        )  # Subtract 1 to exclude the point itself.
 
         # Mark the point as valid if it has the minimum number of neighbors.
         is_valid[i] = num_neighbors >= min_neighbors
@@ -256,12 +261,12 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
     # normalized_tissue = scaler.fit_transform(tissue)
     # resolution = (normalized_tissue.shape[0], normalized_tissue.shape[1])
 
-    inside_diameter = slide['Dia.'].iloc[0]  # should be the same along all columns
+    inside_diameter = slide["Dia."].iloc[0]  # should be the same along all columns
     radii = inside_diameter / 2
 
     # concatenate frame and slide to form block
-    filtered_slide = slide[['X', 'Y']]
-    filtered_frame = frame[['X', 'Y']]
+    filtered_slide = slide[["X", "Y"]]
+    filtered_frame = frame[["X", "Y"]]
     filtered_block = pd.concat([filtered_frame, filtered_slide])
     scaler.fit(filtered_block)
     normalized_slide = scaler.transform(filtered_slide)
@@ -273,17 +278,17 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
     min_val = scaler.min_
 
     # Affine matrix to scale
-    affine_matrix_first = [[scale[0], 0, min_val[0]],
-                           [0, scale[1], min_val[1]],
-                           [0, 0, 1]]
+    affine_matrix_first = [[scale[0], 0, min_val[0]], [0, scale[1], min_val[1]], [0, 0, 1]]
 
     data_min = scaler_fs_detected.data_min_
     data_max = scaler_fs_detected.data_max_
 
     # Construct the inverse transformation matrix
-    inverse_affine_matrix = [[data_max[0] - data_min[0], 0, data_min[0]],
-                             [0, data_max[1] - data_min[1], data_min[1]],
-                             [0, 0, 1]]
+    inverse_affine_matrix = [
+        [data_max[0] - data_min[0], 0, data_min[0]],
+        [0, data_max[1] - data_min[1], data_min[1]],
+        [0, 0, 1],
+    ]
 
     affine_matrix = np.dot(inverse_affine_matrix, affine_matrix_first)
 
@@ -291,7 +296,7 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
     r_inv = np.linalg.inv(rotational_matrix)
     # output final transform
     affine_transform = np.dot(r_inv, affine_matrix).T
-    
+
     # scale back to original resolution
     affine_transform *= 4
     affine_transform[2, 2] = 1
@@ -302,7 +307,9 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
 
     # Note: slide_2_img_res idx match exactly that of the index image in new_img
     for i in range(len(slide_2_img_res)):
-        cv2.circle(new_img, (slide_2_img_res[i][0], slide_2_img_res[i][1]), int(radii), (i + 1, 0, 0), -1)
+        cv2.circle(
+            new_img, (slide_2_img_res[i][0], slide_2_img_res[i][1]), int(radii), (i + 1, 0, 0), -1
+        )
 
     # find the percentage of bead covered
     fiducial_idx = np.unique(new_img)[1:]  # do not care about background = 0
@@ -324,6 +331,7 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
 
     return fractions, affine_transform
 
+
 def find_files(directory: Path, pattern: str) -> Iterable[Path]:
     for dirpath_str, dirnames, filenames in walk(directory):
         dirpath = Path(dirpath_str)
@@ -331,6 +339,7 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             filepath = dirpath / filename
             if filepath.match(pattern):
                 yield filepath
+
 
 def downsample_image(image, scale_factor):
 
@@ -346,7 +355,7 @@ def downsample_image(image, scale_factor):
 
 
 def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighbors=3):
-    
+
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
 
@@ -361,12 +370,11 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
     img = downsample_image(img, scale_factor)
 
     if threshold is None:
-        threshold = gpr['Dia.'].iloc[0] / np.average(img.shape[:2])  # rough estimate
+        threshold = gpr["Dia."].iloc[0] / np.average(img.shape[:2])  # rough estimate
 
     rotational_matrix = get_rotation_matrix(img)
     img = cv2.warpPerspective(img, rotational_matrix, (img.shape[1], img.shape[0]))
-    #Does the unrotated image get used for anything after this?
-
+    # Does the unrotated image get used for anything after this?
 
     # big beads = [1, 3, 5, 7] with corresponding inside beads = [2, 4, 6, 8] - # corresponds to block
     # get the frame or big beads that you need for alignment
@@ -375,22 +383,27 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
     for i in gpr.Block.unique():
         if i % 2:
             # big bead - frame
-            frames.append(gpr.loc[gpr['Block'] == i])
+            frames.append(gpr.loc[gpr["Block"] == i])
         else:
-            tiles.append(gpr.loc[gpr['Block'] == i])
+            tiles.append(gpr.loc[gpr["Block"] == i])
 
-    print('Starting fiducial spot detection from image...')
+    print("Starting fiducial spot detection from image...")
     # find fiducial beads in the tissue
-    fiducial_spots, tissue, pixel_diameter = detect_fiducial_spots_segment_tissue(img, threshold, min_neighbors)
-    match_slide_idx, detected_2_frame, frame_2_detected, scaler_fs_detected = slide_match(frames, fiducial_spots,
-                                                                                          threshold)
+    fiducial_spots, tissue, pixel_diameter = detect_fiducial_spots_segment_tissue(
+        img, threshold, min_neighbors
+    )
+    match_slide_idx, detected_2_frame, frame_2_detected, scaler_fs_detected = slide_match(
+        frames, fiducial_spots, threshold
+    )
     match_slide = tiles[match_slide_idx].copy()
     match_frame = frames[match_slide_idx].copy()
-    fractions, affine_matrix = align_N_register(tissue, match_slide, match_frame, scaler_fs_detected, rotational_matrix)
+    fractions, affine_matrix = align_N_register(
+        tissue, match_slide, match_frame, scaler_fs_detected, rotational_matrix
+    )
 
-    match_slide.loc[:, 'Tissue Coverage Fraction'] = fractions
+    match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
 
-    spot_spatial_diameter = match_slide['Dia.'].iloc[0]
+    spot_spatial_diameter = match_slide["Dia."].iloc[0]
 
     return match_slide, scale_factor, spot_spatial_diameter, affine_matrix
 
@@ -401,23 +414,24 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
     slide_id = gpr_file.stem
     gpr_df, scale_factor, spot_spatial_diameter, affine_matrix = get_gpr_df(metadata_dir, img_dir)
 
-    gpr_df = gpr_df.set_index(['Column', 'Row'], inplace=False, drop=True)
+    gpr_df = gpr_df.set_index(["Column", "Row"], inplace=False, drop=True)
     plate_version_number = gpr_file.stem[1]
     barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
-    coords_df = pd.read_csv(barcode_coords_file, sep='\t', names=['barcode', 'Column', 'Row'])
-    coords_df['Row'] = coords_df['Row'] + 1
-    coords_df['Row'] = coords_df['Row'] // 2
-    coords_df = coords_df.set_index(['Column', 'Row'])
-    gpr_df['barcode'] = coords_df['barcode']
-    gpr_df = gpr_df[['barcode', 'X', 'Y', 'Tissue Coverage Fraction']]
+    coords_df = pd.read_csv(barcode_coords_file, sep="\t", names=["barcode", "Column", "Row"])
+    coords_df["Row"] = coords_df["Row"] + 1
+    coords_df["Row"] = coords_df["Row"] // 2
+    coords_df = coords_df.set_index(["Column", "Row"])
+    gpr_df["barcode"] = coords_df["barcode"]
+    gpr_df = gpr_df[["barcode", "X", "Y", "Tissue Coverage Fraction"]]
 
     gpr_df = gpr_df.reset_index(inplace=False)
-    gpr_df = gpr_df.set_index('barcode', inplace=False, drop=True)
+    gpr_df = gpr_df.set_index("barcode", inplace=False, drop=True)
     return gpr_df, slide_id, scale_factor, spot_spatial_diameter, affine_matrix
 
 
 def main(metadata_dir: Path, img_dir: Path):
     return read_visium_positions(metadata_dir, img_dir)
+
 
 if __name__ == "__main__":
     manhole.install(activate_on="USR1")

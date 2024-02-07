@@ -16,6 +16,7 @@ from plot_utils import new_plot
 component_neighbor_count = 50
 output_file = Path("scvelo_annotated.h5ad")
 
+
 def main(spliced_h5ad_file: Path, assay: Assay):
     if assay == Assay.VISIUM_FF:
         print("Skipping scVelo analysis for", assay)

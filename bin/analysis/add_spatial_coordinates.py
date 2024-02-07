@@ -1,30 +1,32 @@
 #!/usr/bin/env python3
+import re
+import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
+from os import walk
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Iterable, List, Literal, Optional, Tuple
 
+import aicsimageio
 import anndata
 import manhole
-import pandas as pd
-from common import Assay
-from os import walk
-from typing import Iterable, Literal, Callable, Tuple, List
-import read_visium_positions
 import numpy as np
-import aicsimageio
-import xml.etree.ElementTree as ET
+import pandas as pd
 from pint import Quantity, UnitRegistry
-import re
+
+import read_visium_positions
+from common import Assay
 
 schema_url_pattern = re.compile(r"\{(.+)\}OME")
 barcode_matching_dir = "barcode_matching"
+
 
 def get_schema_url(ome_xml_root_node: ET.Element) -> str:
     if m := schema_url_pattern.match(ome_xml_root_node.tag):
         return m.group(1)
     raise ValueError(f"Couldn't extract schema URL from tag name {ome_xml_root_node.tag}")
 
-def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[UnitRegistry, Quantity]:
+
+def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], List[str]]:
     """
     Returns area of each pixel (if dimensions == 2) or volume of each
     voxel (if dimensions == 3) as a pint.Quantity. Also returns the
@@ -55,12 +57,14 @@ def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[UnitRegistry, Q
 
     return values, units
 
+
 def apply_affine_transform(coords, affine):
-    ones = np.ones((coords.shape[0],1))
+    ones = np.ones((coords.shape[0], 1))
     coords_concat = np.append(coords, ones, axis=1)
     coords_transform = coords_concat @ affine
     coords_trim = np.delete(coords_transform, 2, axis=1)
     return coords_trim
+
 
 def read_slideseq_pos(dataset_dir: Path) -> pd.DataFrame:
     barcode_matching_dirs = list(dataset_dir.glob(f"**/{barcode_matching_dir}"))
@@ -91,19 +95,35 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             if filepath.match(pattern):
                 yield filepath
 
-def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional[Path] = None, metadata_dir: Optional[Path] = None) -> anndata.AnnData:
+
+def annotate(
+    h5ad_path: Path,
+    dataset_dir: Path,
+    assay: Assay,
+    img_dir: Optional[Path] = None,
+    metadata_dir: Optional[Path] = None,
+) -> anndata.AnnData:
     assert assay in {Assay.SLIDESEQ, Assay.VISIUM_FF}
     d = anndata.read_h5ad(h5ad_path)
     if assay == Assay.SLIDESEQ:
         barcode_pos = read_slideseq_pos(dataset_dir)
     elif assay == Assay.VISIUM_FF:
-        barcode_pos, slide_id, scale_factor, spot_diameter, affine_matrix = read_visium_positions.read_visium_positions(metadata_dir, img_dir)
-        d.obs['Tissue Coverage Fraction'] = barcode_pos['Tissue Coverage Fraction']
-#        d.obs['Tissue'] = barcode_pos['Tissue']
+        (
+            barcode_pos,
+            slide_id,
+            scale_factor,
+            spot_diameter,
+            affine_matrix,
+        ) = read_visium_positions.read_visium_positions(metadata_dir, img_dir)
+        d.obs["Tissue Coverage Fraction"] = barcode_pos["Tissue Coverage Fraction"]
+        #        d.obs['Tissue'] = barcode_pos['Tissue']
         spatial_key = "spatial"
         library_id = "visium"
         d.uns[spatial_key] = {library_id: {}}
-        d.uns[spatial_key][library_id]["scalefactors"] = {"tissue_hires_scalef": 1.0, "spot_diameter_fullres": 454}
+        d.uns[spatial_key][library_id]["scalefactors"] = {
+            "tissue_hires_scalef": 1.0,
+            "spot_diameter_fullres": 454,
+        }
 
     quant_bc_set = set(d.obs.index)
     pos_bc_set = set(barcode_pos.index)
@@ -118,7 +138,11 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional
     )
 
     quant_pos = pd.concat([positions_overlap, positions_missing])
-    quant_pos_ordered = quant_pos.loc[d.obs.index, ["X", 'Y']] if assay in {assay.VISIUM_FF} else quant_pos.loc[d.obs.index]
+    quant_pos_ordered = (
+        quant_pos.loc[d.obs.index, ["X", "Y"]]
+        if assay in {assay.VISIUM_FF}
+        else quant_pos.loc[d.obs.index]
+    )
 
     if assay == assay.VISIUM_FF:
         d.obsm["X_spatial"] = apply_affine_transform(quant_pos_ordered.to_numpy(), affine_matrix)
@@ -130,9 +154,9 @@ def annotate(h5ad_path: Path, dataset_dir: Path, assay: Assay, img_dir: Optional
         values, units = physical_dimension_func(img)
         ureg = UnitRegistry()
         Q_ = ureg.Quantity
-        d.uns['X_spatial_units'] = 'µm'
-        d.obsm["X_spatial"][:, 0] *= (values[0])
-        d.obsm["X_spatial"][:, 1] *= (values[1])
+        d.uns["X_spatial_units"] = "µm"
+        d.obsm["X_spatial"][:, 0] *= values[0]
+        d.obsm["X_spatial"][:, 1] *= values[1]
         d.obsm["X_spatial"] = Q_(d.obsm["X_spatial"], ureg(units[0])).to("micrometer").magnitude
         d.obsm["X_spatial_gpr"] = quant_pos_ordered.to_numpy()
 
