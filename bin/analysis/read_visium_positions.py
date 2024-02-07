@@ -83,7 +83,7 @@ def detect_fiducial_spots_segment_tissue(
 
     diameters = []
 
-    for (x, y, r) in new_circles:
+    for x, y, r in new_circles:
         # Draw the circle
         cv2.circle(blank_img, (x, y), r, (255, 0, 0), 2)
         diameters.append(r * 2)
