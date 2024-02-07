@@ -17,8 +17,8 @@ from common import (
     Assay,
 )
 
-index = '/opt/gencode.v35.intron-exon.sidx'
-transcript_map = '/opt/gencode.v35.annotation.expanded.tx2gene.tsv'
+index = "/opt/gencode.v35.intron-exon.sidx"
+transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
 
 SALMON_COMMAND = [
     "salmon",
@@ -43,6 +43,7 @@ metadata_cell_count_field = "expected_cell_count"
 metadata_probe_set_version_field = "visium_probe_set_version"
 barcode_whitelist_path = Path("barcode_whitelist.txt")
 
+
 def find_metadata_file(directory: Path) -> Optional[Path]:
     """
     Finds and returns the first metadata file for a HuBMAP data set.
@@ -53,6 +54,7 @@ def find_metadata_file(directory: Path) -> Optional[Path]:
         if metadata_filename_pattern.match(file_path.name):
             return file_path
 
+
 def find_files(directory: Path, pattern: str) -> Iterable[Path]:
     for dirpath_str, dirnames, filenames in walk(directory):
         dirpath = Path(dirpath_str)
@@ -61,9 +63,11 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             if filepath.match(pattern):
                 yield filepath
 
+
 def get_visium_plate_version(directory: Path) -> int:
     gpr_file = list(find_files(directory, "*.gpr"))[0]
     return int(gpr_file.stem[1])
+
 
 def read_expected_cell_count(directory: Path) -> Optional[int]:
     cell_count_from_file = None
@@ -180,7 +184,7 @@ def main(
             salmon_option=assay.salmon_option,
             threads=threads,
             index=index,
-            transcript_map=transcript_map
+            transcript_map=transcript_map,
         )
         for piece in SALMON_COMMAND
     ]
@@ -210,8 +214,8 @@ def main(
         barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
     elif assay in {Assay.VISIUM_FF}:
-        barcode_file = f'/opt/visium-v{visium_plate_version}.txt'
-        command.extend(['--whitelist', barcode_file])
+        barcode_file = f"/opt/visium-v{visium_plate_version}.txt"
+        command.extend(["--whitelist", barcode_file])
 
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:

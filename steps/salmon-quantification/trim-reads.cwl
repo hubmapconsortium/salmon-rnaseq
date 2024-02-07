@@ -3,7 +3,7 @@ class: CommandLineTool
 requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-trim-reads:latest
-baseCommand: /opt/trim_reads_visium.py
+baseCommand: /opt/trim_reads.py
 label: Trim FASTQ files
 
 # arguments are hardcoded in salmon_wrapper.py
