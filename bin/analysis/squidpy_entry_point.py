@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
+import re
 from argparse import ArgumentParser
+from os import fspath, walk
 from pathlib import Path
+from typing import Iterable, Tuple
 
-import pandas as pd
-from os import walk, fspath
 import anndata
+import cv2
 import manhole
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import scanpy as sc
 import squidpy as sq
 
 from common import Assay
 from plot_utils import new_plot
-from typing import Iterable, Tuple
-import re
-
-import cv2
-import numpy as np
 
 ome_tiff_pattern = re.compile(r"(?P<basename>.*)\.ome\.tiff(f?)$")
+
 
 def find_ome_tiffs(input_dir: Path) -> Iterable[Path]:
     """
@@ -32,6 +32,7 @@ def find_ome_tiffs(input_dir: Path) -> Iterable[Path]:
             if ome_tiff_pattern.match(filename):
                 src_filepath = dirpath / filename
                 yield src_filepath
+
 
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
@@ -76,11 +77,11 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             sq.pl.interaction_matrix(adata, cluster_key="leiden")
             plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
 
-#        sq.gr.ripley(adata, cluster_key="leiden")
+        #        sq.gr.ripley(adata, cluster_key="leiden")
 
-#        with new_plot():
-#            sq.pl.ripley(adata, cluster_key="leiden")
-#            plt.savefig("ripley.pdf", bbox_inches="tight")
+        #        with new_plot():
+        #            sq.pl.ripley(adata, cluster_key="leiden")
+        #            plt.savefig("ripley.pdf", bbox_inches="tight")
 
         output_file = Path("squidpy_annotated.h5ad")
         print("Saving output to", output_file.absolute())
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
     p.add_argument("alevin_h5ad_file", type=Path)
-    p.add_argument("img_dir", type=Path, nargs='?')
+    p.add_argument("img_dir", type=Path, nargs="?")
 
     args = p.parse_args()
 

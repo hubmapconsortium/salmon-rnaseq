@@ -178,7 +178,9 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
     return adata
 
 
-def convert(assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path) -> Tuple[AnnData, AnnData]:
+def convert(
+    assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path
+) -> Tuple[AnnData, AnnData]:
     """
     :return: 2-tuple:
      [0] full count matrix, with columns for spliced and unspliced regions

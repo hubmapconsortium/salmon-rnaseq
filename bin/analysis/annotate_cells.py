@@ -30,7 +30,9 @@ def main(
     elif assay in {Assay.SLIDESEQ, Assay.VISIUM_FF}:
         if len(raw_fastq_dirs) != 1 and assay in {Assay.SLIDESEQ}:
             raise ValueError("Need exactly 1 input directory for Slide-seq")
-        expr_data = add_spatial_coordinates.annotate(h5ad_file, raw_fastq_dirs[0], assay, img_dir, metadata_dir)
+        expr_data = add_spatial_coordinates.annotate(
+            h5ad_file, raw_fastq_dirs[0], assay, img_dir, metadata_dir
+        )
         print(expr_data.obs.columns)
     else:
         print("No annotation to perform for assay", assay)
@@ -53,4 +55,11 @@ if __name__ == "__main__":
 
     print(args)
 
-    main(args.assay, args.h5ad_file, args.raw_fastq_dir, args.img_dir, args.metadata_dir, args.metadata_json)
+    main(
+        args.assay,
+        args.h5ad_file,
+        args.raw_fastq_dir,
+        args.img_dir,
+        args.metadata_dir,
+        args.metadata_json,
+    )
