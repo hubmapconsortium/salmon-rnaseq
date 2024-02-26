@@ -16,7 +16,7 @@ inputs:
     inputBinding:
       position: 1
   img_dir:
-    type: Directory
+    type: Directory?
     inputBinding:
       position: 2
 outputs:
