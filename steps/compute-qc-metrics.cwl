@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Compute QC metrics
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:latest
+    dockerPull: hubmap/scrna-analysis:2.1.19
 baseCommand: /opt/compute_qc_metrics.py
 
 inputs:
