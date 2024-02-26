@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Dimensionality reduction and clustering
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/squidpy-analysis:2.1.18
+    dockerPull: hubmap/squidpy-analysis:latest
 baseCommand: /opt/squidpy_entry_point.py
 
 inputs:
@@ -16,7 +16,7 @@ inputs:
     inputBinding:
       position: 1
   img_dir:
-    type: Directory
+    type: Directory?
     inputBinding:
       position: 2
 outputs:
