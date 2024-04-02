@@ -121,3 +121,11 @@ class Assay(Enum):
         False,
         False,
     )
+    MULTIOME_10X = (
+        "multiome_10x",
+        "--chromiumV3",
+        AnnDataLayer.SPLICED,
+        False,
+        False,
+        False,
+    )
