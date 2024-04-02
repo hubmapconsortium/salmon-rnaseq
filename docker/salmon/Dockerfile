@@ -27,3 +27,4 @@ RUN mkdir /out
 
 COPY bin/common /opt
 COPY bin/salmon /opt
+COPY data/multiome10x/ /opt
