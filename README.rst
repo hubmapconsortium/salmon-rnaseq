@@ -43,3 +43,4 @@ Supported assays:
 * ``snareseq``
 * ``sciseq``
 * ``slideseq``
+* ``multiome_10x``
