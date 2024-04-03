@@ -216,6 +216,9 @@ def main(
     elif assay in {Assay.VISIUM_FF}:
         barcode_file = f"/opt/visium-v{visium_plate_version}.txt"
         command.extend(["--whitelist", barcode_file])
+    elif assay in {Assay.MULTIOME_10X}:
+        barcode_file = "/opt/cellranger_barcodes.txt"
+        command.extend(["--whitelist", barcode_file])
 
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:
