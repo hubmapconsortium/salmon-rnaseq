@@ -36,8 +36,6 @@ def main(spliced_h5ad_file: Path, assay: Assay):
     scv.pp.filter_genes_dispersion(adata, n_top_genes=2000)
     scv.pp.log1p(adata)
 
-    sc.pp.pca(adata, n_comps=50)
-    sc.pp.neighbors(adata, n_neighbors=50, n_pcs=50)
     try:
         sc.pp.pca(adata, n_comps=component_neighbor_count)
         sc.pp.neighbors(

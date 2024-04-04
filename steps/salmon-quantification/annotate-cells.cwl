@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Assay-specific annotation of cell barcodes after quantification
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.1.19
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/annotate_cells.py
 
 inputs:
