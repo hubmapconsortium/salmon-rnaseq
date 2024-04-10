@@ -23,7 +23,7 @@ workflow SalmonRNAseq {
         Boolean? keep_all_barcodes
     }
 
-    call SalmonQuantification.SalmonQuantification {
+    call SalmonQuantification.SalmonQuantification as SalmonQuantificationCall {
         input:
             fastq_dir = fastq_dir,
             img_dir = img_dir,
@@ -35,29 +35,29 @@ workflow SalmonRNAseq {
     }
 
     scatter (fastq in fastq_dir) {
-        call FastQC.FastQC {
+        call FastQC.FastQC as FastQCCall {
             input:
                 fastq_dir = fastq,
                 threads = threads
         }
     }
 
-    call ScanPyAnalysis.ScanPyAnalysis {
+    call ScanPyAnalysis.ScanPyAnalysis as ScanPyAnalysisCall {
         input:
             assay = assay,
-            h5ad_file = SalmonQuantification.SalmonQuantification.count_matrix_h5ad
+            h5ad_file = SalmonQuantificationCall.count_matrix_h5ad
     }
 
-    call ScVeloAnalysis.ScVeloAnalysis {
+    call ScVeloAnalysis.ScVeloAnalysis as ScVeloAnalysisCall {
         input:
-            spliced_h5ad_file = SalmonQuantification.SalmonQuantification.count_matrix_h5ad,
+            spliced_h5ad_file = SalmonQuantificationCall.count_matrix_h5ad,
             assay_name = assay
     }
 
-    call SquidPyAnalysis.SquidPyAnalysis {
+    call SquidPyAnalysis.SquidPyAnalysis as SquidPyAnalysisCall {
         input:
             assay = assay,
-            h5ad_file = ScanPyAnalysis.ScanPyAnalysis.filtered_data_h5ad,
+            h5ad_file = ScanPyAnalysisCall.filtered_data_h5ad,
             img_dir = img_dir
     }
 }
