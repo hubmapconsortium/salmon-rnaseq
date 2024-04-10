@@ -69,4 +69,30 @@ workflow SalmonRNAseq {
             h5ad_secondary = ScanPyAnalysisCall.filtered_data_h5ad,
             salmon_dir = SalmonQuantificationCall.salmon_output
     }
+
+    output {
+        Directory salmon_output = SalmonQuantificationCall.salmon_output
+        File count_matrix_h5ad = SalmonQuantificationCall.count_matrix_h5ad
+        File? raw_count_matrix = SalmonQuantificationCall.raw_count_matrix
+        File genome_build_json = SalmonQuantificationCall.genome_build_json
+        Array[Directory] fastqc_dir = FastQCCall.fastqc_dir
+        File scanpy_qc_results = ComputeQCMetricsCall.scanpy_qc_results
+        File qc_report = ComputeQCMetricsCall.qc_metrics
+        File dispersion_plot = ScanPyAnalysisCall.dispersion_plot
+        File umap_plot = ScanPyAnalysisCall.umap_plot
+        File umap_density_plot = ScanPyAnalysisCall.umap_density_plot
+        File? spatial_plot = ScanPyAnalysisCall.spatial_plot
+        File filtered_data_h5ad = ScanPyAnalysisCall.filtered_data_h5ad
+        File marker_gene_plot_t_test = ScanPyAnalysisCall.marker_gene_plot_t_test
+        File marker_gene_plot_logreg = ScanPyAnalysisCall.marker_gene_plot_logreg
+        File? scvelo_annotated_h5ad = ScVeloAnalysisCall.annotated_h5ad_file
+        File? scvelo_embedding_grid_plot = ScVeloAnalysisCall.embedding_grid_plot
+        File? squidpy_annotated_h5ad = SquidPyAnalysisCall.squidpy_annotated_h5ad
+        File? neighborhood_enrichment_plot = SquidPyAnalysisCall.neighborhood_enrichment_plot
+        File? co_occurrence_plot = SquidPyAnalysisCall.co_occurrence_plot
+        File? interaction_matrix_plot = SquidPyAnalysisCall.interaction_matrix_plot
+        File? centrality_scores_plot = SquidPyAnalysisCall.centrality_scores_plot
+        File? ripley_plot = SquidPyAnalysisCall.ripley_plot
+        File? squidpy_spatial_plot = SquidPyAnalysisCall.spatial_plot
+    }
 }
