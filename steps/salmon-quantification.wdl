@@ -139,7 +139,6 @@ task AlevinToAnndata {
         container: "hubmap/scrna-analysis:latest"
     }
 
-    # Need to fix this command
     command {
         /opt/alevin_to_anndata.py ~{assay} ~{alevin_dir}
     }
@@ -163,8 +162,7 @@ task AnnotateCells {
         container: "hubmap/scrna-analysis:latest"
     }
 
-    # Need to fix this command
     command {
-        /opt/annotate_cells.py
+        /opt/annotate_cells.py ~{assay} ~{h5ad_file} ~{sep(" ", orig_fastq_dirs)} ~{if defined(img_dir) then "--img_dir " + img_dir else ""} ~{if defined(metadata_dir) then "--metadata_dir " + metadata_dir else ""} ~{if defined(metadata_json) then "--metadata_json " + metadata_json else ""}
     }
 }
