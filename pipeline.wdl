@@ -11,6 +11,7 @@ import "./steps/fastqc.wdl" as FastQC
 import "./steps/scanpy-analysis.wdl" as ScanPyAnalysis
 import "./steps/scvelo-analysis.wdl" as ScVeloAnalysis
 import "./steps/squidpy-analysis.wdl" as SquidPyAnalysis
+import "./steps/compute-qc-metrics.wdl" as ComputeQCMetrics
 
 workflow SalmonRNAseq {
     input {
@@ -59,5 +60,13 @@ workflow SalmonRNAseq {
             assay = assay,
             h5ad_file = ScanPyAnalysisCall.filtered_data_h5ad,
             img_dir = img_dir
+    }
+
+    call ComputeQCMetrics.ComputeQCMetrics as ComputeQCMetricsCall {
+        input:
+            assay = assay,
+            h5ad_primary = SalmonQuantificationCall.count_matrix_h5ad,
+            h5ad_secondary = ScanPyAnalysisCall.filtered_data_h5ad,
+            salmon_dir = SalmonQuantificationCall.salmon_output
     }
 }
