@@ -121,7 +121,7 @@ def annotate(
         library_id = "visium"
         d.uns[spatial_key] = {library_id: {}}
         d.uns[spatial_key][library_id]["scalefactors"] = {
-            "tissue_hires_scalef": 1.0, #This is the scale factor from our image to full res, and our image is full res
+            "tissue_hires_scalef": 1.0,  # This is the scale factor from our image to full res, and our image is full res
             "spot_diameter_fullres": spot_diameter,
         }
 

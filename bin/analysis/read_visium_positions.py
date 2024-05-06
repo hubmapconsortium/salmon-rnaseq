@@ -28,6 +28,7 @@ def get_schema_url(ome_xml_root_node: ET.Element) -> str:
         return m.group(1)
     raise ValueError(f"Couldn't extract schema URL from tag name {ome_xml_root_node.tag}")
 
+
 def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], List[str]]:
     """
     Returns lists of physical dimensions of pixels and corresponding units
@@ -54,6 +55,7 @@ def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], Li
         units.append(unit)
 
     return values, units
+
 
 def circle_attributes(contour, circularity_threshold=0.85):
 
@@ -387,7 +389,9 @@ def downsample_image(image, scale_factor):
     required_size = 5000.0
     shape = np.array(image.shape[0:2])
     scale_factor = (required_size / shape).max()
-    resized_image = Image.fromarray(image).resize((shape * scale_factor).round().astype(int), Image.LANCZOS)
+    resized_image = Image.fromarray(image).resize(
+        (shape * scale_factor).round().astype(int), Image.LANCZOS
+    )
 
     return np.asarray(resized_image)
 
@@ -448,13 +452,19 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
     values, units = physical_dimension_func(img)
     ureg = UnitRegistry()
     Q_ = ureg.Quantity
-    micrometers_per_pixel = Q_(values[0], ureg(units[0])).to("micrometer").magnitude #Physical size of pixel in micrometers
+    micrometers_per_pixel = (
+        Q_(values[0], ureg(units[0])).to("micrometer").magnitude
+    )  # Physical size of pixel in micrometers
 
-    spot_spatial_diameter_micrometers = match_slide["Dia."].iloc[0] #in micrometers
+    spot_spatial_diameter_micrometers = match_slide["Dia."].iloc[0]  # in micrometers
 
-    pixels_per_micrometer = 1 / micrometers_per_pixel #conversion factor from micrometers to pixels
+    pixels_per_micrometer = (
+        1 / micrometers_per_pixel
+    )  # conversion factor from micrometers to pixels
 
-    spot_spatial_diameter_pixels = spot_spatial_diameter_micrometers * pixels_per_micrometer #physical size in pixels
+    spot_spatial_diameter_pixels = (
+        spot_spatial_diameter_micrometers * pixels_per_micrometer
+    )  # physical size in pixels
 
     return match_slide, scale_factor, spot_spatial_diameter_pixels, affine_matrix
 
