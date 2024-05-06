@@ -14,23 +14,46 @@ from PIL import Image
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
 from sklearn.preprocessing import MinMaxScaler
+import xml.etree.ElementTree as ET
+from pint import Quantity, UnitRegistry
+import re
 import aicsimageio
-import ome_utils
+from typing import Tuple, List
 
-def find_files(directory: Path, pattern: str) -> Iterable[Path]:
-    for dirpath_str, dirnames, filenames in walk(directory):
-        dirpath = Path(dirpath_str)
-        for filename in filenames:
-            filepath = dirpath / filename
-            if filepath.match(pattern):
-                yield filepath
+schema_url_pattern = re.compile(r"\{(.+)\}OME")
 
-def get_image_from_img_dir(img_dir:Path)->aicsimageio.AICSImage:
-    img_files = find_files(img_dir, "*.ome.tif*")
-    img_files_list = list(img_files)
-    img_file = img_files_list[0]
-    img = aicsimageio.AICSImage(img_file)
-    return img
+
+def get_schema_url(ome_xml_root_node: ET.Element) -> str:
+    if m := schema_url_pattern.match(ome_xml_root_node.tag):
+        return m.group(1)
+    raise ValueError(f"Couldn't extract schema URL from tag name {ome_xml_root_node.tag}")
+
+def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], List[str]]:
+    """
+    Returns lists of physical dimensions of pixels and corresponding units
+    read from OME-XML metadata of input image
+    """
+
+    # aicsimageio parses the OME-XML metadata when loading an image,
+    # and uses that metadata to populate various data structures in
+    # the AICSImage object. The AICSImage.metadata.to_xml() function
+    # constructs a new OME-XML string from that metadata, so anything
+    # ignored by aicsimageio won't be present in that XML document.
+    # Unfortunately, current aicsimageio ignores physical size units,
+    # so we have to parse the original XML ourselves:
+    root = ET.fromstring(img.xarray_dask_data.unprocessed[270])
+    schema_url = get_schema_url(root)
+    pixel_node_attrib = root.findall(f".//{{{schema_url}}}Pixels")[0].attrib
+
+    values = []
+    units = []
+    for dimension in "XY":
+        unit = pixel_node_attrib[f"PhysicalSize{dimension}Unit"]
+        value = float(pixel_node_attrib[f"PhysicalSize{dimension}"])
+        values.append(value)
+        units.append(unit)
+
+    return values, units
 
 def circle_attributes(contour, circularity_threshold=0.85):
 
@@ -348,6 +371,15 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
     return fractions, affine_transform
 
 
+def find_files(directory: Path, pattern: str) -> Iterable[Path]:
+    for dirpath_str, dirnames, filenames in walk(directory):
+        dirpath = Path(dirpath_str)
+        for filename in filenames:
+            filepath = dirpath / filename
+            if filepath.match(pattern):
+                yield filepath
+
+
 def downsample_image(image, scale_factor):
 
     # Resize the image using the new dimensions
@@ -409,10 +441,19 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
 
     match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
 
-    img = get_image_from_img_dir(img_dir)
-    micrometers_per_pixel = ome_utils.get_converted_physical_size(img)['X'].magnitude
+    img_files = find_files(img_dir, "*.ome.tif*")
+    img_files_list = list(img_files)
+    img_file = img_files_list[0]
+    img = aicsimageio.AICSImage(img_file)
+    values, units = physical_dimension_func(img)
+    ureg = UnitRegistry()
+    Q_ = ureg.Quantity
+    micrometers_per_pixel = Q_(values[0], ureg(units[0])).to("micrometer").magnitude #Physical size of pixel in micrometers
+
     spot_spatial_diameter_micrometers = match_slide["Dia."].iloc[0] #in micrometers
+
     pixels_per_micrometer = 1 / micrometers_per_pixel #conversion factor from micrometers to pixels
+
     spot_spatial_diameter_pixels = spot_spatial_diameter_micrometers * pixels_per_micrometer #physical size in pixels
 
     return match_slide, scale_factor, spot_spatial_diameter_pixels, affine_matrix
