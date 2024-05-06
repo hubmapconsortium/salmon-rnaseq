@@ -385,7 +385,7 @@ def downsample_image(image, scale_factor):
     # Resize the image using the new dimensions
     # 5000 by 5000 image was found in testing to provide best tradeoff between runtime and reliable fiducial detection
     required_size = 5000.0
-    shape = image.shape
+    shape = np.array(image.shape[0:2])
     scale_factor = (required_size / shape).max()
     resized_image = Image.fromarray(image).resize((shape * scale_factor).round().astype(int), Image.LANCZOS)
 
