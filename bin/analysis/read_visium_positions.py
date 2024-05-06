@@ -1,24 +1,23 @@
 #!/usr/bin/env python3
+import re
 import sys
+import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
 from os import walk
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, List, Tuple
 
+import aicsimageio
 import cv2
 import manhole
 import numpy as np
 import pandas as pd
 import tifffile as tf
 from PIL import Image
+from pint import Quantity, UnitRegistry
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
 from sklearn.preprocessing import MinMaxScaler
-import xml.etree.ElementTree as ET
-from pint import Quantity, UnitRegistry
-import re
-import aicsimageio
-from typing import Tuple, List
 
 schema_url_pattern = re.compile(r"\{(.+)\}OME")
 
