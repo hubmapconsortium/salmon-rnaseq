@@ -33,8 +33,6 @@ def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], Li
     Returns lists of physical dimensions of pixels and corresponding units
     read from OME-XML metadata of input image
     """
-    reg = UnitRegistry()
-    reg.define("cell = []")
 
     # aicsimageio parses the OME-XML metadata when loading an image,
     # and uses that metadata to populate various data structures in
