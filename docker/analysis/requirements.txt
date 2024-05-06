@@ -21,3 +21,4 @@ umap-learn~=0.5.2
 
 git+https://github.com/andrewhill157/barcodeutils
 git+https://github.com/hubmapconsortium/fastq-utils@v0.2.5
+git+https://github.com/hubmapconsortium/ome-utils@v0.1
