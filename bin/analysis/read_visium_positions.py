@@ -30,10 +30,8 @@ def get_schema_url(ome_xml_root_node: ET.Element) -> str:
 
 def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], List[str]]:
     """
-    Returns area of each pixel (if dimensions == 2) or volume of each
-    voxel (if dimensions == 3) as a pint.Quantity. Also returns the
-    unit registry associated with these dimensions, with a 'cell' unit
-    added to the defaults
+    Returns lists of physical dimensions of pixels and corresponding units
+    read from OME-XML metadata of input image
     """
     reg = UnitRegistry()
     reg.define("cell = []")
