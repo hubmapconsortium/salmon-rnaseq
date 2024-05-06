@@ -1,19 +1,59 @@
 #!/usr/bin/env python3
+import re
 import sys
+import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
 from os import walk
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, List, Tuple
 
+import aicsimageio
 import cv2
 import manhole
 import numpy as np
 import pandas as pd
 import tifffile as tf
 from PIL import Image
+from pint import Quantity, UnitRegistry
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
 from sklearn.preprocessing import MinMaxScaler
+
+schema_url_pattern = re.compile(r"\{(.+)\}OME")
+
+
+def get_schema_url(ome_xml_root_node: ET.Element) -> str:
+    if m := schema_url_pattern.match(ome_xml_root_node.tag):
+        return m.group(1)
+    raise ValueError(f"Couldn't extract schema URL from tag name {ome_xml_root_node.tag}")
+
+
+def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], List[str]]:
+    """
+    Returns lists of physical dimensions of pixels and corresponding units
+    read from OME-XML metadata of input image
+    """
+
+    # aicsimageio parses the OME-XML metadata when loading an image,
+    # and uses that metadata to populate various data structures in
+    # the AICSImage object. The AICSImage.metadata.to_xml() function
+    # constructs a new OME-XML string from that metadata, so anything
+    # ignored by aicsimageio won't be present in that XML document.
+    # Unfortunately, current aicsimageio ignores physical size units,
+    # so we have to parse the original XML ourselves:
+    root = ET.fromstring(img.xarray_dask_data.unprocessed[270])
+    schema_url = get_schema_url(root)
+    pixel_node_attrib = root.findall(f".//{{{schema_url}}}Pixels")[0].attrib
+
+    values = []
+    units = []
+    for dimension in "XY":
+        unit = pixel_node_attrib[f"PhysicalSize{dimension}Unit"]
+        value = float(pixel_node_attrib[f"PhysicalSize{dimension}"])
+        values.append(value)
+        units.append(unit)
+
+    return values, units
 
 
 def circle_attributes(contour, circularity_threshold=0.85):
@@ -343,13 +383,14 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
 
 def downsample_image(image, scale_factor):
 
-    # Calculate the new dimensions based on the scale factor
-    width, height = image.shape[1], image.shape[0]
-    new_width = int(width / scale_factor)
-    new_height = int(height / scale_factor)
-
     # Resize the image using the new dimensions
-    resized_image = Image.fromarray(image).resize((new_width, new_height), Image.LANCZOS)
+    # 5000 by 5000 image was found in testing to provide best tradeoff between runtime and reliable fiducial detection
+    required_size = 5000.0
+    shape = np.array(image.shape[0:2])
+    scale_factor = (required_size / shape).max()
+    resized_image = Image.fromarray(image).resize(
+        (shape * scale_factor).round().astype(int), Image.LANCZOS
+    )
 
     return np.asarray(resized_image)
 
@@ -403,9 +444,28 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
 
     match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
 
-    spot_spatial_diameter = match_slide["Dia."].iloc[0]
+    img_files = find_files(img_dir, "*.ome.tif*")
+    img_files_list = list(img_files)
+    img_file = img_files_list[0]
+    img = aicsimageio.AICSImage(img_file)
+    values, units = physical_dimension_func(img)
+    ureg = UnitRegistry()
+    Q_ = ureg.Quantity
+    micrometers_per_pixel = (
+        Q_(values[0], ureg(units[0])).to("micrometer").magnitude
+    )  # Physical size of pixel in micrometers
 
-    return match_slide, scale_factor, spot_spatial_diameter, affine_matrix
+    spot_spatial_diameter_micrometers = match_slide["Dia."].iloc[0]  # in micrometers
+
+    pixels_per_micrometer = (
+        1 / micrometers_per_pixel
+    )  # conversion factor from micrometers to pixels
+
+    spot_spatial_diameter_pixels = (
+        spot_spatial_diameter_micrometers * pixels_per_micrometer
+    )  # physical size in pixels
+
+    return match_slide, scale_factor, spot_spatial_diameter_pixels, affine_matrix
 
 
 def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
