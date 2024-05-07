@@ -465,14 +465,26 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         spot_spatial_diameter_micrometers * pixels_per_micrometer
     )  # physical size in pixels
 
-    return match_slide, scale_factor, spot_spatial_diameter_pixels, affine_matrix
+    return (
+        match_slide,
+        scale_factor,
+        spot_spatial_diameter_pixels,
+        spot_spatial_diameter_micrometers,
+        affine_matrix,
+    )
 
 
 def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
     gpr_file = list(find_files(metadata_dir, "*.gpr"))[0]
 
     slide_id = gpr_file.stem
-    gpr_df, scale_factor, spot_spatial_diameter, affine_matrix = get_gpr_df(metadata_dir, img_dir)
+    (
+        gpr_df,
+        scale_factor,
+        spot_spatial_diameter,
+        spot_spatial_diameter_micrometers,
+        affine_matrix,
+    ) = get_gpr_df(metadata_dir, img_dir)
 
     gpr_df = gpr_df.set_index(["Column", "Row"], inplace=False, drop=True)
     plate_version_number = gpr_file.stem[1]
@@ -486,7 +498,14 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
 
     gpr_df = gpr_df.reset_index(inplace=False)
     gpr_df = gpr_df.set_index("barcode", inplace=False, drop=True)
-    return gpr_df, slide_id, scale_factor, spot_spatial_diameter, affine_matrix
+    return (
+        gpr_df,
+        slide_id,
+        scale_factor,
+        spot_spatial_diameter,
+        spot_spatial_diameter_micrometers,
+        affine_matrix,
+    )
 
 
 def main(metadata_dir: Path, img_dir: Path):
