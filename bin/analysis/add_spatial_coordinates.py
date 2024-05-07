@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
 from os import walk
 from pathlib import Path
-from typing import Callable, Iterable, List, Literal, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 import aicsimageio
 import anndata
@@ -113,6 +113,7 @@ def annotate(
             slide_id,
             scale_factor,
             spot_diameter,
+            spot_diameter_micrometers,
             affine_matrix,
         ) = read_visium_positions.read_visium_positions(metadata_dir, img_dir)
         d.obs["Tissue Coverage Fraction"] = barcode_pos["Tissue Coverage Fraction"]
@@ -123,6 +124,7 @@ def annotate(
         d.uns[spatial_key][library_id]["scalefactors"] = {
             "tissue_hires_scalef": 1.0,  # This is the scale factor from our image to full res, and our image is full res
             "spot_diameter_fullres": spot_diameter,
+            "spot_diameter_micrometers": spot_diameter_micrometers,
         }
 
     quant_bc_set = set(d.obs.index)
