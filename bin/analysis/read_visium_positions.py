@@ -338,7 +338,7 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
     affine_transform = np.dot(r_inv, affine_matrix).T
 
     # scale back to original resolution
-    affine_transform *= (1 / scale_factor)
+    affine_transform *= 1 / scale_factor
     affine_transform[2, 2] = 1
     # convert slide of coordinates to image
     new_img = np.zeros(tissue.shape)
@@ -390,9 +390,7 @@ def downsample_image(image, scale_factor):
     scale_factor = (required_size / shape).max()
     new_dims = (shape * scale_factor).round().astype(int)
     new_dims = (new_dims[1], new_dims[0])
-    resized_image = Image.fromarray(image).resize(
-        new_dims, Image.LANCZOS
-    )
+    resized_image = Image.fromarray(image).resize(new_dims, Image.LANCZOS)
 
     return np.asarray(resized_image), scale_factor
 
@@ -441,7 +439,12 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
     match_slide = tiles[match_slide_idx].copy()
     match_frame = frames[match_slide_idx].copy()
     fractions, affine_matrix = align_N_register(
-        tissue, match_slide, match_frame, scaler_fs_detected, rotational_matrix, scale_factor,
+        tissue,
+        match_slide,
+        match_frame,
+        scaler_fs_detected,
+        rotational_matrix,
+        scale_factor,
     )
 
     match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
