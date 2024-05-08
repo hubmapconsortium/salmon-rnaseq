@@ -338,7 +338,7 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
     affine_transform = np.dot(r_inv, affine_matrix).T
 
     # scale back to original resolution
-    affine_transform *= (1/scale_factor)
+    affine_transform *= (1 / scale_factor)
     affine_transform[2, 2] = 1
     # convert slide of coordinates to image
     new_img = np.zeros(tissue.shape)
@@ -388,8 +388,10 @@ def downsample_image(image, scale_factor):
     required_size = 5000.0
     shape = np.array(image.shape[0:2])
     scale_factor = (required_size / shape).max()
+    new_dims = (shape * scale_factor).round().astype(int)
+    new_dims = (new_dims[1], new_dims[0])
     resized_image = Image.fromarray(image).resize(
-        (shape * scale_factor).round().astype(int), Image.LANCZOS
+        new_dims, Image.LANCZOS
     )
 
     return np.asarray(resized_image), scale_factor
