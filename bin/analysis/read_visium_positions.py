@@ -294,7 +294,7 @@ def determine_threshold_distance(data, k):
     return kth_distances[threshold_position]
 
 
-def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix):
+def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix, scale_factor):
     # normalize min max
     scaler = MinMaxScaler()
 
@@ -338,7 +338,7 @@ def align_N_register(tissue, slide, frame, scaler_fs_detected, rotational_matrix
     affine_transform = np.dot(r_inv, affine_matrix).T
 
     # scale back to original resolution
-    affine_transform *= 4
+    affine_transform *= (1/scale_factor)
     affine_transform[2, 2] = 1
     # convert slide of coordinates to image
     new_img = np.zeros(tissue.shape)
@@ -392,7 +392,7 @@ def downsample_image(image, scale_factor):
         (shape * scale_factor).round().astype(int), Image.LANCZOS
     )
 
-    return np.asarray(resized_image)
+    return np.asarray(resized_image), scale_factor
 
 
 def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighbors=3):
@@ -408,7 +408,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         img = tf.imread(img_path)
         img = np.transpose(img, (1, 2, 0))
 
-    img = downsample_image(img, scale_factor)
+    img, scale_factor = downsample_image(img, scale_factor)
 
     if threshold is None:
         threshold = gpr["Dia."].iloc[0] / np.average(img.shape[:2])  # rough estimate
@@ -439,7 +439,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
     match_slide = tiles[match_slide_idx].copy()
     match_frame = frames[match_slide_idx].copy()
     fractions, affine_matrix = align_N_register(
-        tissue, match_slide, match_frame, scaler_fs_detected, rotational_matrix
+        tissue, match_slide, match_frame, scaler_fs_detected, rotational_matrix, scale_factor,
     )
 
     match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
