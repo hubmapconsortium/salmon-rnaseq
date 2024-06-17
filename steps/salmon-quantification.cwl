@@ -112,14 +112,7 @@ steps:
         source: assay
       alevin_dir:
         source: [salmon/output_dir, salmon-mouse/output_dir]
-        valueFrom: |
-          ${
-            if(self[0]){
-              return self[0];
-            } else if(self[1]){
-              return self[1];
-            }
-          }
+        pickValue: first_non_nulls
     out:
       - expr_h5ad
       - raw_expr_h5ad
