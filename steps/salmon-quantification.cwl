@@ -22,6 +22,8 @@ inputs:
     type: Directory?
   metadata_dir:
     type: Directory?
+  organism:
+    type: string?
 outputs:
   salmon_output:
     outputSource: salmon/output_dir

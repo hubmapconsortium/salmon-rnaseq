@@ -17,8 +17,11 @@ from common import (
     Assay,
 )
 
-index = "/opt/gencode.v35.intron-exon.sidx"
-transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
+human_index = "/opt/gencode.v35.intron-exon.sidx"
+human_transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
+mouse_index = "/opt/gencode.vM28.intron-exon.sidx"
+mouse_transcript_map = "/opt/gencode.vM28.aannotation.expanded.tx2gene.tsv"
+
 
 SALMON_COMMAND = [
     "salmon",
@@ -174,10 +177,14 @@ def main(
     expected_cell_count: Optional[int],
     keep_all_barcodes: bool,
     threads: Optional[int],
+    organism: Optional[str] = "human",
 ):
     threads = threads or 1
 
     visium_plate_version = 1
+
+    index = human_index if organism == "human" else mouse_index
+    transcript_map = human_transcript_map if organism == "human" else mouse_transcript_map
 
     command = [
         piece.format(
@@ -251,6 +258,7 @@ if __name__ == "__main__":
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
+    p.add_argument("--threads", type=str, nargs="?", default="human")
     args = p.parse_args()
 
     main(

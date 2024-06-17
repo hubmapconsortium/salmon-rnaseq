@@ -27,6 +27,8 @@ inputs:
     type: int?
   keep_all_barcodes:
     type: boolean?
+  organism:
+    type: string?
 outputs:
   salmon_output:
     outputSource: salmon_quantification/salmon_output
