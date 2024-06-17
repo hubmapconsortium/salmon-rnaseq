@@ -26,7 +26,8 @@ inputs:
     type: string?
 outputs:
   salmon_output:
-    outputSource: salmon/output_dir
+    outputSource: [salmon/output_dir, salmon-mouse/output_dir]
+    pickValue: first_non_null
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix_h5ad:
@@ -77,16 +78,48 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
+      organism:
+        source: organism
     out:
       - output_dir
     run: salmon-quantification/salmon.cwl
+    when: $(inputs.organism == 'human')
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
+  salmon-mouse:
+    in:
+      orig_fastq_dirs:
+        source: fastq_dir
+      trimmed_fastq_dir:
+        source: trim_reads/trimmed_fastq_dir
+      assay:
+        source: assay
+      threads:
+        source: threads
+      expected_cell_count:
+        source: expected_cell_count
+      keep_all_barcodes:
+        source: keep_all_barcodes
+      organism:
+        source: organism
+    out:
+      - output_dir
+    run: salmon-quantification/salmon-mouse.cwl
+        when: $(inputs.organism == 'human')
+    label: "Salmon Alevin, with index from GRCm39 transcriptome"
   alevin_to_anndata:
     in:
       assay:
         source: assay
       alevin_dir:
-        source: salmon/output_dir
+        source: [salmon/output_dir, salmon-mouse/output_dir]
+        valueFrom: |
+          ${
+            if(self[0]){
+              return self[0];
+            } else if(self[1]){
+              return self[1];
+            }
+          }
     out:
       - expr_h5ad
       - raw_expr_h5ad
