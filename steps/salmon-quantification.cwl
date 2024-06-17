@@ -104,7 +104,7 @@ steps:
     out:
       - output_dir
     run: salmon-quantification/salmon-mouse.cwl
-        when: $(inputs.organism == 'human')
+    when: $(inputs.organism == 'mouse')
     label: "Salmon Alevin, with index from GRCm39 transcriptome"
   alevin_to_anndata:
     in:
@@ -112,7 +112,7 @@ steps:
         source: assay
       alevin_dir:
         source: [salmon/output_dir, salmon-mouse/output_dir]
-        pickValue: first_non_nulls
+        pickValue: first_non_null
     out:
       - expr_h5ad
       - raw_expr_h5ad
