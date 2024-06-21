@@ -11,7 +11,7 @@ SALMON_COMMAND = [
     "salmon",
     "quant",
     "--index",
-    "/opt/grch38_index",
+    "/opt/gencode.v35.intron-exon.sidx",
     "--libType",
     "A",
     "-p",
