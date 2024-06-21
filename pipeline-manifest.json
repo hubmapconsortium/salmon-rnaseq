@@ -74,5 +74,15 @@
 		"description": "FastQC report of input FASTQ file",
 		"edam_ontology_term": "EDAM_1.24.format_2331",
 		"is_qa_qc": true
+	},
+	{
+		"pattern": "marker_genes_by_cluster_logreg\\.pdf",
+		"description": "Plot of marker genes by cluster calculated using logistic regression",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
+	},
+	{
+		"pattern": "marker_genes_by_cluster_t_test\\.pdf",
+		"description": "Plot of marker genes by cluster calculated using t test",
+		"edam_ontology_term": "EDAM_1.24.format_3508"
 	}
 ]
