@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 label: Convert Alevin sparse output to anndata.AnnData object, save as h5ad
 requirements:
