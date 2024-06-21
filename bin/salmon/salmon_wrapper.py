@@ -258,7 +258,7 @@ if __name__ == "__main__":
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
-    p.add_argument("--threads", type=str, nargs="?", default="human")
+    p.add_argument("--organism", type=str, nargs="?", default="human")
     args = p.parse_args()
 
     main(
@@ -268,4 +268,5 @@ if __name__ == "__main__":
         args.expected_cell_count,
         args.keep_all_barcodes,
         args.threads,
+        args.organism,
     )

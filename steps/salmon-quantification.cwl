@@ -113,6 +113,8 @@ steps:
       alevin_dir:
         source: [salmon/output_dir, salmon-mouse/output_dir]
         pickValue: first_non_null
+      organism:
+        source: organism
     out:
       - expr_h5ad
       - raw_expr_h5ad

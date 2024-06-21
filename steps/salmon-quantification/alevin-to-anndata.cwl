@@ -15,6 +15,11 @@ inputs:
     type: Directory
     inputBinding:
       position: 1
+  organism:
+    type: string?
+    inputBinding:
+      position: 2
+      prefix: "--organism"
 outputs:
   raw_expr_h5ad:
     type: File?

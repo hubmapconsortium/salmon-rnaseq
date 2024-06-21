@@ -179,7 +179,7 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
 
 
 def convert(
-    assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path
+    assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path, organism: Optional[str]="human",
 ) -> Tuple[AnnData, AnnData]:
     """
     :return: 2-tuple:
@@ -204,12 +204,13 @@ def convert(
         cols=gene_names,
     )
 
-    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path, assay)
-
     spliced_anndata = add_split_spliced_unspliced(raw_labeled)
-    ensembl_hugo_mapper.annotate(raw_labeled, assay)
 
-    ensembl_hugo_mapper.annotate(spliced_anndata, assay)
+    if organism == "human":
+
+        ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path, assay)
+        ensembl_hugo_mapper.annotate(raw_labeled, assay)
+        ensembl_hugo_mapper.annotate(spliced_anndata, assay)
 
     return raw_labeled, spliced_anndata
 
@@ -224,9 +225,11 @@ if __name__ == "__main__":
         type=Path,
         default=DEFAULT_HUGO_ENSEMBL_MAPPING_PATH,
     )
+    p.add_argument("--organism", type=str, nargs="?", default="human")
+
     args = p.parse_args()
 
-    raw, spliced = convert(args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path)
+    raw, spliced = convert(args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path, args.organism)
     if raw:
         raw.write_h5ad("raw_expr.h5ad")
     print(spliced)
