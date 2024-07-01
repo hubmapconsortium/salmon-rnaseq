@@ -41,7 +41,7 @@ SALMON_COMMAND = [
 
 cell_count_filename = "extras/expected_cell_count.txt"
 metadata_filename_pattern = re.compile(r"^[0-9A-Fa-f]{32}-metadata.tsv$")
-metadata_cell_count_field = "expected_cell_count"
+metadata_cell_count_fields = ["expected_cell_count", "expected_entity_capture_count"]
 metadata_probe_set_version_field = "visium_probe_set_version"
 barcode_whitelist_path = Path("barcode_whitelist.txt")
 
@@ -86,14 +86,15 @@ def read_expected_cell_count(directory: Path) -> Optional[int]:
         with open(maybe_metadata_file, newline="") as f:
             r = csv.DictReader(f, delimiter="\t")
             metadata = next(r)
-            if (
-                metadata_cell_count_field in metadata
-                and metadata[metadata_cell_count_field].isdigit()
-            ):
-                cell_count_metadata = int(metadata[metadata_cell_count_field])
-                print(
-                    f"Read expected cell count from {maybe_metadata_file}: {cell_count_metadata}"
-                )
+            for metadata_cell_count_field in metadata_cell_count_fields:
+                if (
+                    metadata_cell_count_field in metadata
+                    and metadata[metadata_cell_count_field].isdigit()
+                ):
+                    cell_count_metadata = int(metadata[metadata_cell_count_field])
+                    print(
+                        f"Read expected cell count from {maybe_metadata_file}: {cell_count_metadata}"
+                    )
 
     present_cell_counts = sum(x is not None for x in [cell_count_from_file, cell_count_metadata])
     if present_cell_counts == 0:
