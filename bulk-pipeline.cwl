@@ -78,7 +78,7 @@ steps:
   - id: make_expression_matrix
     in:
       - id: quant_dir
-        source: [bulk-salmon/output_dir, bulk-salmon-mouse/output_dir]
+        source: [salmon-bulk/output_dir, salmon-bulk-mouse/output_dir]
         pickValue: first_non_null
 
     out:
