@@ -3,15 +3,21 @@ from argparse import ArgumentParser
 from os import fspath
 from pathlib import Path
 from subprocess import check_call
+from typing import Optional
 
 import manhole
 from fastq_utils import find_grouped_fastq_files, get_sample_id_from_r1
+
+human_index = "/opt/gencode.v35.intron-exon.sidx"
+human_transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
+mouse_index = "/opt/gencode.vM28.intron-exon.sidx"
+mouse_transcript_map = "/opt/gencode.vM28.annotation.expanded.tx2gene.tsv"
 
 SALMON_COMMAND = [
     "salmon",
     "quant",
     "--index",
-    "/opt/grch38_index",
+    "{index}",
     "--libType",
     "A",
     "-p",
@@ -35,10 +41,11 @@ def rename_file(old_file_name: str, new_file_name: str):
     check_call(command)
 
 
-def main(threads: int, directory: Path):
+def main(threads: int, directory: Path, organism:Optional[str]="human"):
+    index = human_index if organism == "human" else mouse_index
     for r1_fastq_file, r2_fastq_file in find_grouped_fastq_files(directory, 2):
 
-        command = [piece.format(threads=threads) for piece in SALMON_COMMAND]
+        command = [piece.format(threads=threads, index=index) for piece in SALMON_COMMAND]
 
         fastq_extension = [
             "-1",
@@ -68,7 +75,7 @@ if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("-p", "--threads", type=int)
     p.add_argument("directory", type=Path)
+    p.add_argument("--organism", type=str, nargs="?", default="human")
     args = p.parse_args()
-    print(args.threads, args.directory)
 
     main(args.threads, args.directory)

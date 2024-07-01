@@ -3,9 +3,12 @@
 class: Workflow
 cwlVersion: v1.2
 label: bulk scRNA-seq pipeline using Salmon
-#requirements:
-#  ScatterFeatureRequirement: {}
-#  SubworkflowFeatureRequirement: {}
+requirements:
+  ScatterFeatureRequirement: {}
+  SubworkflowFeatureRequirement: {}
+  MultipleInputFeatureRequirement: {}
+  InlineJavascriptRequirement: {}
+
 inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"
@@ -14,6 +17,8 @@ inputs:
     label: "Number of threads for Salmon"
     type: int
     default: 1
+  organism:
+    type: string?
 outputs:
   fastqc_dir:
     outputSource: fastqc/fastqc_dir
@@ -48,15 +53,33 @@ steps:
         source: fastq_dir
       - id: threads
         source: threads
+      - id: organism
+        source: organism
     out:
       - output_dir
     run: steps/bulk-salmon.cwl
+    when: $(inputs.organism == 'human')
     label: "Salmon quant 1.0.0, with index from GRCh38 transcriptome"
+
+  - id: salmon-bulk-mouse
+    in:
+      - id: fastq_dir
+        source: fastq_dir
+      - id: threads
+        source: threads
+      - id: organism
+        source: organism
+    out:
+      - output_dir
+    run: steps/bulk-salmon-mouse.cwl
+    when: $(inputs.organism == 'mouse')
+    label: "Salmon quant 1.0.0, with index from GRCm39 transcriptome"
 
   - id: make_expression_matrix
     in:
       - id: quant_dir
-        source: salmon-bulk/output_dir
+        source: [bulk-salmon/output_dir, bulk-salmon-mouse/output_dir]
+        pickValue: first_non_null
 
     out:
       - expression_matrix

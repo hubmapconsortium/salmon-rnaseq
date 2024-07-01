@@ -3,6 +3,9 @@
 class: Workflow
 cwlVersion: v1.2
 label: Salmon quantification, FASTQ -> H5AD count matrix
+requirements:
+  MultipleInputFeatureRequirement: {}
+  InlineJavascriptRequirement: {}
 inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"

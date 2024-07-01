@@ -20,8 +20,7 @@ from common import (
 human_index = "/opt/gencode.v35.intron-exon.sidx"
 human_transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
 mouse_index = "/opt/gencode.vM28.intron-exon.sidx"
-mouse_transcript_map = "/opt/gencode.vM28.aannotation.expanded.tx2gene.tsv"
-
+mouse_transcript_map = "/opt/gencode.vM28.annotation.expanded.tx2gene.tsv"
 
 SALMON_COMMAND = [
     "salmon",

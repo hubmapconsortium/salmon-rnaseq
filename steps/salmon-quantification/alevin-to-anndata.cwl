@@ -4,6 +4,7 @@ label: Convert Alevin sparse output to anndata.AnnData object, save as h5ad
 requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-analysis:latest
+  MultipleInputFeatureRequirement: {}
 baseCommand: /opt/alevin_to_anndata.py
 
 inputs:
