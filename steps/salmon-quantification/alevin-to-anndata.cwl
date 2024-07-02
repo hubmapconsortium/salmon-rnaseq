@@ -1,9 +1,10 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 label: Convert Alevin sparse output to anndata.AnnData object, save as h5ad
 requirements:
   DockerRequirement:
     dockerPull: hubmap/scrna-analysis:latest
+  MultipleInputFeatureRequirement: {}
 baseCommand: /opt/alevin_to_anndata.py
 
 inputs:
@@ -15,6 +16,11 @@ inputs:
     type: Directory
     inputBinding:
       position: 1
+  organism:
+    type: string?
+    inputBinding:
+      position: 2
+      prefix: "--organism"
 outputs:
   raw_expr_h5ad:
     type: File?

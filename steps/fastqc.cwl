@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 label: Runs fastQC on each fastq file in fastq directory
 requirements:

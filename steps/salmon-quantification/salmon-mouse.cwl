@@ -2,7 +2,7 @@ cwlVersion: v1.2
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch38:latest
+    dockerPull: hubmap/salmon-grcm39:latest
   ResourceRequirement:
     ramMin: 28672
 baseCommand: /opt/salmon_wrapper.py
@@ -38,6 +38,11 @@ inputs:
     inputBinding:
       position: 5
       prefix: "--keep-all-barcodes"
+  organism:
+    type: string?
+    inputBinding:
+      position: 6
+      prefix: "--organism"
 
 outputs:
   output_dir:
