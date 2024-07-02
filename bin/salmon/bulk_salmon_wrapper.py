@@ -41,10 +41,9 @@ def rename_file(old_file_name: str, new_file_name: str):
     check_call(command)
 
 
-def main(threads: int, directory: Path, organism:Optional[str]="human"):
+def main(threads: int, directory: Path, organism: Optional[str] = "human"):
     index = human_index if organism == "human" else mouse_index
     for r1_fastq_file, r2_fastq_file in find_grouped_fastq_files(directory, 2):
-
         command = [piece.format(threads=threads, index=index) for piece in SALMON_COMMAND]
 
         fastq_extension = [

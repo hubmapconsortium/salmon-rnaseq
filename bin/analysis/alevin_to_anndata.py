@@ -56,7 +56,6 @@ class EnsemblHugoMapper:
         return self
 
     def annotate(self, data: AnnData, assay: Assay):
-
         symbols = [self.mapping.get(e) for e in data.var.index]
         data.var.loc[
             :,
@@ -179,7 +178,10 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
 
 
 def convert(
-    assay: Assay, input_dir: Path, ensembl_hugo_mapping_path: Path, organism: Optional[str]="human",
+    assay: Assay,
+    input_dir: Path,
+    ensembl_hugo_mapping_path: Path,
+    organism: Optional[str] = "human",
 ) -> Tuple[AnnData, AnnData]:
     """
     :return: 2-tuple:
@@ -227,7 +229,9 @@ if __name__ == "__main__":
 
     args = p.parse_args()
 
-    raw, spliced = convert(args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path, args.organism)
+    raw, spliced = convert(
+        args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path, args.organism
+    )
     if raw:
         raw.write_h5ad("raw_expr.h5ad")
     print(spliced)

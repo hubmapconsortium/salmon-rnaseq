@@ -57,7 +57,6 @@ def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], Li
 
 
 def circle_attributes(contour, circularity_threshold=0.85):
-
     area = cv2.contourArea(contour)
     perimeter = cv2.arcLength(contour, True)
 
@@ -87,7 +86,6 @@ def circle_attributes(contour, circularity_threshold=0.85):
 def detect_fiducial_spots_segment_tissue(
     img, threshold, min_neighbors, binary_threshold=125, blur_size=255
 ):
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     kernel_close = np.ones((100, 100), np.uint8)  # morphological kernel
     kernel_dilate = np.ones((20, 20), np.uint8)
@@ -382,7 +380,6 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
 
 
 def downsample_image(image, scale_factor):
-
     # Resize the image using the new dimensions
     # 5000 by 5000 image was found in testing to provide best tradeoff between runtime and reliable fiducial detection
     required_size = 5000.0
@@ -396,7 +393,6 @@ def downsample_image(image, scale_factor):
 
 
 def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighbors=3):
-
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
 
