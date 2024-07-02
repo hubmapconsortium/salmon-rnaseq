@@ -136,6 +136,8 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
+      organism:
+        source: organism
     out:
       - salmon_output
       - count_matrix_h5ad
