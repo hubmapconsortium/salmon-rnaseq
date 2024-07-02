@@ -206,11 +206,9 @@ def convert(
 
     spliced_anndata = add_split_spliced_unspliced(raw_labeled)
 
-    if organism == "human":
-
-        ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path, assay)
-        ensembl_hugo_mapper.annotate(raw_labeled, assay)
-        ensembl_hugo_mapper.annotate(spliced_anndata, assay)
+    ensembl_hugo_mapper = EnsemblHugoMapper.populate(ensembl_hugo_mapping_path, assay)
+    ensembl_hugo_mapper.annotate(raw_labeled, assay)
+    ensembl_hugo_mapper.annotate(spliced_anndata, assay)
 
     return raw_labeled, spliced_anndata
 
