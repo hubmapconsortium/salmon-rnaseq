@@ -1,9 +1,9 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 label: Dimensionality reduction and clustering
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/squidpy-analysis:2.2.4
+    dockerPull: hubmap/squidpy-analysis:latest
 baseCommand: /opt/squidpy_entry_point.py
 
 inputs:

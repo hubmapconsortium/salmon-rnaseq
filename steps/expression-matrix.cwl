@@ -1,9 +1,9 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.2.4
+    dockerPull: hubmap/scrna-analysis:latest
 
 baseCommand: /opt/make_expression_matrix.py
 label: Takes gene expression vectors from several bulk RNA samples and makes them into a gene by sample matrix

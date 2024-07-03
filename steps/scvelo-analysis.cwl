@@ -1,9 +1,9 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 label: RNA velocity analysis via scVelo
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.2.4
+    dockerPull: hubmap/scrna-analysis:latest
   EnvVarRequirement:
     envDef:
       TMPDIR: "/tmp"

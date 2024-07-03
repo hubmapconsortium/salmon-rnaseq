@@ -1,8 +1,11 @@
 #!/usr/bin/env cwl-runner
 
 class: Workflow
-cwlVersion: v1.0
+cwlVersion: v1.2
 label: Salmon quantification, FASTQ -> H5AD count matrix
+requirements:
+  MultipleInputFeatureRequirement: {}
+  InlineJavascriptRequirement: {}
 inputs:
   fastq_dir:
     label: "Directory containing FASTQ files"
@@ -22,9 +25,12 @@ inputs:
     type: Directory?
   metadata_dir:
     type: Directory?
+  organism:
+    type: string?
 outputs:
   salmon_output:
-    outputSource: salmon/output_dir
+    outputSource: [salmon/output_dir, salmon-mouse/output_dir]
+    pickValue: first_non_null
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix_h5ad:
@@ -75,16 +81,43 @@ steps:
         source: expected_cell_count
       keep_all_barcodes:
         source: keep_all_barcodes
+      organism:
+        source: organism
     out:
       - output_dir
     run: salmon-quantification/salmon.cwl
+    when: $(inputs.organism == 'human')
     label: "Salmon Alevin, with index from GRCh38 transcriptome"
+  salmon-mouse:
+    in:
+      orig_fastq_dirs:
+        source: fastq_dir
+      trimmed_fastq_dir:
+        source: trim_reads/trimmed_fastq_dir
+      assay:
+        source: assay
+      threads:
+        source: threads
+      expected_cell_count:
+        source: expected_cell_count
+      keep_all_barcodes:
+        source: keep_all_barcodes
+      organism:
+        source: organism
+    out:
+      - output_dir
+    run: salmon-quantification/salmon-mouse.cwl
+    when: $(inputs.organism == 'mouse')
+    label: "Salmon Alevin, with index from GRCm39 transcriptome"
   alevin_to_anndata:
     in:
       assay:
         source: assay
       alevin_dir:
-        source: salmon/output_dir
+        source: [salmon/output_dir, salmon-mouse/output_dir]
+        pickValue: first_non_null
+      organism:
+        source: organism
     out:
       - expr_h5ad
       - raw_expr_h5ad

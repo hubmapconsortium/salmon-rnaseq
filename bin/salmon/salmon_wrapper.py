@@ -17,8 +17,10 @@ from common import (
     Assay,
 )
 
-index = "/opt/gencode.v35.intron-exon.sidx"
-transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
+human_index = "/opt/gencode.v35.intron-exon.sidx"
+human_transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
+mouse_index = "/opt/gencode.vM28.intron-exon.sidx"
+mouse_transcript_map = "/opt/gencode.vM28.annotation.expanded.tx2gene.tsv"
 
 SALMON_COMMAND = [
     "salmon",
@@ -39,7 +41,7 @@ SALMON_COMMAND = [
 
 cell_count_filename = "extras/expected_cell_count.txt"
 metadata_filename_pattern = re.compile(r"^[0-9A-Fa-f]{32}-metadata.tsv$")
-metadata_cell_count_field = "expected_cell_count"
+metadata_cell_count_fields = ["expected_cell_count", "expected_entity_capture_count"]
 metadata_probe_set_version_field = "visium_probe_set_version"
 barcode_whitelist_path = Path("barcode_whitelist.txt")
 
@@ -84,14 +86,15 @@ def read_expected_cell_count(directory: Path) -> Optional[int]:
         with open(maybe_metadata_file, newline="") as f:
             r = csv.DictReader(f, delimiter="\t")
             metadata = next(r)
-            if (
-                metadata_cell_count_field in metadata
-                and metadata[metadata_cell_count_field].isdigit()
-            ):
-                cell_count_metadata = int(metadata[metadata_cell_count_field])
-                print(
-                    f"Read expected cell count from {maybe_metadata_file}: {cell_count_metadata}"
-                )
+            for metadata_cell_count_field in metadata_cell_count_fields:
+                if (
+                    metadata_cell_count_field in metadata
+                    and metadata[metadata_cell_count_field].isdigit()
+                ):
+                    cell_count_metadata = int(metadata[metadata_cell_count_field])
+                    print(
+                        f"Read expected cell count from {maybe_metadata_file}: {cell_count_metadata}"
+                    )
 
     present_cell_counts = sum(x is not None for x in [cell_count_from_file, cell_count_metadata])
     if present_cell_counts == 0:
@@ -174,10 +177,14 @@ def main(
     expected_cell_count: Optional[int],
     keep_all_barcodes: bool,
     threads: Optional[int],
+    organism: Optional[str] = "human",
 ):
     threads = threads or 1
 
     visium_plate_version = 1
+
+    index = human_index if organism == "human" else mouse_index
+    transcript_map = human_transcript_map if organism == "human" else mouse_transcript_map
 
     command = [
         piece.format(
@@ -251,6 +258,7 @@ if __name__ == "__main__":
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
+    p.add_argument("--organism", type=str, nargs="?", default="human")
     args = p.parse_args()
 
     main(
@@ -260,4 +268,5 @@ if __name__ == "__main__":
         args.expected_cell_count,
         args.keep_all_barcodes,
         args.threads,
+        args.organism,
     )
