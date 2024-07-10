@@ -77,4 +77,4 @@ if __name__ == "__main__":
     p.add_argument("--organism", type=str, nargs="?", default="human")
     args = p.parse_args()
 
-    main(args.threads, args.directory)
+    main(args.threads, args.directory, args.organism)
