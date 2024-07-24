@@ -3,8 +3,10 @@ import json
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, Optional, Tuple
+from os import fspath
 
 import anndata
+import muon as mu
 import manhole
 import pandas as pd
 import scanpy as sc
@@ -44,8 +46,8 @@ def write_scanpy_qc(adata: anndata.AnnData):
         store["qc_by_gene"] = qc_by_gene
 
 
-def main(assay: Assay, h5ad_primary: Path, h5ad_secondary: Path, salmon_dir: Path):
-    expr_primary = anndata.read_h5ad(h5ad_primary)
+def main(assay: Assay, primary_matrix_path: Path, secondary_matrix_path: Path, salmon_dir: Path):
+    expr_primary = mu.read(f"{fspath(primary_matrix_path)}/rna") if primary_matrix_path.suffix == ".h5mu" else anndata.read_h5ad(primary_matrix_path)
     if assay.secondary_analysis_layer in expr_primary.layers:
         expr_primary.X = expr_primary.layers[assay.secondary_analysis_layer]
     expr_primary.var_names_make_unique()
@@ -56,7 +58,7 @@ def main(assay: Assay, h5ad_primary: Path, h5ad_secondary: Path, salmon_dir: Pat
     unspliced_total = expr_primary.layers["unspliced"].sum()
     spliced_unspliced_total = expr_primary.layers["spliced_unspliced_sum"].sum()
 
-    expr_secondary = anndata.read_h5ad(h5ad_secondary)
+    expr_secondary = mu.read(f"{fspath(secondary_matrix_path)}/rna") if secondary_matrix_path.suffix == ".h5mu" else anndata.read_h5ad(secondary_matrix_path)
 
     salmon_measures = read_salmon_output(salmon_dir)
 
@@ -77,9 +79,9 @@ if __name__ == "__main__":
     manhole.install(activate_on="USR1")
     p = ArgumentParser()
     p.add_argument("assay", choices=list(Assay), type=Assay)
-    p.add_argument("h5ad_primary", type=Path)
-    p.add_argument("h5ad_secondary", type=Path)
+    p.add_argument("primary_matrix_path", type=Path)
+    p.add_argument("secondary_matrix_path", type=Path)
     p.add_argument("salmon_dir", type=Path)
     args = p.parse_args()
 
-    main(args.assay, args.h5ad_primary, args.h5ad_secondary, args.salmon_dir)
+    main(args.assay, args.primary_matrix_path, args.secondary_matrix_path, args.salmon_dir)
