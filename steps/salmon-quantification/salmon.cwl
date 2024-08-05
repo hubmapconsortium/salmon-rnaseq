@@ -2,7 +2,7 @@ cwlVersion: v1.2
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch38:latest
+    dockerPull: hubmap/salmon-grch38:2.2.7
   ResourceRequirement:
     ramMin: 28672
 baseCommand: /opt/salmon_wrapper.py
