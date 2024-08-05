@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Compute QC metrics
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:2.2.6
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/compute_qc_metrics.py
 
 inputs:
@@ -11,11 +11,11 @@ inputs:
     type: string
     inputBinding:
       position: 0
-  h5ad_primary:
+  primary_matrix_path:
     type: File
     inputBinding:
       position: 1
-  h5ad_secondary:
+  secondary_matrix_path:
     type: File
     inputBinding:
       position: 2

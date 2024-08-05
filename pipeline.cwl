@@ -205,9 +205,9 @@ steps:
     in:
       assay:
         source: assay
-      h5ad_primary:
+      primary_matrix_path:
         source: salmon_quantification/count_matrix_h5ad
-      h5ad_secondary:
+      secondary_matrix_path:
         source: scanpy_analysis/filtered_data_h5ad
       salmon_dir:
         source: salmon_quantification/salmon_output
