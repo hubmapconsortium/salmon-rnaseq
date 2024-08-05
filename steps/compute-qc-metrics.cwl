@@ -11,11 +11,11 @@ inputs:
     type: string
     inputBinding:
       position: 0
-  h5ad_primary:
+  primary_matrix_path:
     type: File
     inputBinding:
       position: 1
-  h5ad_secondary:
+  secondary_matrix_path:
     type: File
     inputBinding:
       position: 2

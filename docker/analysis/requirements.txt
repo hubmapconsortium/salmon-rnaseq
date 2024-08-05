@@ -5,6 +5,7 @@ h5py~=3.6.0
 leidenalg~=0.8.9
 manhole~=1.8
 matplotlib~=3.5.1
+muon
 networkx~=2.7
 # pinned for numba
 numpy==1.22
