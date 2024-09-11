@@ -416,10 +416,10 @@ def downsample_image(image, scale_factor):
     return np.asarray(resized_image), scale_factor
 
 
-def get_gpr_df(metadata_dir, img_dir, alignment_file, threshold=None, scale_factor=4, min_neighbors=3):
+def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighbors=3):
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
-
+    alignment_path = list(find_files(img_dir, "alignment.json"))[0]
 
     gpr = pd.read_table(gpr_path, skiprows=9)
 
@@ -429,8 +429,8 @@ def get_gpr_df(metadata_dir, img_dir, alignment_file, threshold=None, scale_fact
         img = tf.imread(img_path)
         img = np.transpose(img, (1, 2, 0))
 
-    if alignment_file:
-        with open(alignment_file, 'r') as file:
+    if alignment_path:
+        with open(alignment_path, 'r') as file:
             alignment_file = json.load(file)
 
         #'oligo' - inner beads
@@ -546,7 +546,7 @@ def get_gpr_df(metadata_dir, img_dir, alignment_file, threshold=None, scale_fact
     )
 
 
-def read_visium_positions(metadata_dir: Path, img_dir: Path, alignment_file: Path, cutoff=0.0):
+def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
     gpr_file = list(find_files(metadata_dir, "*.gpr"))[0]
 
     slide_id = gpr_file.stem
@@ -556,7 +556,7 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, alignment_file: Pat
         spot_spatial_diameter,
         spot_spatial_diameter_micrometers,
         affine_matrix,
-    ) = get_gpr_df(metadata_dir, img_dir, alignment_file)
+    ) = get_gpr_df(metadata_dir, img_dir)
 
     gpr_df = gpr_df.set_index(["Column", "Row"], inplace=False, drop=True)
     plate_version_number = gpr_file.stem[1]
@@ -580,8 +580,8 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, alignment_file: Pat
     )
 
 
-def main(metadata_dir: Path, img_dir: Path, alignment_file: Path):
-    return read_visium_positions(metadata_dir, img_dir, alignment_file)
+def main(metadata_dir: Path, img_dir: Path):
+    return read_visium_positions(metadata_dir, img_dir)
 
 
 if __name__ == "__main__":
@@ -590,7 +590,6 @@ if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("metadata_dir", type=Path)
     p.add_argument("img_dir", type=Path)
-    p.add_argument("alignment_file", type=str, default=None)
     args = p.parse_args()
 
-    d = main(args.metadata_dir, args.img_dir, args.alignment_file)
+    d = main(args.metadata_dir, args.img_dir)
