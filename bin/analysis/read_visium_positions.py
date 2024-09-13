@@ -465,8 +465,10 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
             fractions.append(numerator / denom.shape[0])
 
         inner_df['Tissue Coverage Fraction'] = fractions
-        
-        match_slide = inner_df[['imageX', 'imageY', 'Tissue Coverage Fraction']].rename(columns={'imageX': 'X', 'imageY': 'Y'})
+
+        match_slide = inner_df[['imageX', 'imageY', 'Tissue Coverage Fraction']].rename(columns={'imageX': 'X', 'imageY': 'Y', 'row':'Row', 'col':'Column'})
+        match_slide['Column'] = match_slide['Column'] + 1
+        match_slide['Row'] = (match_slide['Row'] // 2) + 1
         match_slide['Dia.'] = gpr[gpr['Block'] == 2]['Dia.'].iloc[0]
         scale_factor = 1
 
@@ -517,18 +519,18 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
 
         match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
 
-        gpr_df = match_slide.set_index(["Column", "Row"], inplace=False, drop=True)
-        plate_version_number = gpr_path.stem[1]
-        barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
-        coords_df = pd.read_csv(barcode_coords_file, sep="\t", names=["barcode", "Column", "Row"])
-        coords_df["Row"] = coords_df["Row"] + 1
-        coords_df["Row"] = coords_df["Row"] // 2
-        coords_df = coords_df.set_index(["Column", "Row"])
-        gpr_df["barcode"] = coords_df["barcode"]
-        gpr_df = gpr_df[["barcode", "X", "Y", "Tissue Coverage Fraction"]]
+    gpr_df = match_slide.set_index(["Column", "Row"], inplace=False, drop=True)
+    plate_version_number = gpr_path.stem[1]
+    barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
+    coords_df = pd.read_csv(barcode_coords_file, sep="\t", names=["barcode", "Column", "Row"])
+    coords_df["Row"] = coords_df["Row"] + 1
+    coords_df["Row"] = coords_df["Row"] // 2
+    coords_df = coords_df.set_index(["Column", "Row"])
+    gpr_df["barcode"] = coords_df["barcode"]
+    gpr_df = gpr_df[["barcode", "X", "Y", "Tissue Coverage Fraction"]]
 
-        gpr_df = gpr_df.reset_index(inplace=False)
-        match_slide = gpr_df.set_index("barcode", inplace=False, drop=True)
+    gpr_df = gpr_df.reset_index(inplace=False)
+    match_slide = gpr_df.set_index("barcode", inplace=False, drop=True)
 
     img_files = find_files(img_dir, "*.ome.tif*")
     img_files_list = list(img_files)
