@@ -466,7 +466,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
 
         inner_df['Tissue Coverage Fraction'] = fractions
 
-        match_slide = inner_df[['imageX', 'imageY', 'Tissue Coverage Fraction']].rename(columns={'imageX': 'X', 'imageY': 'Y', 'row':'Row', 'col':'Column'})
+        match_slide = inner_df[['imageX', 'imageY', 'Tissue Coverage Fraction', 'row', 'col']].rename(columns={'imageX': 'X', 'imageY': 'Y', 'row':'Row', 'col':'Column'})
         match_slide['Column'] = match_slide['Column'] + 1
         match_slide['Row'] = (match_slide['Row'] // 2) + 1
         match_slide['Dia.'] = gpr[gpr['Block'] == 2]['Dia.'].iloc[0]
