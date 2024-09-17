@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -379,6 +380,29 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
                 yield filepath
 
 
+def segment_tissue(img, blur_size=255):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    black_pixels = np.where(gray == 0)
+
+    if black_pixels[0].size > 0:
+        gray[black_pixels] = 255
+
+    # gray = fiducial_filter(gray, distance, filter=0)
+
+    # otsu
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    gray = clahe.apply(gray)
+
+    # Apply Gaussian blur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (blur_size, blur_size), 0)
+
+    # Apply Otsu's thresholding method to create a binary image
+    _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    return binary
+
+
 def downsample_image(image, scale_factor):
     # Resize the image using the new dimensions
     # 5000 by 5000 image was found in testing to provide best tradeoff between runtime and reliable fiducial detection
@@ -395,6 +419,7 @@ def downsample_image(image, scale_factor):
 def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighbors=3):
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
+    alignment_path = list(find_files(img_dir, "alignment.json"))[0]
 
     gpr = pd.read_table(gpr_path, skiprows=9)
 
@@ -404,46 +429,102 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         img = tf.imread(img_path)
         img = np.transpose(img, (1, 2, 0))
 
-    img, scale_factor = downsample_image(img, scale_factor)
+    if alignment_path:
+        with open(alignment_path, "r") as file:
+            alignment_file = json.load(file)
 
-    if threshold is None:
-        threshold = gpr["Dia."].iloc[0] / np.average(img.shape[:2])  # rough estimate
+        #'oligo' - inner beads
+        #'fiducial' - outter beads
+        inner_df = pd.json_normalize(alignment_file["oligo"])
+        # outer_df = pd.json_normalize(alignment_file['fiducial'])
+        affine_matrix = np.asarray(alignment_file["transform"])
 
-    rotational_matrix = get_rotation_matrix(img)
-    img = cv2.warpPerspective(img, rotational_matrix, (img.shape[1], img.shape[0]))
-    # Does the unrotated image get used for anything after this?
+        # if debug:
 
-    # big beads = [1, 3, 5, 7] with corresponding inside beads = [2, 4, 6, 8] - # corresponds to block
-    # get the frame or big beads that you need for alignment
-    frames = []
-    tiles = []
-    for i in gpr.Block.unique():
-        if i % 2:
-            # big bead - frame
-            frames.append(gpr.loc[gpr["Block"] == i])
-        else:
-            tiles.append(gpr.loc[gpr["Block"] == i])
+        #     #test to overlay beads with image
+        #     for idx, row in inner_df.iterrows():
+        #         cv2.circle(img, (int(row['imageX']), int(row['imageY'])), int(row['dia'] / 2), (0, 0, 255), -1)
 
-    print("Starting fiducial spot detection from image...")
-    # find fiducial beads in the tissue
-    fiducial_spots, tissue, pixel_diameter = detect_fiducial_spots_segment_tissue(
-        img, threshold, min_neighbors
-    )
-    match_slide_idx, detected_2_frame, frame_2_detected, scaler_fs_detected = slide_match(
-        frames, fiducial_spots, threshold
-    )
-    match_slide = tiles[match_slide_idx].copy()
-    match_frame = frames[match_slide_idx].copy()
-    fractions, affine_matrix = align_N_register(
-        tissue,
-        match_slide,
-        match_frame,
-        scaler_fs_detected,
-        rotational_matrix,
-        scale_factor,
-    )
+        #     cv2.imwrite(str(output_dir / "alignment_debug_bead_image.png"), img)
 
-    match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
+        tissue = segment_tissue(img)
+        new_img = np.zeros(tissue.shape)
+
+        for idx, row in inner_df.iterrows():
+            cv2.circle(
+                new_img,
+                (int(row["imageX"]), int(row["imageY"])),
+                int(row["dia"] / 2),
+                (idx + 1, 0, 0),
+                -1,
+            )
+
+        fiducial_idx = np.unique(new_img)[1:]
+        fractions = []
+        # find fraction of occupancy
+        # start_time = timeit.default_timer()  # starting time
+        for idx in fiducial_idx:
+            roi = new_img == idx
+            denom = tissue[roi]  # faster but more memory intensive
+            # numerator = tissue[roi[0], roi[1]].flatten()
+            numerator = denom[denom > 0].shape[0]
+            fractions.append(numerator / denom.shape[0])
+
+        inner_df["Tissue Coverage Fraction"] = fractions
+
+        match_slide = inner_df[
+            ["imageX", "imageY", "Tissue Coverage Fraction", "row", "col"]
+        ].rename(columns={"imageX": "X", "imageY": "Y", "row": "Row", "col": "Column"})
+        match_slide["Column"] = match_slide["Column"] + 1
+        match_slide["Row"] = (match_slide["Row"] // 2) + 1
+        match_slide["Dia."] = gpr[gpr["Block"] == 2]["Dia."].iloc[0]
+        scale_factor = 1
+
+        # write out inner_df
+        # output_df.to_csv((output_dir / (gpr_path.name + '_detected_output.csv')))
+        # exit()
+
+    else:
+        img, scale_factor = downsample_image(img, scale_factor)
+
+        if threshold is None:
+            threshold = gpr["Dia."].iloc[0] / np.average(img.shape[:2])  # rough estimate
+
+        rotational_matrix = get_rotation_matrix(img)
+        img = cv2.warpPerspective(img, rotational_matrix, (img.shape[1], img.shape[0]))
+        # Does the unrotated image get used for anything after this?
+
+        # big beads = [1, 3, 5, 7] with corresponding inside beads = [2, 4, 6, 8] - # corresponds to block
+        # get the frame or big beads that you need for alignment
+        frames = []
+        tiles = []
+        for i in gpr.Block.unique():
+            if i % 2:
+                # big bead - frame
+                frames.append(gpr.loc[gpr["Block"] == i])
+            else:
+                tiles.append(gpr.loc[gpr["Block"] == i])
+
+        print("Starting fiducial spot detection from image...")
+        # find fiducial beads in the tissue
+        fiducial_spots, tissue, pixel_diameter = detect_fiducial_spots_segment_tissue(
+            img, threshold, min_neighbors
+        )
+        match_slide_idx, detected_2_frame, frame_2_detected, scaler_fs_detected = slide_match(
+            frames, fiducial_spots, threshold
+        )
+        match_slide = tiles[match_slide_idx].copy()
+        match_frame = frames[match_slide_idx].copy()
+        fractions, affine_matrix = align_N_register(
+            tissue,
+            match_slide,
+            match_frame,
+            scaler_fs_detected,
+            rotational_matrix,
+            scale_factor,
+        )
+
+        match_slide.loc[:, "Tissue Coverage Fraction"] = fractions
 
     img_files = find_files(img_dir, "*.ome.tif*")
     img_files_list = list(img_files)
@@ -466,6 +547,19 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         spot_spatial_diameter_micrometers * pixels_per_micrometer
     )  # physical size in pixels
 
+    gpr_df = match_slide.set_index(["Column", "Row"], inplace=False, drop=True)
+    plate_version_number = gpr_path.stem[1]
+    barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
+    coords_df = pd.read_csv(barcode_coords_file, sep="\t", names=["barcode", "Column", "Row"])
+    coords_df["Row"] = coords_df["Row"] + 1
+    coords_df["Row"] = coords_df["Row"] // 2
+    coords_df = coords_df.set_index(["Column", "Row"])
+    gpr_df["barcode"] = coords_df["barcode"]
+    gpr_df = gpr_df[["barcode", "X", "Y", "Tissue Coverage Fraction"]]
+
+    gpr_df = gpr_df.reset_index(inplace=False)
+    match_slide = gpr_df.set_index("barcode", inplace=False, drop=True)
+
     return (
         match_slide,
         scale_factor,
@@ -487,18 +581,6 @@ def read_visium_positions(metadata_dir: Path, img_dir: Path, cutoff=0.0):
         affine_matrix,
     ) = get_gpr_df(metadata_dir, img_dir)
 
-    gpr_df = gpr_df.set_index(["Column", "Row"], inplace=False, drop=True)
-    plate_version_number = gpr_file.stem[1]
-    barcode_coords_file = Path(f"/opt/data/visium-v{plate_version_number}_coordinates.txt")
-    coords_df = pd.read_csv(barcode_coords_file, sep="\t", names=["barcode", "Column", "Row"])
-    coords_df["Row"] = coords_df["Row"] + 1
-    coords_df["Row"] = coords_df["Row"] // 2
-    coords_df = coords_df.set_index(["Column", "Row"])
-    gpr_df["barcode"] = coords_df["barcode"]
-    gpr_df = gpr_df[["barcode", "X", "Y", "Tissue Coverage Fraction"]]
-
-    gpr_df = gpr_df.reset_index(inplace=False)
-    gpr_df = gpr_df.set_index("barcode", inplace=False, drop=True)
     return (
         gpr_df,
         slide_id,
