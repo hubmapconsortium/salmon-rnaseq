@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -18,7 +19,6 @@ from pint import Quantity, UnitRegistry
 from scipy.spatial import distance
 from scipy.spatial.distance import cdist
 from sklearn.preprocessing import MinMaxScaler
-import json
 
 schema_url_pattern = re.compile(r"\{(.+)\}OME")
 
@@ -379,8 +379,8 @@ def find_files(directory: Path, pattern: str) -> Iterable[Path]:
             if filepath.match(pattern):
                 yield filepath
 
-def segment_tissue(img, blur_size=255):
 
+def segment_tissue(img, blur_size=255):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     black_pixels = np.where(gray == 0)
@@ -430,14 +430,14 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         img = np.transpose(img, (1, 2, 0))
 
     if alignment_path:
-        with open(alignment_path, 'r') as file:
+        with open(alignment_path, "r") as file:
             alignment_file = json.load(file)
 
         #'oligo' - inner beads
         #'fiducial' - outter beads
-        inner_df = pd.json_normalize(alignment_file['oligo'])
+        inner_df = pd.json_normalize(alignment_file["oligo"])
         # outer_df = pd.json_normalize(alignment_file['fiducial'])
-        affine_matrix = np.asarray(alignment_file['transform'])
+        affine_matrix = np.asarray(alignment_file["transform"])
 
         # if debug:
 
@@ -451,7 +451,13 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         new_img = np.zeros(tissue.shape)
 
         for idx, row in inner_df.iterrows():
-            cv2.circle(new_img, (int(row['imageX']), int(row['imageY'])), int(row['dia'] / 2), (idx + 1, 0, 0), -1)
+            cv2.circle(
+                new_img,
+                (int(row["imageX"]), int(row["imageY"])),
+                int(row["dia"] / 2),
+                (idx + 1, 0, 0),
+                -1,
+            )
 
         fiducial_idx = np.unique(new_img)[1:]
         fractions = []
@@ -464,20 +470,21 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
             numerator = denom[denom > 0].shape[0]
             fractions.append(numerator / denom.shape[0])
 
-        inner_df['Tissue Coverage Fraction'] = fractions
+        inner_df["Tissue Coverage Fraction"] = fractions
 
-        match_slide = inner_df[['imageX', 'imageY', 'Tissue Coverage Fraction', 'row', 'col']].rename(columns={'imageX': 'X', 'imageY': 'Y', 'row':'Row', 'col':'Column'})
-        match_slide['Column'] = match_slide['Column'] + 1
-        match_slide['Row'] = (match_slide['Row'] // 2) + 1
-        match_slide['Dia.'] = gpr[gpr['Block'] == 2]['Dia.'].iloc[0]
+        match_slide = inner_df[
+            ["imageX", "imageY", "Tissue Coverage Fraction", "row", "col"]
+        ].rename(columns={"imageX": "X", "imageY": "Y", "row": "Row", "col": "Column"})
+        match_slide["Column"] = match_slide["Column"] + 1
+        match_slide["Row"] = (match_slide["Row"] // 2) + 1
+        match_slide["Dia."] = gpr[gpr["Block"] == 2]["Dia."].iloc[0]
         scale_factor = 1
 
         # write out inner_df
         # output_df.to_csv((output_dir / (gpr_path.name + '_detected_output.csv')))
         # exit()
-    
-    else:
 
+    else:
         img, scale_factor = downsample_image(img, scale_factor)
 
         if threshold is None:
