@@ -419,7 +419,7 @@ def downsample_image(image, scale_factor):
 def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighbors=3):
     gpr_path = list(find_files(metadata_dir, "*.gpr"))[0]
     img_path = list(find_files(img_dir, "*.ome.tiff"))[0]
-    alignment_path = list(find_files(img_dir, "alignment.json"))
+    alignment_path = list(find_files(img_dir, "alignment.json"))[0]
 
     gpr = pd.read_table(gpr_path, skiprows=9)
 
@@ -430,7 +430,6 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         img = np.transpose(img, (1, 2, 0))
 
     if alignment_path:
-        alignment_path = alignment_path[0]
         with open(alignment_path, "r") as file:
             alignment_file = json.load(file)
 
