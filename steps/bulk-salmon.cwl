@@ -20,6 +20,8 @@ inputs:
     type: string?
     inputBinding:
       position: 2
+      prefix: "--organism"
+
 
 outputs:
   output_dir:
