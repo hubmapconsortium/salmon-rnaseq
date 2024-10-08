@@ -2,7 +2,7 @@ cwlVersion: v1.2
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grch38:2.2.9
+    dockerPull: hubmap/salmon-grch38:latest
 baseCommand: /opt/bulk_salmon_wrapper.py
 label: Run Salmon quant tool on FASTQ input
 
@@ -20,6 +20,7 @@ inputs:
     type: string?
     inputBinding:
       position: 2
+      prefix: "--organism"
 
 outputs:
   output_dir:
