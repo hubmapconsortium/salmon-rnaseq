@@ -1,0 +1,12 @@
+{
+  "RunSalmonRNAseq.threads": 4,
+  "RunSalmonRNAseq.mem_gb": 40,
+  "RunSalmonRNAseq.fastq1": "./demo/Sample_X_S1_L001_R1_001.fastq.gz",
+  "RunSalmonRNAseq.fastq2": "./demo/Sample_X_S1_L001_R2_001.fastq.gz", 
+  "RunSalmonRNAseq.species": "GRCh38",
+  "RunSalmonRNAseq.assay": "10x_v2",
+  "RunSalmonRNAseq.run_id": "nf2.0",
+  "RunSalmonRNAseq.protocol": "10XV2",
+  "RunSalmonRNAseq.expected_cell_count": 5000,
+  "RunSalmonRNAseq.email": "xl7@psc.edu"
+}
