@@ -423,11 +423,8 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
 
     gpr = pd.read_table(gpr_path, skiprows=9)
 
-    try:
-        img = cv2.imread(str(img_path))
-    except:
-        img = tf.imread(img_path)
-        img = np.transpose(img, (1, 2, 0))
+    img = tf.imread(img_path)
+    img = np.transpose(img, (1, 2, 0))
 
     if alignment_path:
         alignment_path = alignment_path[0]
