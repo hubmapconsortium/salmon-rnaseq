@@ -22,7 +22,6 @@ inputs:
       position: 2
       prefix: "--organism"
 
-
 outputs:
   output_dir:
     type: Directory
