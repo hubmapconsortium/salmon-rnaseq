@@ -4,3 +4,4 @@ hubmap/scrna-trim-reads	docker/trim_reads/Dockerfile	base_directory_build
 hubmap/salmon-grch38	docker/salmon/Dockerfile	base_directory_build
 hubmap/salmon-grcm39	docker/salmon-mouse/Dockerfile	base_directory_build
 hubmap/squidpy-analysis docker/squidpy/Dockerfile   base_directory_build
+hubmap/scrna-spatialdata-conversion docker/spatialdata/Dockerfile   base_directory_build

@@ -119,6 +119,9 @@ outputs:
   squidpy_spatial_plot:
     outputSource: squidpy_analysis/spatial_plot
     type: File?
+  sdata_zarr:
+    outputSource: spatialdata_conversion/sdata_zarr
+    type: Directory?
 steps:
   salmon_quantification:
     in:
@@ -201,6 +204,18 @@ steps:
       - spatial_plot
     run: steps/squidpy-analysis.cwl
     label: "Spatial analysis via SquidPy"
+  spatialdata_conversion:
+    in:
+      assay:
+        source: assay
+      h5ad_file:
+        source: scanpy_analysis/filtered_data_h5ad
+      img_dir:
+        source: img_dir
+    out:
+      - sdata_zarr
+    run: steps/spatialdata-conversion.cwl
+    label: "Conversion to spatialdata format"
   compute_qc_results:
     in:
       assay:
