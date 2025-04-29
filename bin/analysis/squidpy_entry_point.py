@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 import squidpy as sq
+import tifffile as tf
 
 from common import Assay
 from plot_utils import new_plot
@@ -40,7 +41,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
         if img_dir:
             tiff_file = list(find_ome_tiffs(input_dir=img_dir))[0]
-            img = cv2.imread(fspath(tiff_file))
+            img = tf.imread(fspath(tiff_file))
             library_id = list(adata.uns["spatial"].keys())[0]
             adata.uns["spatial"][library_id]["images"] = {"hires": img}
             adata.uns["spatial"][library_id]["scalefactors"] = {
