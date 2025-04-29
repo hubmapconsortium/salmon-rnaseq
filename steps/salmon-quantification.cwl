@@ -27,6 +27,8 @@ inputs:
     type: Directory?
   organism:
     type: string?
+  barcode_whitelist:
+    type: File?
 outputs:
   salmon_output:
     outputSource: [salmon/output_dir, salmon-mouse/output_dir]
@@ -83,6 +85,8 @@ steps:
         source: keep_all_barcodes
       organism:
         source: organism
+      barcode_whitelist:
+        source: barcode_whitelist
     out:
       - output_dir
     run: salmon-quantification/salmon.cwl

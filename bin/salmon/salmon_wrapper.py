@@ -178,6 +178,7 @@ def main(
     keep_all_barcodes: bool,
     threads: Optional[int],
     organism: Optional[str] = "human",
+    barcode_whitelist: Optional[Path] = None,
 ):
     threads = threads or 1
 
@@ -218,13 +219,22 @@ def main(
         if len(orig_fastq_dirs) != 1:
             raise ValueError("Need exactly 1 input directory for Slide-seq")
     if assay in {Assay.SLIDESEQ}:
-        barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
+        if barcode_whitelist:
+            barcode_file = barcode_whitelist
+        else:
+            barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
     elif assay in {Assay.VISIUM_FF}:
-        barcode_file = f"/opt/visium-v{visium_plate_version}.txt"
+        if barcode_whitelist:
+            barcode_file = barcode_whitelist
+        else:
+            barcode_file = f"/opt/visium-v{visium_plate_version}.txt"
         command.extend(["--whitelist", barcode_file])
     elif assay in {Assay.MULTIOME_10X}:
-        barcode_file = "/opt/cellranger_barcodes.txt"
+        if barcode_whitelist:
+            barcode_file = barcode_whitelist
+        else:
+            barcode_file = "/opt/cellranger_barcodes.txt"
         command.extend(["--whitelist", barcode_file])
 
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
@@ -259,6 +269,7 @@ if __name__ == "__main__":
     p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
     p.add_argument("--organism", type=str, nargs="?", default="human")
+    p.add_argument("--barcode-whitelist", type=Path, nargs="?")
     args = p.parse_args()
 
     main(
@@ -269,4 +280,5 @@ if __name__ == "__main__":
         args.keep_all_barcodes,
         args.threads,
         args.organism,
+        args.barcode_whitelist,
     )

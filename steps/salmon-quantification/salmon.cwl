@@ -38,6 +38,11 @@ inputs:
     inputBinding:
       position: 5
       prefix: "--keep-all-barcodes"
+  barcode_whitelist:
+    type: File?
+    inputBinding:
+      position: 6
+      prefix: "--barcode-whitelist"
 
 outputs:
   output_dir:

@@ -29,6 +29,8 @@ inputs:
     type: boolean?
   organism:
     type: string?
+  barcode_whitelist
+    type: File?
 outputs:
   salmon_output:
     outputSource: salmon_quantification/salmon_output
@@ -138,6 +140,8 @@ steps:
         source: keep_all_barcodes
       organism:
         source: organism
+      barcode_whitelist:
+        source: barcode_whitelist
     out:
       - salmon_output
       - count_matrix_h5ad
