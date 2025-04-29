@@ -29,7 +29,7 @@ inputs:
     type: boolean?
   organism:
     type: string?
-  barcode_whitelist
+  barcode_whitelist:
     type: File?
 outputs:
   salmon_output:
