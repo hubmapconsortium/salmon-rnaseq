@@ -13,10 +13,10 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 import squidpy as sq
+import tifffile as tf
 
 from common import Assay
 from plot_utils import new_plot
-import tifffile as tf
 
 ome_tiff_pattern = re.compile(r"(?P<basename>.*)\.ome\.tiff(f?)$")
 
