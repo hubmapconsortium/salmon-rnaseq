@@ -435,7 +435,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
         #'fiducial' - outter beads
         inner_df = pd.json_normalize(alignment_file["oligo"])
         # outer_df = pd.json_normalize(alignment_file['fiducial'])
-        affine_matrix = np.asarray(alignment_file["transform"])
+        affine_matrix = np.identity(3)
 
         # if debug:
 
