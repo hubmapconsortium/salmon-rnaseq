@@ -27,6 +27,7 @@ inputs:
     type: int?
   keep_all_barcodes:
     type: boolean?
+    default: true
   organism:
     type: string?
   barcode_whitelist:
