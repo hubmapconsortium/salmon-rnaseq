@@ -118,6 +118,7 @@ def read_expected_cell_counts(directories: Sequence[Path]) -> Optional[int]:
         cell_count = read_expected_cell_count(directory)
         if cell_count is not None:
             cell_counts.append(cell_count)
+            print("Cell counts:", cell_counts)
 
     dirs_with_cell_counts = len(cell_counts)
     if dirs_with_cell_counts == 0:
@@ -230,6 +231,9 @@ def main(
     maybe_cell_count = read_expected_cell_counts(orig_fastq_dirs) or expected_cell_count
     if maybe_cell_count is not None:
         command.extend(["--forceCells", str(maybe_cell_count)])
+        print("expected_cell_count:", maybe_cell_count)
+    else:
+        print("No cell count found.")
 
     for r1_fastq_file, r2_fastq_file in fastq_pairs:
         fastq_extension = [
