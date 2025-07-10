@@ -129,3 +129,19 @@ class Assay(Enum):
         False,
         False,
     )
+    XENIUM = (
+        "xenium",
+        "",
+        AnnDataLayer.SPLICED,
+        False,
+        False,
+        False,
+    )
+    COSMX = (
+        "cosmx",
+        "",
+        AnnDataLayer.SPLICED,
+        False,
+        False,
+        False,
+    )
