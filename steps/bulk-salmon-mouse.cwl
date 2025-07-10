@@ -2,7 +2,7 @@ cwlVersion: v1.2
 class: CommandLineTool
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/salmon-grcm39:latest
+    dockerPull: hubmap/salmon-grcm39:2.3.4
 baseCommand: /opt/bulk_salmon_wrapper.py
 label: Run Salmon quant tool on FASTQ input
 

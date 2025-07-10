@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Dimensionality reduction and clustering
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/squidpy-analysis:latest
+    dockerPull: hubmap/squidpy-analysis:2.3.4
 baseCommand: /opt/squidpy_entry_point.py
 
 inputs:
