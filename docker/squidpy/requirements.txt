@@ -4,3 +4,9 @@ numpy
 pandas
 manhole
 opencv-python
+spatialdata
+spatialdata-io
+spatialdata-plot
+squidpy
+
+
