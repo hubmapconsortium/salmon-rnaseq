@@ -42,6 +42,10 @@ outputs:
     outputSource: salmon_quantification/raw_count_matrix
     type: File?
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
+  sdata_zarr:
+    outputSource: squidpy_analysis/sdata_zarr
+    type: Directory?
+    label: "SpatialData object serialized in zarr format"
   genome_build_json:
     outputSource: salmon_quantification/genome_build_json
     type: File
@@ -193,6 +197,7 @@ steps:
         source: img_dir
     out:
       - squidpy_annotated_h5ad
+      - sdata_zarr
       - neighborhood_enrichment_plot
       - co_occurrence_plot
       - interaction_matrix_plot
