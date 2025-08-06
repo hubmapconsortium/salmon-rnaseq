@@ -6,41 +6,76 @@ from pathlib import Path
 from typing import Iterable, Tuple
 
 import anndata
-import cv2
 import manhole
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import scanpy as sc
 import squidpy as sq
 import tifffile as tf
 
 from common import Assay
 from plot_utils import new_plot
+import spatialdata
+
+from spatialdata.models import Image2DModel, Image3DModel, Labels2DModel, Labels3DModel, PointsModel, TableModel
+from math import ceil, log2
+from aicsimageio import AICSImage
+import geopandas
+import shapely
+import pandas as pd
+
+desired_pixel_size_for_pyramid = 250
 
 ome_tiff_pattern = re.compile(r"(?P<basename>.*)\.ome\.tiff(f?)$")
 
-
-def find_ome_tiffs(input_dir: Path) -> Iterable[Path]:
-    """
-    Yields 2-tuples:
-     [0] full Path to source file
-     [1] output file Path (source file relative to input_dir)
-    """
+def find_ome_tiff(input_dir: Path) -> Path:
     for dirpath_str, _, filenames in walk(input_dir):
         dirpath = Path(dirpath_str)
         for filename in filenames:
             if ome_tiff_pattern.match(filename):
                 src_filepath = dirpath / filename
-                yield src_filepath
+                return src_filepath
 
+def get_img_spatialdata(img_dir: Path):
+    print("Loading image data")
+    image_file = find_ome_tiff(img_dir)
+    image = AICSImage(image_file)
+    image_data_squeezed = image.data.squeeze()
+    print("... done. Original shape:", image.data.shape)
+
+    image_scale_factors = (2,) * ceil(
+        log2(max(image_data_squeezed.shape[1:]) / desired_pixel_size_for_pyramid)
+    )
+
+    img_for_sdata = Image2DModel.parse(
+        data=image_data_squeezed,
+        c_coords=image.channel_names,
+        scale_factors=image_scale_factors,
+    )
+
+    return img_for_sdata
+
+
+def get_shapes_spatialdata(adata:anndata.AnnData)->geopandas.GeoDataFrame:
+    geo_df = geopandas.GeoDataFrame(index=adata.obs.index)
+    radius = adata.uns['spatial']['visium']['scalefactors']['spot_diameter_fullres'] / 2
+    radius_series = pd.Series(radius, index=geo_df.index)
+    coords = adata.obsm['spatial']
+    points_list = [shapely.Point(coords[i]) for i in range(len(adata.obs.index))]
+    points_series = geopandas.Series(points_list, index=adata.obs.index)
+    geo_df['geometry'] = points_series
+    geo_df['radius'] = radius_series
+    return geo_df
 
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
         adata = anndata.read(h5ad_file)
+
+        table_for_sdata = TableModel.from_adata(adata)
+        shapes_for_sdata = get_shapes_spatialdata(adata)
+
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
+
         if img_dir:
-            tiff_file = list(find_ome_tiffs(input_dir=img_dir))[0]
+            tiff_file = find_ome_tiff(input_dir=img_dir)
             img = tf.imread(fspath(tiff_file))
             library_id = list(adata.uns["spatial"].keys())[0]
             adata.uns["spatial"][library_id]["images"] = {"hires": img}
@@ -48,6 +83,14 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
                 "tissue_hires_scalef": 1.0,
                 "spot_diameter_fullres": 89,
             }
+            img_for_sdata = get_img_spatialdata(img_dir)
+
+            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, table=table_for_sdata)
+
+        else:
+            sdata = spatialdata.SpatialData(shapes={'visium':shapes_for_sdata},table=table_for_sdata)
+
+        sdata.write('Visium.zarr')
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
