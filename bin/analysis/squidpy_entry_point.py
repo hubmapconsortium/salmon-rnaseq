@@ -15,7 +15,7 @@ from common import Assay
 from plot_utils import new_plot
 import spatialdata
 
-from spatialdata.models import Image2DModel, Image3DModel, Labels2DModel, Labels3DModel, PointsModel, TableModel
+from spatialdata.models import Image2DModel, Image3DModel, Labels2DModel, Labels3DModel, PointsModel, ShapesModel, TableModel
 from math import ceil, log2
 from aicsimageio import AICSImage
 import geopandas
@@ -40,6 +40,7 @@ def get_img_spatialdata(img_dir: Path):
     image = AICSImage(image_file)
     image_data_squeezed = image.data.squeeze()
     print("... done. Original shape:", image.data.shape)
+    print(f"New shape: {image_data_squeezed.shape}")
 
     image_scale_factors = (2,) * ceil(
         log2(max(image_data_squeezed.shape[1:]) / desired_pixel_size_for_pyramid)
@@ -47,29 +48,29 @@ def get_img_spatialdata(img_dir: Path):
 
     img_for_sdata = Image2DModel.parse(
         data=image_data_squeezed,
-        c_coords=image.channel_names,
+        dims=['x','y','c'],
         scale_factors=image_scale_factors,
     )
 
     return img_for_sdata
 
 
-def get_shapes_spatialdata(adata:anndata.AnnData)->geopandas.GeoDataFrame:
+def get_shapes_spatialdata(adata:anndata.AnnData):
     geo_df = geopandas.GeoDataFrame(index=adata.obs.index)
     radius = adata.uns['spatial']['visium']['scalefactors']['spot_diameter_fullres'] / 2
     radius_series = pd.Series(radius, index=geo_df.index)
     coords = adata.obsm['spatial']
     points_list = [shapely.Point(coords[i]) for i in range(len(adata.obs.index))]
-    points_series = geopandas.Series(points_list, index=adata.obs.index)
+    points_series = geopandas.GeoSeries(points_list, index=adata.obs.index)
     geo_df['geometry'] = points_series
     geo_df['radius'] = radius_series
-    return geo_df
+    return ShapesModel.parse(geo_df)
 
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
         adata = anndata.read_h5ad(h5ad_file)
 
-        table_for_sdata = TableModel.from_adata(adata)
+        table_for_sdata = TableModel.parse(adata)
         shapes_for_sdata = get_shapes_spatialdata(adata)
 
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
