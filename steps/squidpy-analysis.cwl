@@ -27,7 +27,7 @@ outputs:
   sdata_zarr:
     type: Directory?
     outputBinding:
-      glob: Visium.zarr
+      glob: *.zarr
   neighborhood_enrichment_plot:
     type: File?
     outputBinding:
