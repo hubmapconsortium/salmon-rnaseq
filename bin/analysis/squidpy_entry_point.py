@@ -14,6 +14,7 @@ import tifffile as tf
 from common import Assay
 from plot_utils import new_plot
 import spatialdata
+import spatialdata_plot
 
 from spatialdata.models import Image2DModel, Image3DModel, Labels2DModel, Labels3DModel, PointsModel, ShapesModel, TableModel
 from math import ceil, log2
@@ -48,7 +49,7 @@ def get_img_spatialdata(img_dir: Path):
 
     img_for_sdata = Image2DModel.parse(
         data=image_data_squeezed,
-        dims=['x','y','c'],
+        dims=['y','x','c'],
         scale_factors=image_scale_factors,
     )
 
@@ -88,17 +89,22 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
 
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, table=table_for_sdata)
 
-        else:
-            sdata = spatialdata.SpatialData(shapes={'visium':shapes_for_sdata},table=table_for_sdata)
+            sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
+            plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 
-        sdata.write('Visium.zarr')
+        else:
+            sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata},table=table_for_sdata)
+
+        output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
+        output_file_stem = output_file_stem_dict[assay]
+        sdata.write(f'{output_file_stem}.zarr')
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
 
-        with new_plot():
-            sq.pl.spatial_scatter(adata, color="leiden")
-            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
+#        with new_plot():
+#            sq.pl.spatial_scatter(adata, color="leiden")
+#            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
 
         with new_plot():
             sq.pl.nhood_enrichment(adata, cluster_key="leiden")
