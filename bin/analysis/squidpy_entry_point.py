@@ -58,7 +58,11 @@ def get_img_spatialdata(img_dir: Path):
 
 def get_shapes_spatialdata(adata:anndata.AnnData):
     geo_df = geopandas.GeoDataFrame(index=adata.obs.index)
-    radius = adata.uns['spatial']['visium']['scalefactors']['spot_diameter_fullres'] / 2
+    if 'spatial' in adata.uns:#visium
+        radius = adata.uns['spatial']['visium']['scalefactors']['spot_diameter_fullres'] / 2
+    else:#slideseq
+        radius = 5
+        adata.obsm['spatial'] = adata.obsm['X_spatial']
     radius_series = pd.Series(radius, index=geo_df.index)
     coords = adata.obsm['spatial']
     points_list = [shapely.Point(coords[i]) for i in range(len(adata.obs.index))]
