@@ -1,0 +1,11 @@
+name: deepscence
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+      - git+https://github.com/hubmapconsortium/DeepScence.git
+      - tensorflow==2.12.*
+      - git+https://github.com/anthony-qu/dca_patched.git

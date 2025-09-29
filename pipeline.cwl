@@ -29,6 +29,7 @@ inputs:
     type: boolean?
   organism:
     type: string?
+    default: human
 outputs:
   salmon_output:
     outputSource: salmon_quantification/salmon_output
@@ -119,6 +120,9 @@ outputs:
   squidpy_spatial_plot:
     outputSource: squidpy_analysis/spatial_plot
     type: File?
+  deepscence_plot:
+    outputSource: deepscence/deepscence_plot
+    type: File
 steps:
   salmon_quantification:
     in:
@@ -156,12 +160,21 @@ steps:
       - fastqc_dir
     run: steps/fastqc.cwl
     label: "Run fastqc on all fastq files in fastq directory"
+  deepscence:
+    in:
+      h5ad_file:
+        source: salmon_quantification/count_matrix_h5ad
+    out:
+      - h5ad_with_ds
+      - deepscence_plot
+    run: steps/deepscence.cwl
+    label: "Run DeepScence method to get cell scenesense scores"
   scanpy_analysis:
     in:
       assay:
         source: assay
       h5ad_file:
-        source: salmon_quantification/count_matrix_h5ad
+        source: deepscence/h5ad_with_ds
     out:
       - filtered_data_h5ad
       - umap_plot
@@ -175,7 +188,7 @@ steps:
   scvelo_analysis:
     in:
       spliced_h5ad_file:
-        source: salmon_quantification/count_matrix_h5ad
+        source: deepscence/h5ad_with_ds
       assay_name:
         source: assay
     out:
@@ -206,7 +219,7 @@ steps:
       assay:
         source: assay
       primary_matrix_path:
-        source: salmon_quantification/count_matrix_h5ad
+        source: deepscence/h5ad_with_ds
       secondary_matrix_path:
         source: scanpy_analysis/filtered_data_h5ad
       salmon_dir:
