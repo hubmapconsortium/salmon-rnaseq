@@ -36,9 +36,9 @@ outputs:
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix_h5ad:
-    outputSource: salmon_quantification/count_matrix_h5ad
+    outputSource: deepscence/h5ad_with_ds
     type: File
-    label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
+    label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts, scenesence scores"
   raw_count_matrix:
     outputSource: salmon_quantification/raw_count_matrix
     type: File?
@@ -91,6 +91,14 @@ outputs:
     outputSource: scanpy_analysis/marker_gene_plot_logreg
     type: File
     label: "Cluster marker genes, logreg method"
+  deepscence_continuous_plot:
+    outputSource: scanpy_analysis/deepscence_continuous_plot
+    type: File
+    label: "Umap with coloring by DeepScence scores"
+  deepscence_binary_plot:
+    outputSource: scanpy_analysis/deepscence_binary_plot
+    type: File
+    label: "Umap with coloring by DeepScence binary results"
   scvelo_annotated_h5ad:
     outputSource: scvelo_analysis/annotated_h5ad_file
     type: File?
@@ -183,6 +191,8 @@ steps:
       - dispersion_plot
       - umap_density_plot
       - spatial_plot
+      - deepscence_continuous_plot
+      - deepscence_binary_plot
     run: steps/scanpy-analysis.cwl
     label: "Secondary analysis via ScanPy"
   scvelo_analysis:

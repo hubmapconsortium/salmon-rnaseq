@@ -44,3 +44,11 @@ outputs:
     type: File
     outputBinding:
       glob: marker_genes_by_cluster_logreg.pdf
+  deepscence_continuous_plot:
+    type: File
+    outputBinding:
+       glob: umap_by_deepscence_continuous.pdf
+  deepscence_binary_plot:
+    type: File
+    outputBinding:
+        glob: umap_by_deepscence_binary.pdf

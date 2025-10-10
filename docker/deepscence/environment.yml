@@ -3,8 +3,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.8
+  - python==3.8
   - pip
+  - anndata==0.9.2
   - pip:
       - git+https://github.com/hubmapconsortium/DeepScence.git
       - tensorflow==2.12.*
