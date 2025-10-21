@@ -7,9 +7,9 @@ import manhole
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import scanpy as sc
+from matplotlib import cm
 
 from common import Assay
-from matplotlib import cm
 from plot_utils import new_plot
 
 TISSUE_COVERAGE_CUTOFF = 1.0
@@ -78,17 +78,17 @@ def main(assay: Assay, h5ad_file: Path):
     adata.write_h5ad(output_file)
 
     # Plot DeepScence results
-    adata.obs['DeepScence_score'] = adata.obsm['DeepScence']['ds']
-    max_score = adata.obs['DeepScence_score'].max()
-    min_score = adata.obs['DeepScence_score'].min()
+    adata.obs["DeepScence_score"] = adata.obsm["DeepScence"]["ds"]
+    max_score = adata.obs["DeepScence_score"].max()
+    min_score = adata.obs["DeepScence_score"].min()
     offset = mcolors.TwoSlopeNorm(vmin=min_score, vcenter=0, vmax=max_score)
     cmap = cm.coolwarm
-    adata.obs['DeepScence_binary'] = adata.obsm['DeepScence']['binary']
+    adata.obs["DeepScence_binary"] = adata.obsm["DeepScence"]["binary"]
     with new_plot():
-        sc.pl.umap(adata, color='DeepScence_score', cmap=cmap, norm=offset)
+        sc.pl.umap(adata, color="DeepScence_score", cmap=cmap, norm=offset)
         plt.savefig("umap_by_deepscence_continuous.pdf", bbox_inches="tight")
     with new_plot():
-        sc.pl.umap(adata, color='DeepScence_binary')
+        sc.pl.umap(adata, color="DeepScence_binary")
         plt.savefig("umap_by_deepscence_binary.pdf", bbox_inches="tight")
 
 
