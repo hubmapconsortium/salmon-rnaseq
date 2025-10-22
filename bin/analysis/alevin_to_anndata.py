@@ -166,9 +166,9 @@ def add_split_spliced_unspliced(d: AnnData) -> AnnData:
         obs=spliced_expanded.obs,
         var=spliced_expanded.var,
         layers={
-            AnnDataLayer.SPLICED: spliced,
-            AnnDataLayer.UNSPLICED: sparsify_if_appropriate(unspliced_expanded.X),
-            AnnDataLayer.SPLICED_UNSPLICED_SUM: sparsify_if_appropriate(
+            "spliced": spliced,
+            "unspliced": sparsify_if_appropriate(unspliced_expanded.X),
+            "spliced_unspliced_sum": sparsify_if_appropriate(
                 spliced_expanded.X + unspliced_expanded.X
             ),
         },
