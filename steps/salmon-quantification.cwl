@@ -27,6 +27,7 @@ inputs:
     type: Directory?
   organism:
     type: string?
+    default: human
 outputs:
   salmon_output:
     outputSource: [salmon/output_dir, salmon-mouse/output_dir]

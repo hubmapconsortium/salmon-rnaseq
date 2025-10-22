@@ -29,15 +29,16 @@ inputs:
     type: boolean?
   organism:
     type: string?
+    default: human
 outputs:
   salmon_output:
     outputSource: salmon_quantification/salmon_output
     type: Directory
     label: "Full output of `salmon alevin`"
   count_matrix_h5ad:
-    outputSource: salmon_quantification/count_matrix_h5ad
+    outputSource: deepscence/h5ad_with_ds
     type: File
-    label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts"
+    label: "Unfiltered count matrix from Alevin, converted to H5AD, spliced and unspliced counts, scenesence scores"
   raw_count_matrix:
     outputSource: salmon_quantification/raw_count_matrix
     type: File?
@@ -90,6 +91,14 @@ outputs:
     outputSource: scanpy_analysis/marker_gene_plot_logreg
     type: File
     label: "Cluster marker genes, logreg method"
+  deepscence_continuous_plot:
+    outputSource: scanpy_analysis/deepscence_continuous_plot
+    type: File
+    label: "Umap with coloring by DeepScence scores"
+  deepscence_binary_plot:
+    outputSource: scanpy_analysis/deepscence_binary_plot
+    type: File
+    label: "Umap with coloring by DeepScence binary results"
   scvelo_annotated_h5ad:
     outputSource: scvelo_analysis/annotated_h5ad_file
     type: File?
@@ -119,6 +128,9 @@ outputs:
   squidpy_spatial_plot:
     outputSource: squidpy_analysis/spatial_plot
     type: File?
+  deepscence_plot:
+    outputSource: deepscence/deepscence_plot
+    type: File
 steps:
   salmon_quantification:
     in:
@@ -156,12 +168,21 @@ steps:
       - fastqc_dir
     run: steps/fastqc.cwl
     label: "Run fastqc on all fastq files in fastq directory"
+  deepscence:
+    in:
+      h5ad_file:
+        source: salmon_quantification/count_matrix_h5ad
+    out:
+      - h5ad_with_ds
+      - deepscence_plot
+    run: steps/deepscence.cwl
+    label: "Run DeepScence method to get cell scenesense scores"
   scanpy_analysis:
     in:
       assay:
         source: assay
       h5ad_file:
-        source: salmon_quantification/count_matrix_h5ad
+        source: deepscence/h5ad_with_ds
     out:
       - filtered_data_h5ad
       - umap_plot
@@ -170,12 +191,14 @@ steps:
       - dispersion_plot
       - umap_density_plot
       - spatial_plot
+      - deepscence_continuous_plot
+      - deepscence_binary_plot
     run: steps/scanpy-analysis.cwl
     label: "Secondary analysis via ScanPy"
   scvelo_analysis:
     in:
       spliced_h5ad_file:
-        source: salmon_quantification/count_matrix_h5ad
+        source: deepscence/h5ad_with_ds
       assay_name:
         source: assay
     out:
@@ -206,7 +229,7 @@ steps:
       assay:
         source: assay
       primary_matrix_path:
-        source: salmon_quantification/count_matrix_h5ad
+        source: deepscence/h5ad_with_ds
       secondary_matrix_path:
         source: scanpy_analysis/filtered_data_h5ad
       salmon_dir:
