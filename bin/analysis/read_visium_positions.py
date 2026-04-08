@@ -8,7 +8,7 @@ from os import walk
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
-import aicsimageio
+import bioio
 import cv2
 import manhole
 import numpy as np
@@ -29,18 +29,18 @@ def get_schema_url(ome_xml_root_node: ET.Element) -> str:
     raise ValueError(f"Couldn't extract schema URL from tag name {ome_xml_root_node.tag}")
 
 
-def physical_dimension_func(img: aicsimageio.AICSImage) -> Tuple[List[float], List[str]]:
+def physical_dimension_func(img: bioio.BioImage) -> Tuple[List[float], List[str]]:
     """
     Returns lists of physical dimensions of pixels and corresponding units
     read from OME-XML metadata of input image
     """
 
-    # aicsimageio parses the OME-XML metadata when loading an image,
+    # bioio parses the OME-XML metadata when loading an image,
     # and uses that metadata to populate various data structures in
-    # the AICSImage object. The AICSImage.metadata.to_xml() function
+    # the BioImage object. The BioImage.metadata.to_xml() function
     # constructs a new OME-XML string from that metadata, so anything
-    # ignored by aicsimageio won't be present in that XML document.
-    # Unfortunately, current aicsimageio ignores physical size units,
+    # ignored by bioio won't be present in that XML document.
+    # Unfortunately, current bioio ignores physical size units,
     # so we have to parse the original XML ourselves:
     root = ET.fromstring(img.xarray_dask_data.unprocessed[270])
     schema_url = get_schema_url(root)
@@ -527,7 +527,7 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
     img_files = find_files(img_dir, "*.ome.tif*")
     img_files_list = list(img_files)
     img_file = img_files_list[0]
-    img = aicsimageio.AICSImage(img_file)
+    img = bioio.BioImage(img_file)
     values, units = physical_dimension_func(img)
     ureg = UnitRegistry()
     Q_ = ureg.Quantity

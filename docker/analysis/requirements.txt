@@ -1,5 +1,7 @@
-aicsimageio
 anndata==0.12.7
+bioio
+bioio-ome-tiff
+bioio-ome-zarr
 biopython
 h5py
 leidenalg
@@ -14,8 +16,9 @@ pandas
 pint
 scanpy
 scipy
-scvelo
+scvelo==0.3.3
 scikit-learn
+setuptools==80.0.0
 tables
 tensorflow
 tifffile
