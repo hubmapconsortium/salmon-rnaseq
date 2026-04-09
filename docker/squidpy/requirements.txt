@@ -1,0 +1,6 @@
+squidpy
+anndata==0.12.7
+numpy
+pandas
+manhole
+opencv-python
