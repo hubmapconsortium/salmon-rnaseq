@@ -81,12 +81,17 @@ def main(assay: Assay, h5ad_file: Path):
     adata.obs["DeepScence_score"] = adata.obsm["DeepScence"]["ds"]
     max_score = adata.obs["DeepScence_score"].max()
     min_score = adata.obs["DeepScence_score"].min()
-    offset = mcolors.TwoSlopeNorm(vmin=min_score, vcenter=0, vmax=max_score)
-    cmap = cm.coolwarm
+    if min_score > 0: # Do not use offset
+        with new_plot():
+            sc.pl.umap(adata, color="DeepScence_score")
+            plt.savefig("umap_by_deepscence_continuous.pdf", bbox_inches="tight")
+    else: # Use offset
+        offset = mcolors.TwoSlopeNorm(vmin=min_score, vcenter=0, vmax=max_score)
+        cmap = cm.coolwarm
+        with new_plot():
+            sc.pl.umap(adata, color="DeepScence_score", cmap=cmap, norm=offset)
+            plt.savefig("umap_by_deepscence_continuous.pdf", bbox_inches="tight")
     adata.obs["DeepScence_binary"] = adata.obsm["DeepScence"]["binary"]
-    with new_plot():
-        sc.pl.umap(adata, color="DeepScence_score", cmap=cmap, norm=offset)
-        plt.savefig("umap_by_deepscence_continuous.pdf", bbox_inches="tight")
     with new_plot():
         sc.pl.umap(adata, color="DeepScence_binary")
         plt.savefig("umap_by_deepscence_binary.pdf", bbox_inches="tight")
