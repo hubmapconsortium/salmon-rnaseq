@@ -37,7 +37,7 @@ def find_ome_tiffs(input_dir: Path) -> Iterable[Path]:
 
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
-        adata = anndata.read(h5ad_file)
+        adata = anndata.read_h5ad(h5ad_file)
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
         if img_dir:
             tiff_file = list(find_ome_tiffs(input_dir=img_dir))[0]

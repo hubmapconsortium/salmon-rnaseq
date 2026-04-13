@@ -33,6 +33,5 @@ RUN pip3 install -r /opt/requirements.txt \
 COPY data /opt/data
 COPY bin/common /opt
 COPY bin/analysis /opt
-RUN chmod -R +x /opt
 
 WORKDIR /opt
