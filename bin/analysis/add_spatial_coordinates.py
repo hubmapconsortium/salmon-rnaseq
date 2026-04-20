@@ -164,6 +164,7 @@ def annotate(
 
     else:
         d.obsm["X_spatial"] = quant_pos_ordered.to_numpy()
+        d.obsm["spatial"] = d.obsm["X_spatial"].copy()
 
     return d
 
