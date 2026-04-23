@@ -7,7 +7,8 @@ h5py
 leidenalg
 manhole
 matplotlib
-muon
+muon==0.1.7
+mudata==0.3.6
 networkx
 # pinned for numba
 numpy<2

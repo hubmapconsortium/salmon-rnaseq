@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 import anndata
 import manhole
 import muon as mu
+import mudata as md
 import pandas as pd
 import scanpy as sc
 
@@ -48,7 +49,7 @@ def write_scanpy_qc(adata: anndata.AnnData):
 
 def main(assay: Assay, primary_matrix_path: Path, secondary_matrix_path: Path, salmon_dir: Path):
     expr_primary = (
-        mu.read(f"{fspath(primary_matrix_path)}/rna")
+        md.read(f"{fspath(primary_matrix_path)}/rna")
         if primary_matrix_path.suffix == ".h5mu"
         else anndata.read_h5ad(primary_matrix_path)
     )
@@ -63,7 +64,7 @@ def main(assay: Assay, primary_matrix_path: Path, secondary_matrix_path: Path, s
     spliced_unspliced_total = expr_primary.layers["spliced_unspliced_sum"].sum()
 
     expr_secondary = (
-        mu.read(f"{fspath(secondary_matrix_path)}/rna")
+        md.read(f"{fspath(secondary_matrix_path)}/rna")
         if secondary_matrix_path.suffix == ".h5mu"
         else anndata.read_h5ad(secondary_matrix_path)
     )
