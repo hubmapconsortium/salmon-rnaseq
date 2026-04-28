@@ -75,6 +75,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
         adata = anndata.read_h5ad(h5ad_file)
 
+        spatialdata.utils.sanitize_table(adata)
         table_for_sdata = TableModel.parse(adata)
         shapes_for_sdata = get_shapes_spatialdata(adata)
 
