@@ -49,7 +49,7 @@ def get_img_spatialdata(img_dir: Path):
 
     img_for_sdata = Image2DModel.parse(
         data=image_data_squeezed,
-        dims=['y','x','c'],
+        dims=['c', 'y', 'x'],
         scale_factors=image_scale_factors,
     )
 
