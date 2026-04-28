@@ -74,8 +74,9 @@ def get_shapes_spatialdata(adata:anndata.AnnData):
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
         adata = anndata.read_h5ad(h5ad_file)
+        # Modify Tissue Coverage Fraction name for squidpy
+        adata.obs = adata.obs.rename(columns={'Tissue Coverage Fraction': 'tissue_coverage_fraction'})
 
-        spatialdata.utils.sanitize_table(adata)
         table_for_sdata = TableModel.parse(adata)
         shapes_for_sdata = get_shapes_spatialdata(adata)
 
