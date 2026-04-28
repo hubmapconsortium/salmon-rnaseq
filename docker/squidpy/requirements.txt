@@ -1,12 +1,14 @@
 squidpy
 anndata==0.12.7
 numpy
+ome-zarr<0.14.0
 pandas
 manhole
 opencv-python
-spatialdata
+spatialdata==0.7.2
 spatialdata-io
 spatialdata-plot
 squidpy
+aicsimageio
 
 

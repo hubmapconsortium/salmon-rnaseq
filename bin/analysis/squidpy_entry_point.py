@@ -49,7 +49,7 @@ def get_img_spatialdata(img_dir: Path):
 
     img_for_sdata = Image2DModel.parse(
         data=image_data_squeezed,
-        dims=['y','x','c'],
+        dims=['c', 'y', 'x'],
         scale_factors=image_scale_factors,
     )
 
@@ -74,13 +74,28 @@ def get_shapes_spatialdata(adata:anndata.AnnData):
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
         adata = anndata.read_h5ad(h5ad_file)
-
-        table_for_sdata = TableModel.parse(adata)
+        # Modify Tissue Coverage Fraction name for spatialdata
+        adata.obs = adata.obs.rename(columns={'Tissue Coverage Fraction': 'tissue_coverage_fraction'})
+        # Instantiate spatialdata_attrs to be able to plot later
+        adata.obs['cell_id'] = adata.obs.index
+        adata.obs['region'] = 'visium'
+        # Create a copy of adata; spatialdata will update along with whatever anndata object it's attached to
+        adata_copy = adata.copy()
+        adata_copy = spatialdata.sanitize_table(adata_copy, inplace=False)
+        table_for_sdata = TableModel.parse(adata_copy, region='visium', region_key='region', instance_key='cell_id')
+        # Replace the index with the HUGO symbols when available for sdata object
+        table_for_sdata.var['ensembl_id'] = table_for_sdata.var.index
+        table_for_sdata.var['preferred_gene_symbol'] = table_for_sdata.var['hugo_symbol']
+        table_for_sdata.var['preferred_gene_symbol'] = table_for_sdata.var['preferred_gene_symbol'].combine_first(table_for_sdata.var['ensembl_id'])
+        table_for_sdata.var = table_for_sdata.var.set_index(table_for_sdata.var['preferred_gene_symbol'])
+        del table_for_sdata.var['preferred_gene_symbol']
+        # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
-
+        # Rename this matrix
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
 
         if img_dir:
+            # Store image in original adata object
             tiff_file = find_ome_tiff(input_dir=img_dir)
             img = tf.imread(fspath(tiff_file))
             library_id = list(adata.uns["spatial"].keys())[0]
@@ -89,15 +104,16 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
                 "tissue_hires_scalef": 1.0,
                 "spot_diameter_fullres": 89,
             }
+            # Put the spatialdata object together
             img_for_sdata = get_img_spatialdata(img_dir)
-
-            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, table=table_for_sdata)
-
+            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
+            sdata['table'].var = sdata['table'].var.sort_index()
+            print(table_for_sdata.var.head())
             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 
         else:
-            sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata},table=table_for_sdata)
+            sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
 
         output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
         output_file_stem = output_file_stem_dict[assay]
@@ -106,9 +122,9 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
 
-#        with new_plot():
-#            sq.pl.spatial_scatter(adata, color="leiden")
-#            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
+        with new_plot():
+            sq.pl.spatial_scatter(adata, color="leiden")
+            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
 
         with new_plot():
             sq.pl.nhood_enrichment(adata, cluster_key="leiden")
@@ -132,15 +148,17 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             sq.pl.interaction_matrix(adata, cluster_key="leiden")
             plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
 
-        #        sq.gr.ripley(adata, cluster_key="leiden")
+        sq.gr.ripley(adata, cluster_key="leiden")
 
-        #        with new_plot():
-        #            sq.pl.ripley(adata, cluster_key="leiden")
-        #            plt.savefig("ripley.pdf", bbox_inches="tight")
+        with new_plot():
+            sq.pl.ripley(adata, cluster_key="leiden")
+            plt.savefig("ripley.pdf", bbox_inches="tight")
 
         output_file = Path("squidpy_annotated.h5ad")
         print("Saving output to", output_file.absolute())
         # Save normalized/etc. data
+        # Set column back to expected name
+        adata.obs = adata.obs.rename(columns={'tissue_coverage_fraction': 'Tissue Coverage Fraction'})
         adata.write_h5ad(output_file)
 
 
