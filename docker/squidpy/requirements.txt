@@ -4,7 +4,7 @@ numpy
 pandas
 manhole
 opencv-python
-spatialdata
+spatialdata==0.7.2
 spatialdata-io
 spatialdata-plot
 squidpy
