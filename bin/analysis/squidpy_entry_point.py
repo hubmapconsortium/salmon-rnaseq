@@ -76,10 +76,15 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata = anndata.read_h5ad(h5ad_file)
         # Modify Tissue Coverage Fraction name for squidpy
         adata.obs = adata.obs.rename(columns={'Tissue Coverage Fraction': 'tissue_coverage_fraction'})
-
+        # Instantiate spatialdata_attrs to be able to plot later
+        adata.obs['cell_id'] = adata.obs.index
+        adata.obs['region'] = 'leiden'
+        adata.uns['spatialdata_attrs'] = {'instance_key': 'cell_id', 'region': 'leiden', 'region_key': 'region'}
+        # Parse and sanitize anndata object for spatialdata
+        adata = spatialdata.sanitize_table(adata, inplace=False)
         table_for_sdata = TableModel.parse(adata)
+        # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
-
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
 
         if img_dir:
@@ -91,15 +96,18 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
                 "tissue_hires_scalef": 1.0,
                 "spot_diameter_fullres": 89,
             }
+
             img_for_sdata = get_img_spatialdata(img_dir)
+            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
+            # Logging and setting annotation element
+            print(table_for_sdata)
+            print(sdata['visium'])
 
-            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, table=table_for_sdata)
-
-            sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
+            sdata.pl.render_images('visium_fullres_img').pl.render_shapes(element='visium', color='leiden').pl.show()
             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 
         else:
-            sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata},table=table_for_sdata)
+            sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
 
         output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
         output_file_stem = output_file_stem_dict[assay]
@@ -143,6 +151,8 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         output_file = Path("squidpy_annotated.h5ad")
         print("Saving output to", output_file.absolute())
         # Save normalized/etc. data
+        # Set column back to expected name
+        adata.obs = adata.obs.rename(columns={'tissue_coverage_fraction': 'Tissue Coverage Fraction'})
         adata.write_h5ad(output_file)
 
 
