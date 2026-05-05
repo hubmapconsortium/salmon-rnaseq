@@ -85,6 +85,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         table_for_sdata = TableModel.parse(adata)
         # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
+        shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
 
         if img_dir:
