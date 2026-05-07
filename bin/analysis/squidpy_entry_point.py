@@ -84,75 +84,75 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata = spatialdata.sanitize_table(adata, inplace=False)
         table_for_sdata = TableModel.parse(adata, region='leiden', region_key='region', instance_key='cell_id')
         print(table_for_sdata)
-        # Get shapes
-        shapes_for_sdata = get_shapes_spatialdata(adata)
-        shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
-        adata.obsm["spatial"] = adata.obsm["X_spatial"]
-
-        if img_dir:
-            tiff_file = find_ome_tiff(input_dir=img_dir)
-            img = tf.imread(fspath(tiff_file))
-            library_id = list(adata.uns["spatial"].keys())[0]
-            adata.uns["spatial"][library_id]["images"] = {"hires": img}
-            adata.uns["spatial"][library_id]["scalefactors"] = {
-                "tissue_hires_scalef": 1.0,
-                "spot_diameter_fullres": 89,
-            }
-
-            img_for_sdata = get_img_spatialdata(img_dir)
-            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
-
-            sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
-            plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
-
-        else:
-            sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
-
-        output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
-        output_file_stem = output_file_stem_dict[assay]
-        sdata.write(f'{output_file_stem}.zarr')
-
-        sq.gr.spatial_neighbors(adata)
-        sq.gr.nhood_enrichment(adata, cluster_key="leiden")
-
-#        with new_plot():
-#            sq.pl.spatial_scatter(adata, color="leiden")
-#            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
-
-        with new_plot():
-            sq.pl.nhood_enrichment(adata, cluster_key="leiden")
-            plt.savefig("neighborhood_enrichment.pdf", bbox_inches="tight")
-
-        sq.gr.co_occurrence(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.co_occurrence(adata, cluster_key="leiden")
-            plt.savefig("co_occurrence.pdf", bbox_inches="tight")
-
-        sq.gr.centrality_scores(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.centrality_scores(adata, cluster_key="leiden")
-            plt.savefig("centrality_scores.pdf", bbox_inches="tight")
-
-        sq.gr.interaction_matrix(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.interaction_matrix(adata, cluster_key="leiden")
-            plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
-
-        #        sq.gr.ripley(adata, cluster_key="leiden")
-
-        #        with new_plot():
-        #            sq.pl.ripley(adata, cluster_key="leiden")
-        #            plt.savefig("ripley.pdf", bbox_inches="tight")
-
-        output_file = Path("squidpy_annotated.h5ad")
-        print("Saving output to", output_file.absolute())
-        # Save normalized/etc. data
-        # Set column back to expected name
-        adata.obs = adata.obs.rename(columns={'tissue_coverage_fraction': 'Tissue Coverage Fraction'})
-        adata.write_h5ad(output_file)
+#         # Get shapes
+#         shapes_for_sdata = get_shapes_spatialdata(adata)
+#         shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
+#         adata.obsm["spatial"] = adata.obsm["X_spatial"]
+#
+#         if img_dir:
+#             tiff_file = find_ome_tiff(input_dir=img_dir)
+#             img = tf.imread(fspath(tiff_file))
+#             library_id = list(adata.uns["spatial"].keys())[0]
+#             adata.uns["spatial"][library_id]["images"] = {"hires": img}
+#             adata.uns["spatial"][library_id]["scalefactors"] = {
+#                 "tissue_hires_scalef": 1.0,
+#                 "spot_diameter_fullres": 89,
+#             }
+#
+#             img_for_sdata = get_img_spatialdata(img_dir)
+#             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
+#
+#             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
+#             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
+#
+#         else:
+#             sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
+#
+#         output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
+#         output_file_stem = output_file_stem_dict[assay]
+#         sdata.write(f'{output_file_stem}.zarr')
+#
+#         sq.gr.spatial_neighbors(adata)
+#         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
+#
+# #        with new_plot():
+# #            sq.pl.spatial_scatter(adata, color="leiden")
+# #            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
+#
+#         with new_plot():
+#             sq.pl.nhood_enrichment(adata, cluster_key="leiden")
+#             plt.savefig("neighborhood_enrichment.pdf", bbox_inches="tight")
+#
+#         sq.gr.co_occurrence(adata, cluster_key="leiden")
+#
+#         with new_plot():
+#             sq.pl.co_occurrence(adata, cluster_key="leiden")
+#             plt.savefig("co_occurrence.pdf", bbox_inches="tight")
+#
+#         sq.gr.centrality_scores(adata, cluster_key="leiden")
+#
+#         with new_plot():
+#             sq.pl.centrality_scores(adata, cluster_key="leiden")
+#             plt.savefig("centrality_scores.pdf", bbox_inches="tight")
+#
+#         sq.gr.interaction_matrix(adata, cluster_key="leiden")
+#
+#         with new_plot():
+#             sq.pl.interaction_matrix(adata, cluster_key="leiden")
+#             plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
+#
+#         #        sq.gr.ripley(adata, cluster_key="leiden")
+#
+#         #        with new_plot():
+#         #            sq.pl.ripley(adata, cluster_key="leiden")
+#         #            plt.savefig("ripley.pdf", bbox_inches="tight")
+#
+#         output_file = Path("squidpy_annotated.h5ad")
+#         print("Saving output to", output_file.absolute())
+#         # Save normalized/etc. data
+#         # Set column back to expected name
+#         adata.obs = adata.obs.rename(columns={'tissue_coverage_fraction': 'Tissue Coverage Fraction'})
+#         adata.write_h5ad(output_file)
 
 
 if __name__ == "__main__":
