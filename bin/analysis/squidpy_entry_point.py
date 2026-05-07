@@ -82,8 +82,12 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         # Parse and sanitize anndata object for spatialdata
         adata = spatialdata.sanitize_table(adata, inplace=False)
         table_for_sdata = TableModel.parse(adata, region='visium', region_key='region', instance_key='cell_id')
-        print("table_for_sdata.uns['spatial']['visium'] before attaching it to SpatialData object:")
-        print(table_for_sdata.uns['spatial']['visium'])
+        # Replace the index with the HUGO symbols when available for sdata object
+        table_for_sdata.var['ensembl_id'] = table_for_sdata.var.index
+        table_for_sdata.var['preferred_gene_symbol'] = table_for_sdata.var['hugo_symbol']
+        table_for_sdata.var['preferred_gene_symbol'] = table_for_sdata.var['preferred_gene_symbol'].combine_first(table_for_sdata.var['ensembl_id'])
+        table_for_sdata.var = table_for_sdata.var.set_index(table_for_sdata.var['preferred_gene_symbol'])
+        del table_for_sdata.var['preferred_gene_symbol']
         # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
         # Rename this matrix
