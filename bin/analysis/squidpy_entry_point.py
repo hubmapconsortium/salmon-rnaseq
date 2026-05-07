@@ -79,7 +79,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         # Instantiate spatialdata_attrs to be able to plot later
         adata.obs['cell_id'] = adata.obs.index
         adata.obs['region'] = 'leiden'
-        adata.uns['spatialdata_attrs'] = {'instance_key': 'cell_id', 'region': 'leiden', 'region_key': 'region'}
+        # adata.uns['spatialdata_attrs'] = {'instance_key': 'cell_id', 'region': 'leiden', 'region_key': 'region'}
         # Parse and sanitize anndata object for spatialdata
         adata = spatialdata.sanitize_table(adata, inplace=False)
         table_for_sdata = TableModel.parse(adata, region='leiden', region_key='region', instance_key='cell_id')
