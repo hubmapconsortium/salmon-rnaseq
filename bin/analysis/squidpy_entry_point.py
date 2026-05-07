@@ -82,7 +82,8 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata.uns['spatialdata_attrs'] = {'instance_key': 'cell_id', 'region': 'leiden', 'region_key': 'region'}
         # Parse and sanitize anndata object for spatialdata
         adata = spatialdata.sanitize_table(adata, inplace=False)
-        table_for_sdata = TableModel.parse(adata)
+        table_for_sdata = TableModel.parse(adata, region='leiden', region_key='region', instance_key='cell_id')
+        print(table_for_sdata)
         # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
         shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
@@ -101,7 +102,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             img_for_sdata = get_img_spatialdata(img_dir)
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
 
-            sdata.pl.render_images('visium_fullres_img').pl.render_shapes(element='visium', color='leiden').pl.show()
+            sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 
         else:
