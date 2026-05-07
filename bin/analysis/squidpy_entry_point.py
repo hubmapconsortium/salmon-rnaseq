@@ -84,6 +84,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata = spatialdata.sanitize_table(adata, inplace=False)
         table_for_sdata = TableModel.parse(adata, region='leiden', region_key='region', instance_key='cell_id')
         print(table_for_sdata)
+        print(table_for_sdata.uns['spatial'])
 #         # Get shapes
 #         shapes_for_sdata = get_shapes_spatialdata(adata)
 #         shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
