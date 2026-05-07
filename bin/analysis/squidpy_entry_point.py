@@ -78,11 +78,11 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata.obs = adata.obs.rename(columns={'Tissue Coverage Fraction': 'tissue_coverage_fraction'})
         # Instantiate spatialdata_attrs to be able to plot later
         adata.obs['cell_id'] = adata.obs.index
-        adata.obs['region'] = 'leiden'
+        adata.obs['region'] = 'visium'
         # adata.uns['spatialdata_attrs'] = {'instance_key': 'cell_id', 'region': 'leiden', 'region_key': 'region'}
         # Parse and sanitize anndata object for spatialdata
         adata = spatialdata.sanitize_table(adata, inplace=False)
-        table_for_sdata = TableModel.parse(adata, region='leiden', region_key='region', instance_key='cell_id')
+        table_for_sdata = TableModel.parse(adata, region='visium', region_key='region', instance_key='cell_id')
         print("table_for_sdata.uns['spatial']['visium'] before attaching it to SpatialData object:")
         print(table_for_sdata.uns['spatial']['visium'])
         # Get shapes
