@@ -101,15 +101,11 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             }
             # Remove the image from the spatialdata object; no need to store it twice
             del table_for_sdata.uns["spatial"][library_id]["images"]
-
-            print("table_for_sdata.uns['spatial']['visium'] after putting image in adata")
-            print(table_for_sdata.uns['spatial']['visium'])
-
+            # Get the image and put the object together
             img_for_sdata = get_img_spatialdata(img_dir)
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
-            print("sdata['table'].uns['spatial']['visium'] after creating the SpatialData object:")
-            print(sdata['table'].uns['spatial']['visium'])
-#
+            print(sdata['visium'].index)
+
 #             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
 #             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 #
