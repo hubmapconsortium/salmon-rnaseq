@@ -99,6 +99,8 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
                 "tissue_hires_scalef": 1.0,
                 "spot_diameter_fullres": 89,
             }
+            # Remove the image from the spatialdata object; no need to store it twice
+            del table_for_sdata.uns["spatial"][library_id]["images"]
 
             print("table_for_sdata.uns['spatial']['visium'] after putting image in adata")
             print(table_for_sdata.uns['spatial']['visium'])
