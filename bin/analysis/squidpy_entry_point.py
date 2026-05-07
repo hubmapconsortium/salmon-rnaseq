@@ -105,6 +105,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             img_for_sdata = get_img_spatialdata(img_dir)
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
             print(sdata['visium'].index)
+            print(sdata['table'].index)
 
 #             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
 #             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
