@@ -100,6 +100,9 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
                 "spot_diameter_fullres": 89,
             }
 
+            print("table_for_sdata.uns['spatial']['visium'] after putting image in adata")
+            print(table_for_sdata.uns['spatial']['visium'])
+
             img_for_sdata = get_img_spatialdata(img_dir)
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
             print("sdata['table'].uns['spatial']['visium'] after creating the SpatialData object:")
