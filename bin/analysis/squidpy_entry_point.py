@@ -87,7 +87,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         print(table_for_sdata.uns['spatial']['visium'])
         # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
-        shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
+        # shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden'] I shouldn't need to do this; it should be able to pick up the leiden clusters from the table
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
 
         if img_dir:
@@ -104,11 +104,9 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             # Get the image and put the object together
             img_for_sdata = get_img_spatialdata(img_dir)
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
-            print(sdata['visium'].index)
-            print(sdata['table'].obs.index)
 
-#             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
-#             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
+            sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
+            plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 #
 #         else:
 #             sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
