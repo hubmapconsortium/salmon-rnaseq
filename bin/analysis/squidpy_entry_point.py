@@ -84,24 +84,25 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata = spatialdata.sanitize_table(adata, inplace=False)
         table_for_sdata = TableModel.parse(adata, region='leiden', region_key='region', instance_key='cell_id')
         print(table_for_sdata)
-        print(table_for_sdata.uns['spatial'])
-#         # Get shapes
-#         shapes_for_sdata = get_shapes_spatialdata(adata)
-#         shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
-#         adata.obsm["spatial"] = adata.obsm["X_spatial"]
-#
-#         if img_dir:
-#             tiff_file = find_ome_tiff(input_dir=img_dir)
-#             img = tf.imread(fspath(tiff_file))
-#             library_id = list(adata.uns["spatial"].keys())[0]
-#             adata.uns["spatial"][library_id]["images"] = {"hires": img}
-#             adata.uns["spatial"][library_id]["scalefactors"] = {
-#                 "tissue_hires_scalef": 1.0,
-#                 "spot_diameter_fullres": 89,
-#             }
-#
-#             img_for_sdata = get_img_spatialdata(img_dir)
-#             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
+        print(table_for_sdata.uns['spatial']['visium'])
+        # Get shapes
+        shapes_for_sdata = get_shapes_spatialdata(adata)
+        shapes_for_sdata['leiden'] = table_for_sdata.obs['leiden']
+        adata.obsm["spatial"] = adata.obsm["X_spatial"]
+
+        if img_dir:
+            tiff_file = find_ome_tiff(input_dir=img_dir)
+            img = tf.imread(fspath(tiff_file))
+            library_id = list(adata.uns["spatial"].keys())[0]
+            adata.uns["spatial"][library_id]["images"] = {"hires": img}
+            adata.uns["spatial"][library_id]["scalefactors"] = {
+                "tissue_hires_scalef": 1.0,
+                "spot_diameter_fullres": 89,
+            }
+
+            img_for_sdata = get_img_spatialdata(img_dir)
+            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
+            print(sdata['table'].uns['spatial']['visium'])
 #
 #             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
 #             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
