@@ -83,7 +83,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         # Parse and sanitize anndata object for spatialdata
         adata = spatialdata.sanitize_table(adata, inplace=False)
         table_for_sdata = TableModel.parse(adata, region='leiden', region_key='region', instance_key='cell_id')
-        print(table_for_sdata)
+        print("table_for_sdata.uns['spatial']['visium'] before attaching it to SpatialData object:")
         print(table_for_sdata.uns['spatial']['visium'])
         # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
@@ -102,6 +102,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
 
             img_for_sdata = get_img_spatialdata(img_dir)
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
+            print("sdata['table'].uns['spatial']['visium'] after creating the SpatialData object:")
             print(sdata['table'].uns['spatial']['visium'])
 #
 #             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
