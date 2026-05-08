@@ -147,11 +147,11 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             sq.pl.interaction_matrix(adata, cluster_key="leiden")
             plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
 
-        #        sq.gr.ripley(adata, cluster_key="leiden")
+        sq.gr.ripley(adata, cluster_key="leiden")
 
-        #        with new_plot():
-        #            sq.pl.ripley(adata, cluster_key="leiden")
-        #            plt.savefig("ripley.pdf", bbox_inches="tight")
+        with new_plot():
+            sq.pl.ripley(adata, cluster_key="leiden")
+            plt.savefig("ripley.pdf", bbox_inches="tight")
 
         output_file = Path("squidpy_annotated.h5ad")
         print("Saving output to", output_file.absolute())
