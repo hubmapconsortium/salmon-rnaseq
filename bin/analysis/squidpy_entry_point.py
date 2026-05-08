@@ -120,47 +120,47 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         output_file_stem = output_file_stem_dict[assay]
         # sdata.write(f'{output_file_stem}.zarr')
 
-        sq.gr.spatial_neighbors(adata)
-        sq.gr.nhood_enrichment(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.spatial_scatter(adata, color="leiden")
-            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
-
-        with new_plot():
-            sq.pl.nhood_enrichment(adata, cluster_key="leiden")
-            plt.savefig("neighborhood_enrichment.pdf", bbox_inches="tight")
-
-        sq.gr.co_occurrence(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.co_occurrence(adata, cluster_key="leiden")
-            plt.savefig("co_occurrence.pdf", bbox_inches="tight")
-
-        sq.gr.centrality_scores(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.centrality_scores(adata, cluster_key="leiden")
-            plt.savefig("centrality_scores.pdf", bbox_inches="tight")
-
-        sq.gr.interaction_matrix(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.interaction_matrix(adata, cluster_key="leiden")
-            plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
-
-        sq.gr.ripley(adata, cluster_key="leiden")
-
-        with new_plot():
-            sq.pl.ripley(adata, cluster_key="leiden")
-            plt.savefig("ripley.pdf", bbox_inches="tight")
-
-        output_file = Path("squidpy_annotated.h5ad")
-        print("Saving output to", output_file.absolute())
-        # Save normalized/etc. data
-        # Set column back to expected name
-        adata.obs = adata.obs.rename(columns={'tissue_coverage_fraction': 'Tissue Coverage Fraction'})
-        adata.write_h5ad(output_file)
+        # sq.gr.spatial_neighbors(adata)
+        # sq.gr.nhood_enrichment(adata, cluster_key="leiden")
+        #
+        # with new_plot():
+        #     sq.pl.spatial_scatter(adata, color="leiden")
+        #     plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
+        #
+        # with new_plot():
+        #     sq.pl.nhood_enrichment(adata, cluster_key="leiden")
+        #     plt.savefig("neighborhood_enrichment.pdf", bbox_inches="tight")
+        #
+        # sq.gr.co_occurrence(adata, cluster_key="leiden")
+        #
+        # with new_plot():
+        #     sq.pl.co_occurrence(adata, cluster_key="leiden")
+        #     plt.savefig("co_occurrence.pdf", bbox_inches="tight")
+        #
+        # sq.gr.centrality_scores(adata, cluster_key="leiden")
+        #
+        # with new_plot():
+        #     sq.pl.centrality_scores(adata, cluster_key="leiden")
+        #     plt.savefig("centrality_scores.pdf", bbox_inches="tight")
+        #
+        # sq.gr.interaction_matrix(adata, cluster_key="leiden")
+        #
+        # with new_plot():
+        #     sq.pl.interaction_matrix(adata, cluster_key="leiden")
+        #     plt.savefig("interaction_matrix.pdf", bbox_inches="tight")
+        #
+        # sq.gr.ripley(adata, cluster_key="leiden")
+        #
+        # with new_plot():
+        #     sq.pl.ripley(adata, cluster_key="leiden")
+        #     plt.savefig("ripley.pdf", bbox_inches="tight")
+        #
+        # output_file = Path("squidpy_annotated.h5ad")
+        # print("Saving output to", output_file.absolute())
+        # # Save normalized/etc. data
+        # # Set column back to expected name
+        # adata.obs = adata.obs.rename(columns={'tissue_coverage_fraction': 'Tissue Coverage Fraction'})
+        # adata.write_h5ad(output_file)
 
 
 if __name__ == "__main__":
