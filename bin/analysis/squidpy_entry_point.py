@@ -79,9 +79,10 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         # Instantiate spatialdata_attrs to be able to plot later
         adata.obs['cell_id'] = adata.obs.index
         adata.obs['region'] = 'visium'
-        # Parse and sanitize anndata object for spatialdata
-        adata = spatialdata.sanitize_table(adata, inplace=False)
-        table_for_sdata = TableModel.parse(adata, region='visium', region_key='region', instance_key='cell_id')
+        # Create a copy of adata; spatialdata will update along with whatever anndata object it's attached to
+        adata_copy = adata.copy()
+        adata_copy = spatialdata.sanitize_table(adata_copy, inplace=False)
+        table_for_sdata = TableModel.parse(adata_copy, region='visium', region_key='region', instance_key='cell_id')
         # Replace the index with the HUGO symbols when available for sdata object
         table_for_sdata.var['ensembl_id'] = table_for_sdata.var.index
         table_for_sdata.var['preferred_gene_symbol'] = table_for_sdata.var['hugo_symbol']
@@ -101,7 +102,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 
-            # Store image in adata object
+            # Store image in original adata object
             tiff_file = find_ome_tiff(input_dir=img_dir)
             img = tf.imread(fspath(tiff_file))
             library_id = list(adata.uns["spatial"].keys())[0]
