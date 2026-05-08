@@ -111,7 +111,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
                 "spot_diameter_fullres": 89,
             }
 
-            print(sdata["tables"].uns["spatial"])
+            print(sdata["table"].uns["spatial"])
 
         else:
             sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
