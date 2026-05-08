@@ -94,6 +94,14 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
 
         if img_dir:
+            # Get the image and put the object together
+            img_for_sdata = get_img_spatialdata(img_dir)
+            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
+
+            sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
+            plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
+
+            # Store image in adata object
             tiff_file = find_ome_tiff(input_dir=img_dir)
             img = tf.imread(fspath(tiff_file))
             library_id = list(adata.uns["spatial"].keys())[0]
@@ -102,15 +110,8 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
                 "tissue_hires_scalef": 1.0,
                 "spot_diameter_fullres": 89,
             }
-            # Remove the image from the spatialdata object; no need to store it twice
-            del table_for_sdata.uns["spatial"][library_id]["images"]
-            print(adata.uns["spatial"][library_id]["images"])
-            # Get the image and put the object together
-            img_for_sdata = get_img_spatialdata(img_dir)
-            sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
 
-            sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
-            plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
+            print(sdata["tables"].uns["spatial"])
 
         else:
             sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
