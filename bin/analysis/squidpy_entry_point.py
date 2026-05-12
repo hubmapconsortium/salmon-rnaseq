@@ -6,8 +6,10 @@ from pathlib import Path
 from typing import Iterable, Tuple
 
 import anndata
+import hotspot
 import manhole
 import matplotlib.pyplot as plt
+import mplscience
 import squidpy as sq
 import tifffile as tf
 
@@ -71,30 +73,41 @@ def get_shapes_spatialdata(adata:anndata.AnnData):
     geo_df['radius'] = radius_series
     return ShapesModel.parse(geo_df)
 
+
+def standardize_genes(table):
+    """
+    Set the index to the HUGO symbol when available.
+    """
+    table.var['ensembl_id'] = table.var.index
+    table.var['preferred_gene_symbol'] = table.var['hugo_symbol']
+    table.var['preferred_gene_symbol'] = table.var['preferred_gene_symbol'].combine_first(table.var['ensembl_id'])
+    table.var = table.var.set_index(table.var['preferred_gene_symbol'])
+    del table.var['preferred_gene_symbol']
+    table.var = table.var.sort_index()
+    return table
+
+
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
         adata = anndata.read_h5ad(h5ad_file)
         # Modify Tissue Coverage Fraction name for spatialdata
         adata.obs = adata.obs.rename(columns={'Tissue Coverage Fraction': 'tissue_coverage_fraction'})
         # Instantiate spatialdata_attrs to be able to plot later
+        region_name_dict = {Assay.VISIUM_FF: "visium", Assay.SLIDESEQ: "slideseq"}
         adata.obs['cell_id'] = adata.obs.index
-        adata.obs['region'] = 'visium'
+        adata.obs['region'] = region_name_dict[assay]
         # Create a copy of adata; spatialdata will update along with whatever anndata object it's attached to
         adata_copy = adata.copy()
         adata_copy = spatialdata.sanitize_table(adata_copy, inplace=False)
-        table_for_sdata = TableModel.parse(adata_copy, region='visium', region_key='region', instance_key='cell_id')
+        table_for_sdata = TableModel.parse(adata_copy, region=region_name_dict[assay], region_key='region', instance_key='cell_id')
         # Replace the index with the HUGO symbols when available for sdata object
-        table_for_sdata.var['ensembl_id'] = table_for_sdata.var.index
-        table_for_sdata.var['preferred_gene_symbol'] = table_for_sdata.var['hugo_symbol']
-        table_for_sdata.var['preferred_gene_symbol'] = table_for_sdata.var['preferred_gene_symbol'].combine_first(table_for_sdata.var['ensembl_id'])
-        table_for_sdata.var = table_for_sdata.var.set_index(table_for_sdata.var['preferred_gene_symbol'])
-        del table_for_sdata.var['preferred_gene_symbol']
+        table_for_sdata = standardize_genes(table_for_sdata)
         # Get shapes
         shapes_for_sdata = get_shapes_spatialdata(adata)
         # Rename this matrix
         adata.obsm["spatial"] = adata.obsm["X_spatial"]
 
-        if img_dir:
+        if img_dir: # Visium
             # Store image in original adata object
             tiff_file = find_ome_tiff(input_dir=img_dir)
             img = tf.imread(fspath(tiff_file))
@@ -107,8 +120,6 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             # Put the spatialdata object together
             img_for_sdata = get_img_spatialdata(img_dir)
             sdata = spatialdata.SpatialData(images={'visium_fullres_img':img_for_sdata}, shapes={'visium':shapes_for_sdata}, tables={'table':table_for_sdata})
-            sdata['table'].var = sdata['table'].var.sort_index()
-            print(table_for_sdata.var.head())
             sdata.pl.render_images('visium_fullres_img').pl.render_shapes('visium', color='leiden').pl.show()
             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 
