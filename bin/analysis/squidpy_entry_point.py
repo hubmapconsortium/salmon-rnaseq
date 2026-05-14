@@ -6,10 +6,8 @@ from pathlib import Path
 from typing import Iterable, Tuple
 
 import anndata
-import hotspot
 import manhole
 import matplotlib.pyplot as plt
-import mplscience
 import squidpy as sq
 import tifffile as tf
 
