@@ -129,6 +129,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         # sdata.write(f'{output_file_stem}.zarr')
         print(adata)
         print(adata.uns_keys())
+        print(adata.obsm['spatial'])
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
