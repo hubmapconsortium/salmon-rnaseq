@@ -122,7 +122,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
             plt.savefig('spatial_scatter.pdf', bbox_inches='tight')
 
         else: # Slideseq
-            sdata = spatialdata.SpatialData(points={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
+            sdata = spatialdata.SpatialData(shapes={'slideseq':shapes_for_sdata}, tables={'table':table_for_sdata})
 
         output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
         output_file_stem = output_file_stem_dict[assay]
