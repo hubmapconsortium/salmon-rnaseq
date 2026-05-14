@@ -127,6 +127,8 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
         output_file_stem = output_file_stem_dict[assay]
         # sdata.write(f'{output_file_stem}.zarr')
+        print(adata)
+        print(adata.uns_keys())
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
