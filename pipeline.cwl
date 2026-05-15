@@ -172,6 +172,8 @@ steps:
     in:
       h5ad_file:
         source: salmon_quantification/count_matrix_h5ad
+      organism:
+        source: organism
     out:
       - h5ad_with_ds
       - deepscence_plot
