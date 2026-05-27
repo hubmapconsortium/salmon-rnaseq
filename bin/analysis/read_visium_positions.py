@@ -13,7 +13,6 @@ import cv2
 import manhole
 import numpy as np
 import pandas as pd
-import tifffile as tf
 from PIL import Image
 from pint import Quantity, UnitRegistry
 from scipy.spatial import distance
@@ -423,8 +422,22 @@ def get_gpr_df(metadata_dir, img_dir, threshold=None, scale_factor=4, min_neighb
 
     gpr = pd.read_table(gpr_path, skiprows=9)
 
-    img = tf.imread(img_path)
-    img = np.transpose(img, (1, 2, 0))
+    im = bioio.BioImage(img_path)
+    # ensure storage as RGB with shape (y, x, 3)
+    # Work around bioio inability to check "S" in im.dims:
+    # https://github.com/bioio-devs/bioio-base/issues/68
+    try:
+        s_shape = im.dims.S
+    except AttributeError:
+        s_shape = None
+    c_shape = im.dims.C
+    if s_shape is None and c_shape == 3:
+        # transpose
+        img = np.transpose(im.data.squeeze(), (1, 2, 0))
+    elif s_shape == 3 and c_shape == 1:
+        img = im.data.squeeze()
+    else:
+        raise ValueError(f"Incompatible image shape: {im.dims}")
 
     if alignment_path:
         alignment_path = alignment_path[0]
