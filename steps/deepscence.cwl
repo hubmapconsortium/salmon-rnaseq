@@ -11,7 +11,7 @@ inputs:
     type: File
     inputBinding:
       position: 0
-  organism
+  organism:
     type: string?
     default: human
     inputBinding:
