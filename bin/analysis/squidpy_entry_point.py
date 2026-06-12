@@ -61,6 +61,7 @@ def get_shapes_spatialdata(adata:anndata.AnnData):
     if 'spatial' in adata.uns:#visium
         radius = adata.uns['spatial']['visium']['scalefactors']['spot_diameter_fullres'] / 2
     else:#slideseq
+        # Hardcode radius for slideseq; capture bead radius is 5 microns
         radius = 5
         adata.obsm['spatial'] = adata.obsm['X_spatial']
     radius_series = pd.Series(radius, index=geo_df.index)
