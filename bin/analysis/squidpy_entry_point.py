@@ -127,16 +127,14 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
         output_file_stem = output_file_stem_dict[assay]
         # sdata.write(f'{output_file_stem}.zarr')
-        print(adata)
-        print(adata.uns_keys())
-        print(adata.obsm['spatial'])
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
 
-        with new_plot():
-            sq.pl.spatial_scatter(adata, color="leiden")
-            plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
+        if 'spatial' in adata.uns.keys():
+            with new_plot():
+                sq.pl.spatial_scatter(adata, color="leiden")
+                plt.savefig("spatial_scatter.pdf", bbox_inches="tight")
 
         with new_plot():
             sq.pl.nhood_enrichment(adata, cluster_key="leiden")
