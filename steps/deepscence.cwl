@@ -11,6 +11,12 @@ inputs:
     type: File
     inputBinding:
       position: 0
+  organism:
+    type: string?
+    default: human
+    inputBinding:
+      position: 1
+
 outputs:
   h5ad_with_ds:
     type: File
