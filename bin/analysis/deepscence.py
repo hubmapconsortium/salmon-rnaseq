@@ -7,7 +7,7 @@ import pandas as pd
 from DeepScence.api import DeepScence
 
 
-def main(h5ad_file):
+def main(h5ad_file, organism):
     adata = ad.read_h5ad(h5ad_file)
 
     # DeepScence is expecting HUGO symbols in the var index
@@ -17,7 +17,7 @@ def main(h5ad_file):
     adata.var.index = adata.var["new_index"]
 
     # Run DeepScence
-    adata = DeepScence(adata, binarize=True)
+    adata = DeepScence(adata, binarize=True, species=organism)
 
     # Rename and reorganize new columns
     df = pd.DataFrame()
@@ -41,6 +41,7 @@ if __name__ == "__main__":
 
     p = ArgumentParser()
     p.add_argument("h5ad_file", type=Path)
+    p.add_argument("organism", type=str)
     args = p.parse_args()
 
-    main(args.h5ad_file)
+    main(args.h5ad_file, args.organism)
