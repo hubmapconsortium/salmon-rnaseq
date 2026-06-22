@@ -25,9 +25,9 @@ outputs:
     outputBinding:
       glob: squidpy_annotated.h5ad
   sdata_zarr:
-    type: Directory?
+    type: File?
     outputBinding:
-      glob: "*.zarr"
+      glob: "*.zarr.zip"
   neighborhood_enrichment_plot:
     type: File?
     outputBinding:
