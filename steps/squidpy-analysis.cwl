@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Dimensionality reduction and clustering
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/squidpy-analysis:2.3.9
+    dockerPull: hubmap/squidpy-analysis:latest
 baseCommand: /opt/squidpy_entry_point.py
 
 inputs:
@@ -25,9 +25,9 @@ outputs:
     outputBinding:
       glob: squidpy_annotated.h5ad
   sdata_zarr:
-    type: Directory?
+    type: File?
     outputBinding:
-      glob: "*.zarr"
+      glob: "*.zarr.zip"
   neighborhood_enrichment_plot:
     type: File?
     outputBinding:

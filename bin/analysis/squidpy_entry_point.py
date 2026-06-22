@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import re
 from argparse import ArgumentParser
-from os import fspath, walk
+from os import fspath, walk, system
 from pathlib import Path
 from typing import Iterable, Tuple
 
@@ -86,6 +86,13 @@ def standardize_genes(table):
     return table
 
 
+def zip_spatialdata(spatialdata_path):
+    print("Zipping SpatialData")
+    system(f"cd {spatialdata_path}.zarr")
+    system(f"zip -r {spatialdata_path}.zarr.zip .")
+    system("cd ..")
+
+
 def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
     if assay in {Assay.VISIUM_FF, Assay.SLIDESEQ}:
         adata = anndata.read_h5ad(h5ad_file)
@@ -128,6 +135,7 @@ def main(assay: Assay, h5ad_file: Path, img_dir: Path = None):
         output_file_stem_dict = {Assay.VISIUM_FF:"Visium", Assay.SLIDESEQ:"Slideseq"}
         output_file_stem = output_file_stem_dict[assay]
         sdata.write(f'{output_file_stem}.zarr')
+        zip_spatialdata(output_file_stem)
 
         sq.gr.spatial_neighbors(adata)
         sq.gr.nhood_enrichment(adata, cluster_key="leiden")
