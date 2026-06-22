@@ -45,7 +45,7 @@ outputs:
     label: "Unfiltered count matrix from Alevin, converted to H5AD, with intronic counts as separate columns"
   sdata_zarr:
     outputSource: squidpy_analysis/sdata_zarr
-    type: Directory?
+    type: File?
     label: "SpatialData object serialized in zarr format"
   genome_build_json:
     outputSource: salmon_quantification/genome_build_json

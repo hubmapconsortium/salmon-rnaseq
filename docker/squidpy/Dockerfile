@@ -20,6 +20,8 @@ RUN apt-get update \
     python3-pip \
     python3-venv \
     zlib1g-dev \
+    zip \
+    unzip \
  && rm -rf /var/cache/apt/*
 
 ## Python packages
