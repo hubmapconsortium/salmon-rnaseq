@@ -84,5 +84,10 @@
 		"pattern": "marker_genes_by_cluster_t_test\\.pdf",
 		"description": "Plot of marker genes by cluster calculated using t test",
 		"edam_ontology_term": "EDAM_1.24.format_3508"
-	}
+	},
+  	{
+    "pattern": "(.*).zarr.zip",
+    "description": "SpatialData object serialized in zarr format",
+    "edam_ontology_term": "EDAM_1.24.format_2333"
+  }
 ]
