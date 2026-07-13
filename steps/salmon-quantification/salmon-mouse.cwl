@@ -43,6 +43,11 @@ inputs:
     inputBinding:
       position: 6
       prefix: "--organism"
+  barcode_file:
+    type: File?
+    inputBinding:
+      position: 7
+      prefix: "--barcode-file"
 
 outputs:
   output_dir:
