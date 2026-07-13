@@ -177,6 +177,7 @@ def main(
     expected_cell_count: Optional[int],
     keep_all_barcodes: bool,
     threads: Optional[int],
+    barcode_file: Optional[Path],
     organism: Optional[str] = "human",
 ):
     threads = threads or 1
@@ -217,7 +218,9 @@ def main(
         # between multiple input data sets
         if len(orig_fastq_dirs) != 1:
             raise ValueError("Need exactly 1 input directory for Slide-seq")
-    if assay in {Assay.SLIDESEQ}:
+    if barcode_file:
+        command.extend(["--whitelist", fspath(barcode_file)])
+    elif assay in {Assay.SLIDESEQ}:
         barcode_file = adjust_slideseq_barcode_file(orig_fastq_dirs[0])
         command.extend(["--whitelist", fspath(barcode_file)])
     elif assay in {Assay.VISIUM_FF}:
@@ -258,6 +261,7 @@ if __name__ == "__main__":
     p.add_argument("--expected-cell-count", type=int)
     p.add_argument("--keep-all-barcodes", action="store_true")
     p.add_argument("-p", "--threads", type=int)
+    p.add_argument("--barcode-file", type=Path, nargs="?")
     p.add_argument("--organism", type=str, nargs="?", default="human")
     args = p.parse_args()
 
@@ -268,5 +272,6 @@ if __name__ == "__main__":
         args.expected_cell_count,
         args.keep_all_barcodes,
         args.threads,
+        args.barcode_file,
         args.organism,
     )
