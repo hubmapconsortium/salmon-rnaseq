@@ -28,6 +28,8 @@ inputs:
   organism:
     type: string?
     default: human
+  barcode_file:
+    type: File?
 outputs:
   salmon_output:
     outputSource: [salmon/output_dir, salmon-mouse/output_dir]
@@ -84,6 +86,8 @@ steps:
         source: keep_all_barcodes
       organism:
         source: organism
+      barcode_file:
+        source: barcode_file
     out:
       - output_dir
     run: salmon-quantification/salmon.cwl
@@ -105,6 +109,8 @@ steps:
         source: keep_all_barcodes
       organism:
         source: organism
+      barcode_file:
+        source: barcode_file
     out:
       - output_dir
     run: salmon-quantification/salmon-mouse.cwl
