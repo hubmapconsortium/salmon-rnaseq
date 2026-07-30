@@ -30,6 +30,8 @@ inputs:
   organism:
     type: string?
     default: human
+  barcode_file:
+    type: File?
 outputs:
   salmon_output:
     outputSource: salmon_quantification/salmon_output
@@ -154,6 +156,8 @@ steps:
         source: keep_all_barcodes
       organism:
         source: organism
+      barcode_file:
+        source: barcode_file
     out:
       - salmon_output
       - count_matrix_h5ad
