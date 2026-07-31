@@ -17,7 +17,7 @@ from common import (
     Assay,
 )
 
-human_index = "/opt/Homo_sapiens.GRCh38.115.sidx"
+human_index = "/opt/gencode.v49.annotation.expanded.sidx"
 human_transcript_map = "/opt/Homo_sapiens.GRCh38.115.annotation.expanded.tx2gene.tsv"
 mouse_index = "/opt/gencode.vM28.intron-exon.sidx"
 mouse_transcript_map = "/opt/gencode.vM28.annotation.expanded.tx2gene.tsv"

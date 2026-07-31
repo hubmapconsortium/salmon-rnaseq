@@ -8,8 +8,8 @@ from typing import Optional
 import manhole
 from fastq_utils import find_grouped_fastq_files, get_sample_id_from_r1
 
-human_index = "/opt/gencode.v35.intron-exon.sidx"
-human_transcript_map = "/opt/gencode.v35.annotation.expanded.tx2gene.tsv"
+human_index = "/opt/gencode.v49.annotation.expanded.sidx"
+human_transcript_map = "/opt/Homo_sapiens.GRCh38.115.annotation.expanded.tx2gene.tsv"
 mouse_index = "/opt/gencode.vM28.intron-exon.sidx"
 mouse_transcript_map = "/opt/gencode.vM28.annotation.expanded.tx2gene.tsv"
 
