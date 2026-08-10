@@ -233,8 +233,10 @@ if __name__ == "__main__":
         args.assay, args.alevin_output_dir, args.ensembl_hugo_mapping_path, args.organism
     )
     if raw:
+        raw.var["hugo_symbol"] = raw.var["hugo_symbol"].astype(str)
         raw.write_h5ad("raw_expr.h5ad")
     print(spliced)
+    spliced.var["hugo_symbol"] = raw.var["hugo_symbol"].astype(str)
     spliced.write_h5ad("expr.h5ad")
     if GENOME_BUILD_PATH.is_file():
         copy(GENOME_BUILD_PATH, Path.cwd() / GENOME_BUILD_PATH.name)

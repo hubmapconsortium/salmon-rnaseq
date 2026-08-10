@@ -2,7 +2,8 @@ FROM mruffalo/salmon-custom:1.3.0-hbm1-5-g6e3ad33829a9
 
 WORKDIR /opt
 
-RUN curl https://s3.amazonaws.com/hubmap-pipeline-assets/salmon/gencode-v35-salmon-index.tar | tar -xf -
+RUN curl https://hubmap-pipeline-assets.s3.us-east-1.amazonaws.com/salmon/Homo_sapiens.GRCh38.115.sidx.tar | tar -xf -
+RUN curl -O https://hubmap-pipeline-assets.s3.us-east-1.amazonaws.com/salmon/Homo_sapiens.GRCh38.115.annotation.expanded.tx2gene.tsv
 RUN curl https://s3.amazonaws.com/hubmap-pipeline-assets/salmon/v1_index.tar.gz | tar -xzf -
 RUN curl https://s3.amazonaws.com/hubmap-pipeline-assets/salmon/v2_index.tar.gz | tar -xzf -
 RUN wget https://s3.amazonaws.com/hubmap-pipeline-assets/salmon/visiumv1.tx2gene.tsv
@@ -27,4 +28,3 @@ RUN mkdir /out
 
 COPY bin/common /opt
 COPY bin/salmon /opt
-COPY data/multiome10x /opt
