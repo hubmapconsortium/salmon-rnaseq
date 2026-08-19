@@ -88,8 +88,12 @@ def standardize_genes(table):
 
 def zip_spatialdata(spatialdata_path):
     print("Zipping SpatialData")
+    dont_include = [".cache", "cache", "spatial_scatter.pdf"]
     system(f"cd {spatialdata_path}.zarr")
-    system(f"zip -r {spatialdata_path}.zarr.zip .")
+    exclude_str = " ".join(
+        [f'-x "{name}" -x "{name}/**"' for name in dont_include]
+    )
+    system(f"zip -r {spatialdata_path}.zarr.zip . {exclude_str}")
     system("cd ..")
 
 
