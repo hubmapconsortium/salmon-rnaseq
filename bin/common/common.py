@@ -145,3 +145,12 @@ class Assay(Enum):
         False,
         False,
     )
+    PARSE_EVERCODE = (
+        "parse_evercode",
+        # same barcode length
+        "--snareseq",
+        AnnDataLayer.SPLICED_UNSPLICED_SUM,
+        True,
+        False,
+        False,
+    )
