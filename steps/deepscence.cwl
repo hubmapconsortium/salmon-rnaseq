@@ -3,7 +3,7 @@ class: CommandLineTool
 label: Identify and score scenescent cells
 requirements:
   DockerRequirement:
-    dockerPull: hubmap/scrna-analysis:3.0.0
+    dockerPull: hubmap/scrna-analysis:latest
 baseCommand: /opt/deepscence.py
 
 inputs:
