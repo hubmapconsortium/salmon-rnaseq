@@ -22,7 +22,7 @@ RUN apt-get update \
  && rm -rf /var/cache/apt/*
 
 ## Python packages
-COPY docker/python/environment.yml /opt/environment.yml
+COPY docker/scresolve/environment.yml /opt/environment.yml
 RUN conda env create -f /opt/environment.yml
 
 ENV CONDA_ENV_NAME=scresolve
