@@ -28,4 +28,3 @@ git+https://github.com/andrewhill157/barcodeutils
 git+https://github.com/anthony-qu/dca_patched.git
 git+https://github.com/hubmapconsortium/DeepScence.git
 git+https://github.com/hubmapconsortium/fastq-utils@v0.2.5
-git+https://github.com/chenhcs/scResolve@main
