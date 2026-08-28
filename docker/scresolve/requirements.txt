@@ -1,3 +1,1 @@
-setuptools==80.0.0
-git+https://github.com/andrewhill157/barcodeutils
 git+https://github.com/chenhcs/scResolve@main
