@@ -18,7 +18,7 @@ scanpy
 scipy
 scvelo==0.3.3
 scikit-learn
-setuptools==80.0.0
+setuptools==83.0.0
 tables
 tensorflow
 tifffile
