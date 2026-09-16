@@ -7,6 +7,7 @@ import manhole
 
 import correct_snareseq_barcodes
 import expand_sciseq_barcodes
+import extract_parse_evercode_barcodes
 import extract_slideseq_barcodes
 from common import ADJ_OUTPUT_DIR, Assay
 
@@ -14,6 +15,7 @@ adj_funcs = {
     Assay.SCISEQ: expand_sciseq_barcodes.main,
     Assay.SNARESEQ: correct_snareseq_barcodes.main,
     Assay.SLIDESEQ: extract_slideseq_barcodes.main,
+    Assay.PARSE_EVERCODE: extract_parse_evercode_barcodes.main,
 }
 
 
